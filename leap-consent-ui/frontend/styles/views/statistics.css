@@ -1,0 +1,36 @@
+/* Payments */
+vaadin-board-row.small .statistics__payment-chart:not(:last-child) {
+  box-shadow: inset 0 -1px var(--lumo-contrast-10pct);
+}
+
+vaadin-board-row.medium .statistics__payment-chart:first-child {
+  box-shadow: inset 0 -1px var(--lumo-contrast-10pct),
+              inset -1px 0 var(--lumo-contrast-10pct);
+}
+vaadin-board-row.medium .statistics__payment-chart:nth-child(2) {
+  box-shadow: inset 0 -1px var(--lumo-contrast-10pct);
+}
+vaadin-board-row.medium .statistics__payment-chart:nth-child(3) {
+  box-shadow: inset -1px 0 var(--lumo-contrast-10pct);
+}
+
+vaadin-board-row.large .statistics__payment-chart:not(:last-child) {
+  box-shadow: inset -1px 0 var(--lumo-contrast-10pct);
+}
+
+/* Reports & Logs */
+vaadin-board-row.small .statistics__reports {
+  padding-right: var(--lumo-space-r-l);
+}
+
+vaadin-board-row.small .statistics__logs {
+  padding-left: var(--lumo-space-r-l);
+}
+
+vaadin-board-row:not(.small)  .statistics__reports {
+  padding-right: calc(var(--lumo-space-l) / 2);
+}
+
+vaadin-board-row:not(.small)  .statistics__logs {
+  padding-left: calc(var(--lumo-space-l) / 2);
+}

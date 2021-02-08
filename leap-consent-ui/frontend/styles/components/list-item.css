@@ -1,0 +1,60 @@
+.list-item {
+  box-sizing: border-box;
+  line-height: var(--lumo-line-height-m);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Prefix */
+.list-item__prefix {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.list-item__prefix img {
+  max-height: var(--lumo-icon-size-m);
+  max-width: var(--lumo-icon-size-m);
+}
+
+/* Content */
+.list-item__content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.list-item__content label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Suffix */
+.list-item__suffix {
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* Divider */
+.list-item[with-divider]::after {
+  background-color: var(--lumo-contrast-10pct);
+  bottom: 0;
+  content: "";
+  height: 1px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.list-item[with-prefix][with-divider]::after {
+  left: calc((var(--lumo-icon-size-m) + var(--lumo-space-l)) + var(--lumo-space-l));
+}
+
+/* Grid styling */
+vaadin-grid .list-item label {
+  pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+  .list-item[with-prefix][with-divider]::after {
+    left: calc((var(--lumo-icon-size-m) + var(--lumo-space-l)) + var(--lumo-space-m));
+  }
+}

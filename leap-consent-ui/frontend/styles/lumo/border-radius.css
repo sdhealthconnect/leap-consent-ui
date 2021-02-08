@@ -1,0 +1,15 @@
+.border-radius-s {
+  border-radius: var(--lumo-border-radius);
+}
+
+.border-radius-m {
+  border-radius: calc(var(--lumo-border-radius) * 2);
+}
+
+.border-radius-l {
+  border-radius: calc(var(--lumo-border-radius) * 3);
+}
+
+.border-radius-100 {
+  border-radius: 100%;
+}

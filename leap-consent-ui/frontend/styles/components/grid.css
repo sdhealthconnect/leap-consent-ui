@@ -1,0 +1,9 @@
+@media (max-width: 479px) {
+  :host([theme~="mobile"]) #header {
+    display: none;
+  }
+
+  :host([theme~="mobile"]:not([theme~="no-border"])) {
+    border: none;
+  }
+}

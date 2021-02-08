@@ -1,0 +1,82 @@
+/* Colors */
+.header-text {
+  color: var(--lumo-header-text-color);
+}
+
+.body-text {
+  color: var(--lumo-body-text-color);
+}
+
+.secondary-text {
+  color: var(--lumo-secondary-text-color);
+}
+
+.tertiary-text {
+  color: var(--lumo-tertiary-text-color);
+}
+
+.disabled-text {
+  color: var(--lumo-disabled-text-color);
+}
+
+.primary-text {
+  color: var(--lumo-primary-text-color);
+}
+
+.primary-contrast-text {
+  color: var(--lumo-primary-contrast-color);
+}
+
+.error-text {
+  color: var(--lumo-error-text-color);
+}
+
+.error-contrast-text {
+  color: var(--lumo-error-contrast-color);
+}
+
+.success-text {
+  color: var(--lumo-success-text-color);
+}
+
+.success-contrast-text {
+  color: var(--lumo-success-contrast-color);
+}
+
+/* Headers */
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  display: block;
+  font-weight: 600;
+  line-height: var(--lumo-line-height-xs);
+}
+
+.h1 {
+  font-size: var(--lumo-font-size-xxxl);
+}
+
+.h2 {
+  font-size: var(--lumo-font-size-xxl);
+}
+
+.h3 {
+  font-size: var(--lumo-font-size-xl);
+}
+
+.h4 {
+  font-size: var(--lumo-font-size-l);
+}
+
+.h5 {
+  font-size: var(--lumo-font-size-m);
+}
+
+.h6 {
+  font-size: var(--lumo-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Font families */
+.monospace {
+  font-family: 'SF Mono', 'Roboto Mono', 'Source Code Pro', monospace;
+}

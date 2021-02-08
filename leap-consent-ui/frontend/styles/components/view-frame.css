@@ -1,0 +1,28 @@
+.view-frame {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.view-frame__header {
+  z-index: 2;
+}
+
+.view-frame__wrapper {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.view-frame__content {
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+}
+
+.view-frame__footer {
+  z-index: 2;
+}

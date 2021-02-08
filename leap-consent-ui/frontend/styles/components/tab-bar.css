@@ -1,0 +1,55 @@
+.tab-bar {
+  align-items: center;
+  background-color: var(--lumo-base-color);
+  box-shadow: var(--lumo-box-shadow-s);
+  padding-left: var(--lumo-space-r-l);
+  padding-right: var(--lumo-space-r-l);
+  position: relative;
+  z-index: 1;
+}
+
+/* Avatar */
+.tab-bar__avatar {
+  border-radius: 100%;
+  flex-shrink: 0;
+  height: var(--lumo-size-s);
+  margin-left: auto;
+  width: var(--lumo-size-s);
+}
+
+/* Tabs */
+.tab-bar__tabs {
+  box-shadow: none;
+}
+
+.tab-bar__tab vaadin-button {
+  margin-bottom: 0;
+  margin-left: var(--lumo-space-s);
+  margin-top: 0;
+}
+
+.tab-bar__add-tab {
+  flex-shrink: 0;
+}
+
+@media (max-width: 719px) {
+  .tab-bar__add-tab,
+  vaadin-tab[closable]::after,
+  vaadin-tab[closable]::before,
+  vaadin-tab[closable]:not([selected]),
+  vaadin-tab[closable] vaadin-button {
+    display: none;
+  }
+
+  vaadin-tab[closable][selected] {
+    color: var(--lumo-header-text-color);
+    font-size: var(--lumo-font-size-l);
+    font-weight: 600;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tab-bar__navi-icon {
+    display: none;
+  }
+}

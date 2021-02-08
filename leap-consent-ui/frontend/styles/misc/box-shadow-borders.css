@@ -1,0 +1,15 @@
+.bsb-b {
+  box-shadow: inset 0 -1px var(--lumo-contrast-10pct);
+}
+
+.bsb-l {
+  box-shadow: inset 1px 0 var(--lumo-contrast-10pct);
+}
+
+.bsb-r {
+  box-shadow: inset -1px 0 var(--lumo-contrast-10pct);
+}
+
+.bsb-t {
+  box-shadow: inset 0 1px var(--lumo-contrast-10pct);
+}

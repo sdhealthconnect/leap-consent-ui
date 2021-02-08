@@ -1,0 +1,31 @@
+.account-switcher__avatar {
+  border-radius: 100%;
+  display: flex;
+  height: var(--lumo-size-l);
+  margin-bottom: var(--lumo-space-l);
+  margin-left: var(--lumo-space-m);
+  margin-top: var(--lumo-space-m);
+  width: var(--lumo-size-l);
+}
+
+.account-switcher__title {
+  margin: 0;
+  padding-bottom: var(--lumo-space-m);
+  padding-top: var(--lumo-space-m);
+}
+
+.account-switcher__email {
+  align-items: center;
+  box-shadow: inset 0 -1px var(--lumo-contrast-10pct);
+  display: flex;
+  font-size: var(--lumo-font-size-s);
+  justify-content: space-between;
+  padding-bottom: var(--lumo-space-m);
+  padding-left: var(--lumo-space-m);
+  padding-right: var(--lumo-space-s);
+}
+
+.account-switcher__email vaadin-button {
+  margin-bottom: 0;
+  margin-top: 0;
+}
