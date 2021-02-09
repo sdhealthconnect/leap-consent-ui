@@ -15,7 +15,7 @@ public class FHIRPractitioner {
 
     private HapiFhirServer client;
 
-    public Collection<Practitioner> getAllOrganizationsWithinState() {
+    public Collection<Practitioner> getAllPractitionersWithinState() {
         ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         String state = consentSession.getPrimaryState();
         Collection<Practitioner> consentCollection = new ArrayList<>();

@@ -7,9 +7,9 @@
     <packaging>war</packaging>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.3.RELEASE</version>
+        <artifactId>leap-consent-ui-parent</artifactId>
+        <groupId>gov.hhs.onc.leap</groupId>
+        <version>0.0.1</version>
     </parent>
 
     <properties>

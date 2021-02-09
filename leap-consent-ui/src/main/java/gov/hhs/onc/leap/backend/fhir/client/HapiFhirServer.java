@@ -243,20 +243,34 @@ public class HapiFhirServer {
         }
 
         public Bundle getAllOrganizations(String state) {
-            Bundle bundle = hapiClient
+            /* Bundle bundle = hapiClient
                     .search()
                     .forResource(Organization.class)
                     .where(Organization.ADDRESS_STATE.matches().value(state))
+                    .returnBundle(Bundle.class)
+                    .execute();
+
+             */
+            Bundle bundle = hapiClient
+                    .search()
+                    .forResource(Organization.class)
                     .returnBundle(Bundle.class)
                     .execute();
             return bundle;
         }
 
         public Bundle getAllPractitioners(String state) {
-            Bundle bundle = hapiClient
+            /*Bundle bundle = hapiClient
                     .search()
                     .forResource(Practitioner.class)
                     .where(Practitioner.ADDRESS_STATE.matches().value(state))
+                    .returnBundle(Bundle.class)
+                    .execute();
+
+             */
+            Bundle bundle = hapiClient
+                    .search()
+                    .forResource(Practitioner.class)
                     .returnBundle(Bundle.class)
                     .execute();
             return bundle;

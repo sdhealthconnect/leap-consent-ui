@@ -23,7 +23,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamResource;
-import gov.hhs.onc.leap.backend.Payment;
 import gov.hhs.onc.leap.backend.TestData;
 import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
