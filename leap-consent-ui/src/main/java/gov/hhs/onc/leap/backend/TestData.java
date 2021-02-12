@@ -13,9 +13,13 @@ public class TestData {
 
     private static final Map<Long, ConsentDocument> CONSENT = new HashMap<>();
 
+    private static final Map<Long, ConsentLog> CONSENT_LOG_MAP = new HashMap<>();
+
     public static Collection<ConsentDocument> getConsents() {
         return CONSENT.values();
     }
+
+    public static Collection<ConsentLog> getConsentLogs() { return CONSENT_LOG_MAP.values(); }
 
     public static LocalDate getTodaysDate() {return LocalDate.now();}
 

@@ -131,7 +131,7 @@ public class MainLayout extends FlexBoxLayout
 		menu.addNaviItem(VaadinIcon.RECORDS, "My Consent Documents", ConsentDocumentsView.class);
 		menu.addNaviItem(VaadinIcon.COGS, "Analyze My Data", AnalyzeRecordView.class);
 		menu.addNaviItem(VaadinIcon.SHARE, "Share My Data", SharePatientDataView.class);
-		menu.addNaviItem(VaadinIcon.LIST, "History of Interactions", AuditView.class );
+
 		NaviItem advDirective = menu.addNaviItem(VaadinIcon.EDIT, "Advanced Directives", AdvancedDirectiveView.class);
 		menu.addNaviItem(advDirective, "Living Will", LivingWill.class);
 		menu.addNaviItem(advDirective, "Healthcare Power of Attorney", HealthcarePowerOfAttorney.class);
@@ -139,7 +139,9 @@ public class MainLayout extends FlexBoxLayout
 		menu.addNaviItem(advDirective, "PreHospital Medical Care Directive(DNR)", DoNotResuscitate.class);
 
 		menu.addNaviItem(VaadinIcon.BUILDING, "Participate In Research", ResearchView.class);
-
+		menu.addNaviItem(VaadinIcon.LIST, "Activity Logs", AuditView.class );
+		menu.addNaviItem(VaadinIcon.ENVELOPES, "Notifications", NotificationView.class);
+		/*
 		NaviItem covid = menu.addNaviItem(VaadinIcon.GLOBE, "COVID-19",
 				COVID.class);
 		menu.addNaviItem(covid, "Release Allergy Intolerances", ReleaseAllergyIntoleranceView.class);
@@ -148,6 +150,8 @@ public class MainLayout extends FlexBoxLayout
 		menu.addNaviItem(covid, "Participate In Outcome Research", COVIDOutcomeResearch.class);
 		menu.addNaviItem(covid, "Provider Verify Consent",  COVIDProviderVerifyConsent.class);
 		menu.addNaviItem(covid, "Provider Attestation", COVIDProviderAttestation.class);
+
+		 */
 	}
 
 	/**

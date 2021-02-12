@@ -24,6 +24,7 @@ import gov.hhs.onc.leap.ui.MainLayout;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.Component;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
+import gov.hhs.onc.leap.ui.components.navigation.BasicDivider;
 import gov.hhs.onc.leap.ui.layout.size.*;
 import gov.hhs.onc.leap.ui.util.IconSize;
 import gov.hhs.onc.leap.ui.util.TextColor;
@@ -74,11 +75,11 @@ public class SharePatientDataView extends ViewFrame {
         Html intro = new Html("<p>The following allows you the <b>Patient</b> to create rules to control " +
                 "what, when, and to whom your <b>Personal Healthcare Information</b> can be exchanged with.  " +
                 "That exchange may be between your Primary Physician, Regional Hospital, Health Information Exchange, and others. " +
-                "You may choose not to share information that could be sensitive in nature, or choose not to constrain the exchange at all.  It's your choice. " +
-                "You the <b>Patient</b> have the control here.");
-
+                "You may choose not to share information that could be sensitive in nature, or choose not to constrain the exchange at all. "+
+                "If you have privacy concerns use the <b>Analyze My Data</b> option to determine if sensitive information exists in your "+
+                "clinical record.");
         RadioButtonGroup<String> timeSettings = new RadioButtonGroup<>();
-        timeSettings.setLabel("Choose which date ranges works best for you");
+        timeSettings.setLabel("Set the dates this consent will be in force.");
         timeSettings.setItems("Use Default Option", "Custom Date Option");
         timeSettings.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         timeSettings.addValueChangeListener(event -> {
@@ -252,7 +253,7 @@ public class SharePatientDataView extends ViewFrame {
         sensitivityOptions.setVisible(false);
 
 
-        dateRequirements = new FlexBoxLayout(createHeader(VaadinIcon.CALENDAR, "Date Requirements"),timeSettings, consentDefaultPeriod, startDateTime, endDateTime);
+        dateRequirements = new FlexBoxLayout(createHeader(VaadinIcon.CALENDAR, "Date Requirements"),timeSettings, new BasicDivider(), consentDefaultPeriod, startDateTime, endDateTime);
         dateRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         dateRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
         dateRequirements.setHeightFull();
@@ -264,7 +265,7 @@ public class SharePatientDataView extends ViewFrame {
         dateRequirements.getStyle().set("margin-left", "10px");
         dateRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
 
-        sourceRequirements = new FlexBoxLayout(createHeader(VaadinIcon.DOCTOR, "Data Source - Custodian"),custodianType, practitionerComboBoxSource, organizationComboBoxSource);
+        sourceRequirements = new FlexBoxLayout(createHeader(VaadinIcon.DOCTOR, "Data Source - Custodian"),custodianType, new BasicDivider(), practitionerComboBoxSource, organizationComboBoxSource);
         sourceRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         sourceRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
         sourceRequirements.setHeightFull();
@@ -277,7 +278,7 @@ public class SharePatientDataView extends ViewFrame {
         sourceRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         sourceRequirements.setVisible(false);
 
-        destinationRequirements = new FlexBoxLayout(createHeader(VaadinIcon.HOSPITAL, "Destination - Recipient"),destinationType, practitionerComboBoxDestination, organizationComboBoxDestination);
+        destinationRequirements = new FlexBoxLayout(createHeader(VaadinIcon.HOSPITAL, "Destination - Recipient"),destinationType, new BasicDivider(), practitionerComboBoxDestination, organizationComboBoxDestination);
         destinationRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         destinationRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
         destinationRequirements.setHeightFull();
@@ -290,7 +291,7 @@ public class SharePatientDataView extends ViewFrame {
         destinationRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         destinationRequirements.setVisible(false);
 
-        privacyRequirements = new FlexBoxLayout(createHeader(VaadinIcon.GLASSES, "Privacy Concerns"),sensConstraints, allSensitivityOptions, sensitivityOptions);
+        privacyRequirements = new FlexBoxLayout(createHeader(VaadinIcon.GLASSES, "Privacy Concerns"),sensConstraints, new BasicDivider(), allSensitivityOptions, sensitivityOptions);
         privacyRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         privacyRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
         privacyRequirements.setHeightFull();
