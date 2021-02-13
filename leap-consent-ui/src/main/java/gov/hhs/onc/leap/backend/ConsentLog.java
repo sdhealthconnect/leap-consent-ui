@@ -1,12 +1,20 @@
 package gov.hhs.onc.leap.backend;
 
-import java.util.Date;
+import java.time.LocalDate;
+
 
 public class ConsentLog {
     private String decision;
-    private Date decisionDate;
+    private LocalDate decisionDate;
     private String requestor;
     private String custodian;
+
+    public ConsentLog(String decision, LocalDate decisionDate, String requestor, String custodian) {
+        this.decision = decision;
+        this.decisionDate = decisionDate;
+        this.requestor = requestor;
+        this.custodian = custodian;
+    }
 
     public String getDecision() {
         return decision;
@@ -16,11 +24,11 @@ public class ConsentLog {
         this.decision = decision;
     }
 
-    public Date getDecisionDate() {
+    public LocalDate getDecisionDate() {
         return decisionDate;
     }
 
-    public void setDecisionDate(Date decisionDate) {
+    public void setDecisionDate(LocalDate decisionDate) {
         this.decisionDate = decisionDate;
     }
 

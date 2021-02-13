@@ -123,7 +123,8 @@
       "@vaadin/vaadin-date-time-picker": "1.4.0",
       "lit-element": "2.3.1",
       "@vaadin/vaadin-avatar": "1.0.3",
-      "@lrnwebcomponents/pdf-browser-viewer": "2.1.4"
+      "@lrnwebcomponents/pdf-browser-viewer": "2.1.4",
+      "multiselect-combo-box": "2.4.2"
     },
     "devDependencies": {
       "webpack-babel-multi-target-plugin": "2.3.3",

@@ -17,7 +17,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import gov.hhs.onc.leap.backend.ConsentDocument;
+
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIROrganization;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRPractitioner;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -32,10 +32,9 @@ import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
-import org.graalvm.compiler.core.common.type.ArithmeticOpTable;
 import org.hl7.fhir.r4.model.Organization;
-import org.hl7.fhir.r4.model.OrganizationAffiliation;
 import org.hl7.fhir.r4.model.Practitioner;
+
 
 import java.util.*;
 
@@ -44,11 +43,13 @@ import java.util.*;
 @Route(value = "sharepatientdataview", layout = MainLayout.class)
 public class SharePatientDataView extends ViewFrame {
     private RadioButtonGroup<String> consentDefaultPeriod;
+
     private DateTimePicker startDateTime;
     private DateTimePicker endDateTime;
     private ComboBox<Practitioner> practitionerComboBoxSource;
     private ComboBox<Practitioner> practitionerComboBoxDestination;
     private ComboBox<Organization> organizationComboBoxSource;
+    private ComboBox<String> dataClassComboBox;
     private ComboBox<Organization> organizationComboBoxDestination;
     private FHIROrganization fhirOrganization = new FHIROrganization();
     private FHIRPractitioner fhirPractitioner = new FHIRPractitioner();
@@ -57,6 +58,7 @@ public class SharePatientDataView extends ViewFrame {
     private CheckboxGroup<String> sensitivityOptions;
     private Checkbox allSensitivityOptions;
     private FlexBoxLayout dateRequirements;
+    private FlexBoxLayout dataClassRequirements;
     private FlexBoxLayout sourceRequirements;
     private FlexBoxLayout destinationRequirements;
     private FlexBoxLayout privacyRequirements;
@@ -121,6 +123,37 @@ public class SharePatientDataView extends ViewFrame {
         endDateTime.setDatePlaceholder("Date");
         endDateTime.setTimePlaceholder("Time");
         endDateTime.setVisible(false);
+
+        RadioButtonGroup<String> constrainDataClass = new RadioButtonGroup<>();
+        constrainDataClass.setLabel("Control what types of clinical information are exchanged");
+        constrainDataClass.setItems("Limit information to following;", "Allow all types of data to be exchanged");
+        constrainDataClass.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
+        constrainDataClass.addValueChangeListener(event -> {
+            if (event.getValue() == null) {
+                //do nothing
+            }
+            else {
+                if (event.getValue().equals("Limit information to following;")) {
+                    dataClassComboBox.setVisible(true);
+                }
+                else {
+                    dataClassComboBox.setVisible(false);
+                }
+            }
+        });
+
+        // todo dataClassComboBox make this a multiselect combo
+        dataClassComboBox = new ComboBox<>();
+        dataClassComboBox.setLabel("Select Items");
+        dataClassComboBox.setPlaceholder("Choose");
+        dataClassComboBox.setItems("AdverseEvent","AllergyIntolerance", "Appointment", "BodyStructure",
+                "CarePlan", "Condition", "Coverage", "DiagnosticReport", "Encounter", "EpisodeOfCare",
+                "FamilyMemberHistory", "Goal", "ImagingStudy", "Immunization", "InsurancePlan", "MeasureReport",
+                "MedicationStatement","Observation", "Patient", "RelatedPerson", "ResearchSubject", "RiskAssessment",
+                "ServiceRequest", "Specimen");
+        dataClassComboBox.setClearButtonVisible(true);
+        dataClassComboBox.setVisible(false);
+
 
         RadioButtonGroup<String> custodianType = new RadioButtonGroup<>();
         custodianType.setLabel("The source of information being exchanged");
@@ -265,6 +298,19 @@ public class SharePatientDataView extends ViewFrame {
         dateRequirements.getStyle().set("margin-left", "10px");
         dateRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
 
+        dataClassRequirements = new FlexBoxLayout(createHeader(VaadinIcon.RECORDS, "Data Class Requirements"), constrainDataClass, new BasicDivider(), dataClassComboBox);
+        dataClassRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        dataClassRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
+        dataClassRequirements.setHeightFull();
+        dataClassRequirements.setBackgroundColor("white");
+        dataClassRequirements.setShadow(Shadow.S);
+        dataClassRequirements.setBorderRadius(BorderRadius.S);
+        dataClassRequirements.getStyle().set("margin-bottom", "10px");
+        dataClassRequirements.getStyle().set("margin-right", "10px");
+        dataClassRequirements.getStyle().set("margin-left", "10px");
+        dataClassRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        dataClassRequirements.setVisible(false);
+
         sourceRequirements = new FlexBoxLayout(createHeader(VaadinIcon.DOCTOR, "Data Source - Custodian"),custodianType, new BasicDivider(), practitionerComboBoxSource, organizationComboBoxSource);
         sourceRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         sourceRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -305,7 +351,7 @@ public class SharePatientDataView extends ViewFrame {
         privacyRequirements.setVisible(false);
 
 
-        FlexBoxLayout content = new FlexBoxLayout(intro, dateRequirements, sourceRequirements,
+        FlexBoxLayout content = new FlexBoxLayout(intro, dateRequirements, dataClassRequirements, sourceRequirements,
                 destinationRequirements, privacyRequirements);
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -357,6 +403,7 @@ public class SharePatientDataView extends ViewFrame {
                 returnButton.setEnabled(false);
                 forwardButton.setEnabled(true);
                 dateRequirements.setVisible(true);
+                dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(false);
                 destinationRequirements.setVisible(false);
                 privacyRequirements.setVisible(false);
@@ -365,7 +412,8 @@ public class SharePatientDataView extends ViewFrame {
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(true);
                 dateRequirements.setVisible(false);
-                sourceRequirements.setVisible(true);
+                dataClassRequirements.setVisible(true);
+                sourceRequirements.setVisible(false);
                 destinationRequirements.setVisible(false);
                 privacyRequirements.setVisible(false);
                 break;
@@ -373,14 +421,25 @@ public class SharePatientDataView extends ViewFrame {
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(true);
                 dateRequirements.setVisible(false);
-                sourceRequirements.setVisible(false);
-                destinationRequirements.setVisible(true);
+                dataClassRequirements.setVisible(false);
+                sourceRequirements.setVisible(true);
+                destinationRequirements.setVisible(false);
                 privacyRequirements.setVisible(false);
                 break;
             case 3:
                 returnButton.setEnabled(true);
+                forwardButton.setEnabled(true);
+                dateRequirements.setVisible(false);
+                dataClassRequirements.setVisible(false);
+                sourceRequirements.setVisible(false);
+                destinationRequirements.setVisible(true);
+                privacyRequirements.setVisible(false);
+                break;
+            case 4:
+                returnButton.setEnabled(true);
                 forwardButton.setEnabled(false);
                 dateRequirements.setVisible(false);
+                dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(false);
                 destinationRequirements.setVisible(false);
                 privacyRequirements.setVisible(true);

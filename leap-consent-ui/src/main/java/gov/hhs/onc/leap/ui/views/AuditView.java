@@ -12,17 +12,20 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.ConsentLog;
 import gov.hhs.onc.leap.backend.TestData;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
+import gov.hhs.onc.leap.ui.components.ListItem;
 import gov.hhs.onc.leap.ui.components.navigation.BasicDivider;
 import gov.hhs.onc.leap.ui.layout.size.Horizontal;
 import gov.hhs.onc.leap.ui.layout.size.Right;
 import gov.hhs.onc.leap.ui.layout.size.Top;
+import gov.hhs.onc.leap.ui.layout.size.Vertical;
 import gov.hhs.onc.leap.ui.util.IconSize;
 import gov.hhs.onc.leap.ui.util.TextColor;
 import gov.hhs.onc.leap.ui.util.UIUtils;
@@ -89,8 +92,47 @@ public class AuditView extends ViewFrame {
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
         grid.setDataProvider(dataProvider);
         grid.setHeightFull();
+
+        grid.addColumn(new ComponentRenderer<>(this::createDecision))
+                .setHeader("Access Decision")
+                .setWidth("100px");
+
+        grid.addColumn(TemplateRenderer.<ConsentLog>of("[[item.decisionDate]]")
+                .withProperty("decisionDate", consentLog -> UIUtils.formatDate(consentLog.getDecisionDate())))
+                .setAutoWidth(true)
+                .setComparator(ConsentLog::getDecisionDate)
+                .setFlexGrow(0)
+                .setHeader("Decision Date");
+        grid.addColumn(new ComponentRenderer<>(this::createCustodian))
+                .setHeader("Custodian")
+                .setWidth("150px");
+        grid.addColumn(new ComponentRenderer<>(this::createRecipient))
+                .setHeader("Recipient")
+                .setWidth("150px");
+
         return grid;
     }
+
+    private Component createDecision(ConsentLog consentLog) {
+        ListItem item = new ListItem(consentLog.getDecision());
+        item.setPadding(Vertical.XS);
+        return item;
+    }
+
+    private Component createCustodian(ConsentLog consentLog) {
+        ListItem item = new ListItem(consentLog.getCustodian());
+        item.setPadding(Vertical.XS);
+        return item;
+    }
+
+    private Component createRecipient(ConsentLog consentLog) {
+        ListItem item = new ListItem(consentLog.getRequestor());
+        item.setPadding(Vertical.XS);
+        return item;
+    }
+
+
+
 
     private Component createChart() {
         Chart chart = new Chart(ChartType.SCATTER);
