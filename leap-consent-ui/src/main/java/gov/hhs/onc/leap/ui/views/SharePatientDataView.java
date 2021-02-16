@@ -6,8 +6,10 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -18,6 +20,7 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIROrganization;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRPractitioner;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -49,7 +52,7 @@ public class SharePatientDataView extends ViewFrame {
     private ComboBox<Practitioner> practitionerComboBoxSource;
     private ComboBox<Practitioner> practitionerComboBoxDestination;
     private ComboBox<Organization> organizationComboBoxSource;
-    private ComboBox<String> dataClassComboBox;
+    private MultiSelectListBox<String> dataClassComboBox;
     private ComboBox<Organization> organizationComboBoxDestination;
     private FHIROrganization fhirOrganization = new FHIROrganization();
     private FHIRPractitioner fhirPractitioner = new FHIRPractitioner();
@@ -62,9 +65,12 @@ public class SharePatientDataView extends ViewFrame {
     private FlexBoxLayout sourceRequirements;
     private FlexBoxLayout destinationRequirements;
     private FlexBoxLayout privacyRequirements;
+    private FlexBoxLayout signatureRequirements;
     private int questionPosition = 0;
     private Button returnButton;
     private Button forwardButton;
+
+    private SignaturePad signature;
 
 
     public SharePatientDataView() {
@@ -143,15 +149,14 @@ public class SharePatientDataView extends ViewFrame {
         });
 
         // todo dataClassComboBox make this a multiselect combo
-        dataClassComboBox = new ComboBox<>();
-        dataClassComboBox.setLabel("Select Items");
-        dataClassComboBox.setPlaceholder("Choose");
+        dataClassComboBox = new MultiSelectListBox<>();
+
         dataClassComboBox.setItems("AdverseEvent","AllergyIntolerance", "Appointment", "BodyStructure",
                 "CarePlan", "Condition", "Coverage", "DiagnosticReport", "Encounter", "EpisodeOfCare",
                 "FamilyMemberHistory", "Goal", "ImagingStudy", "Immunization", "InsurancePlan", "MeasureReport",
                 "MedicationStatement","Observation", "Patient", "RelatedPerson", "ResearchSubject", "RiskAssessment",
                 "ServiceRequest", "Specimen");
-        dataClassComboBox.setClearButtonVisible(true);
+        dataClassComboBox.setHeight("100px");
         dataClassComboBox.setVisible(false);
 
 
@@ -285,6 +290,14 @@ public class SharePatientDataView extends ViewFrame {
         allSensitivityOptions.setVisible(false);
         sensitivityOptions.setVisible(false);
 
+        Html eSignLabel = new Html("<p>This last step will capture your signature and create a <b>human readible pdf</b> of this consent.</p>");
+        Button eSignButton = new Button("eSign Consent and Submit");
+        eSignButton.addClickListener(event -> {
+            Dialog d = createSignatureDialog();
+            d.open();
+        });
+
+
 
         dateRequirements = new FlexBoxLayout(createHeader(VaadinIcon.CALENDAR, "Date Requirements"),timeSettings, new BasicDivider(), consentDefaultPeriod, startDateTime, endDateTime);
         dateRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -350,9 +363,22 @@ public class SharePatientDataView extends ViewFrame {
         privacyRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         privacyRequirements.setVisible(false);
 
+        signatureRequirements = new FlexBoxLayout(createHeader(VaadinIcon.PENCIL, "Signature"), eSignLabel, eSignButton, new BasicDivider());
+        signatureRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        signatureRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
+        signatureRequirements.setHeightFull();
+        signatureRequirements.setBackgroundColor("white");
+        signatureRequirements.setShadow(Shadow.S);
+        signatureRequirements.setBorderRadius(BorderRadius.S);
+        signatureRequirements.getStyle().set("margin-bottom", "10px");
+        signatureRequirements.getStyle().set("margin-right", "10px");
+        signatureRequirements.getStyle().set("margin-left", "10px");
+        signatureRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        signatureRequirements.setVisible(false);
+
 
         FlexBoxLayout content = new FlexBoxLayout(intro, dateRequirements, dataClassRequirements, sourceRequirements,
-                destinationRequirements, privacyRequirements);
+                destinationRequirements, privacyRequirements, signatureRequirements);
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -407,6 +433,7 @@ public class SharePatientDataView extends ViewFrame {
                 sourceRequirements.setVisible(false);
                 destinationRequirements.setVisible(false);
                 privacyRequirements.setVisible(false);
+                signatureRequirements.setVisible(false);
                 break;
             case 1:
                 returnButton.setEnabled(true);
@@ -416,6 +443,7 @@ public class SharePatientDataView extends ViewFrame {
                 sourceRequirements.setVisible(false);
                 destinationRequirements.setVisible(false);
                 privacyRequirements.setVisible(false);
+                signatureRequirements.setVisible(false);
                 break;
             case 2:
                 returnButton.setEnabled(true);
@@ -425,6 +453,7 @@ public class SharePatientDataView extends ViewFrame {
                 sourceRequirements.setVisible(true);
                 destinationRequirements.setVisible(false);
                 privacyRequirements.setVisible(false);
+                signatureRequirements.setVisible(false);
                 break;
             case 3:
                 returnButton.setEnabled(true);
@@ -434,15 +463,27 @@ public class SharePatientDataView extends ViewFrame {
                 sourceRequirements.setVisible(false);
                 destinationRequirements.setVisible(true);
                 privacyRequirements.setVisible(false);
+                signatureRequirements.setVisible(false);
                 break;
             case 4:
+                returnButton.setEnabled(true);
+                forwardButton.setEnabled(true);
+                dateRequirements.setVisible(false);
+                dataClassRequirements.setVisible(false);
+                sourceRequirements.setVisible(false);
+                destinationRequirements.setVisible(false);
+                privacyRequirements.setVisible(true);
+                signatureRequirements.setVisible(false);
+                break;
+            case 5:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(false);
                 dateRequirements.setVisible(false);
                 dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(false);
                 destinationRequirements.setVisible(false);
-                privacyRequirements.setVisible(true);
+                privacyRequirements.setVisible(false);
+                signatureRequirements.setVisible(true);
                 break;
             default:
                 break;
@@ -459,6 +500,38 @@ public class SharePatientDataView extends ViewFrame {
         return header;
     }
 
+    private Dialog createSignatureDialog() {
+        signature = new SignaturePad();
+        signature.setHeight("100px");
+        signature.setWidth("400px");
+        signature.setPenColor("#2874A6");
 
+        Button saveSig = new Button("Done");
+        saveSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
+        saveSig.addClickListener(event -> {
+            signature.setReadOnly(true);
+        });
+        Button cancelSign = new Button("Cancel");
+        cancelSign.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CLOSE));
+        cancelSign.addClickListener(event -> {
+            signature.undo();
+        });
+        Html signHere = new Html("<p><b>Sign Here</b></p>");
+        HorizontalLayout hLayout = new HorizontalLayout();
+        hLayout.add(cancelSign, saveSig);
+        hLayout.setAlignItems(FlexComponent.Alignment.END);
+
+
+        Dialog dialog = new Dialog();
+        dialog.setHeight("250px");
+        dialog.setWidth("450px");
+        dialog.setCloseOnOutsideClick(true);
+        dialog.setCloseOnEsc(true);
+        dialog.setResizable(true);
+
+        dialog.add(signHere, signature, hLayout);
+
+        return dialog;
+    }
 
 }

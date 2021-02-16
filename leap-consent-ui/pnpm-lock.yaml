@@ -47,6 +47,7 @@ dependencies:
   '@vaadin/vaadin-time-picker': 2.4.0
   '@vaadin/vaadin-upload': 4.4.1
   lit-element: 2.3.1
+  signature_pad: 3.0.0-beta.4
 devDependencies:
   '@types/validator': 13.1.0
   awesome-typescript-loader: 5.2.1_typescript@4.0.3
@@ -6606,6 +6607,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-VUJ49FC8U1OxwZLxIbTTrDvLnf/6TDgxZcK8wxR8zs13xpx7xbG60ndBlhNrFi2EMuFRoeDoJO7wthSLq42EjA==
+  /signature_pad/3.0.0-beta.4:
+    dev: false
+    resolution:
+      integrity: sha512-cOf2NhVuTiuNqe2X/ycEmizvCDXk0DoemhsEpnkcGnA4kS5iJYTCqZ9As7tFBbsch45Q1EdX61833+6sjJ8rrw==
   /slash/1.0.0:
     dev: true
     engines:
@@ -7639,6 +7644,7 @@ specifiers:
   progress-webpack-plugin: 0.0.24
   raw-loader: 3.1.0
   script-ext-html-webpack-plugin: 2.1.4
+  signature_pad: 3.0.0-beta.4
   terser: 4.6.7
   typescript: 4.0.3
   validator: 13.1.17

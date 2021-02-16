@@ -155,13 +155,13 @@
             <artifactId>pdf-browser</artifactId>
             <version>3.0.1</version>
         </dependency>
-        <!--
+
+        <!--Signature Pad Addon -->
         <dependency>
-            <groupId>eu.maxschuster</groupId>
-            <artifactId>vaadin-signaturefield</artifactId>
-            <version>2.0.1</version>
+            <groupId>de.f0rce.signaturepad</groupId>
+            <artifactId>signature-widget</artifactId>
+            <version>1.0.1</version>
         </dependency>
-        -->
         <!--Spring dependencies -->
         <dependency>
             <groupId>com.vaadin</groupId>
