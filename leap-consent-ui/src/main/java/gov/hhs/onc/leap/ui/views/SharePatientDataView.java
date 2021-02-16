@@ -69,6 +69,8 @@ public class SharePatientDataView extends ViewFrame {
     private int questionPosition = 0;
     private Button returnButton;
     private Button forwardButton;
+    private Dialog dialog;
+    private byte[] base64Signature;
 
     private SignaturePad signature;
 
@@ -293,8 +295,8 @@ public class SharePatientDataView extends ViewFrame {
         Html eSignLabel = new Html("<p>This last step will capture your signature and create a <b>human readible pdf</b> of this consent.</p>");
         Button eSignButton = new Button("eSign Consent and Submit");
         eSignButton.addClickListener(event -> {
-            Dialog d = createSignatureDialog();
-            d.open();
+            dialog = createSignatureDialog();
+            dialog.open();
         });
 
 
@@ -509,12 +511,15 @@ public class SharePatientDataView extends ViewFrame {
         Button saveSig = new Button("Done");
         saveSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         saveSig.addClickListener(event -> {
-            signature.setReadOnly(true);
+            base64Signature = signature.getImageBase64();
+            //todo create fhir consent resource and pdf for review in flow and final submittal of consent
+            forwardButton.setEnabled(true);
+            dialog.close();
         });
         Button cancelSign = new Button("Cancel");
         cancelSign.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CLOSE));
         cancelSign.addClickListener(event -> {
-            signature.undo();
+            dialog.close();
         });
         Html signHere = new Html("<p><b>Sign Here</b></p>");
         HorizontalLayout hLayout = new HorizontalLayout();
