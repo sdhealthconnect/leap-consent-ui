@@ -20,6 +20,7 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import com.vaadin.flow.server.StreamResource;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIROrganization;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRPractitioner;
@@ -35,10 +36,19 @@ import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
+import gov.hhs.onc.leap.ui.util.pdf.PDFPatientPrivacyHandler;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.Practitioner;
+import org.joda.time.DateTime;
+import org.vaadin.alejandro.PdfBrowserViewer;
 
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -69,8 +79,15 @@ public class SharePatientDataView extends ViewFrame {
     private int questionPosition = 0;
     private Button returnButton;
     private Button forwardButton;
+    private Button submitButton;
     private Dialog dialog;
+    private Dialog docDialog;
     private byte[] base64Signature;
+    private RadioButtonGroup<String> timeSettings;
+    private RadioButtonGroup<String> constrainDataClass;
+    private RadioButtonGroup<String> custodianType;
+    private RadioButtonGroup<String> destinationType;
+    private RadioButtonGroup<String> sensConstraints;
 
     private SignaturePad signature;
 
@@ -88,7 +105,7 @@ public class SharePatientDataView extends ViewFrame {
                 "You may choose not to share information that could be sensitive in nature, or choose not to constrain the exchange at all. "+
                 "If you have privacy concerns use the <b>Analyze My Data</b> option to determine if sensitive information exists in your "+
                 "clinical record.");
-        RadioButtonGroup<String> timeSettings = new RadioButtonGroup<>();
+        timeSettings = new RadioButtonGroup<>();
         timeSettings.setLabel("Set the dates this consent will be in force.");
         timeSettings.setItems("Use Default Option", "Custom Date Option");
         timeSettings.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
@@ -132,7 +149,7 @@ public class SharePatientDataView extends ViewFrame {
         endDateTime.setTimePlaceholder("Time");
         endDateTime.setVisible(false);
 
-        RadioButtonGroup<String> constrainDataClass = new RadioButtonGroup<>();
+        constrainDataClass = new RadioButtonGroup<>();
         constrainDataClass.setLabel("Control what types of clinical information are exchanged");
         constrainDataClass.setItems("Limit information to following;", "Allow all types of data to be exchanged");
         constrainDataClass.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
@@ -162,7 +179,7 @@ public class SharePatientDataView extends ViewFrame {
         dataClassComboBox.setVisible(false);
 
 
-        RadioButtonGroup<String> custodianType = new RadioButtonGroup<>();
+        custodianType = new RadioButtonGroup<>();
         custodianType.setLabel("The source of information being exchanged");
         custodianType.setItems("Practitioner", "Organization");
         custodianType.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
@@ -202,7 +219,7 @@ public class SharePatientDataView extends ViewFrame {
         organizationComboBoxSource.setVisible(false);
 
 
-        RadioButtonGroup<String> destinationType = new RadioButtonGroup<>();
+        destinationType = new RadioButtonGroup<>();
         destinationType.setLabel("The Person or Organization, the destination, requesting your information");
         destinationType.setItems("Practitioner", "Organization");
         destinationType.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
@@ -238,9 +255,9 @@ public class SharePatientDataView extends ViewFrame {
         organizationComboBoxDestination.setItems(organizationListDataProvider);
         organizationComboBoxDestination.setVisible(false);
 
-        RadioButtonGroup<String> sensConstraints = new RadioButtonGroup<>();
+        sensConstraints = new RadioButtonGroup<>();
         sensConstraints.setLabel("If portions of my clinical record are privacy sensitive I would like to;");
-        sensConstraints.setItems("Remove them", "I do not have a privacy concerns");
+        sensConstraints.setItems("Remove them", "I do not have privacy concerns");
         sensConstraints.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         sensConstraints.addValueChangeListener(event -> {
             if (event.getValue() == null) {
@@ -418,7 +435,10 @@ public class SharePatientDataView extends ViewFrame {
            questionPosition++;
            evalNavigation();
         });
-        HorizontalLayout footer = new HorizontalLayout(returnButton, forwardButton);
+        submitButton = new Button("Submit", new Icon(VaadinIcon.STORAGE));
+        submitButton.setVisible(false);
+
+        HorizontalLayout footer = new HorizontalLayout(returnButton, forwardButton, submitButton);
         footer.setAlignItems(FlexComponent.Alignment.CENTER);
         footer.setPadding(true);
         footer.setSpacing(true);
@@ -430,6 +450,7 @@ public class SharePatientDataView extends ViewFrame {
             case 0:
                 returnButton.setEnabled(false);
                 forwardButton.setEnabled(true);
+                submitButton.setVisible(false);
                 dateRequirements.setVisible(true);
                 dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(false);
@@ -440,6 +461,7 @@ public class SharePatientDataView extends ViewFrame {
             case 1:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(true);
+                submitButton.setVisible(false);
                 dateRequirements.setVisible(false);
                 dataClassRequirements.setVisible(true);
                 sourceRequirements.setVisible(false);
@@ -450,6 +472,7 @@ public class SharePatientDataView extends ViewFrame {
             case 2:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(true);
+                submitButton.setVisible(false);
                 dateRequirements.setVisible(false);
                 dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(true);
@@ -460,6 +483,7 @@ public class SharePatientDataView extends ViewFrame {
             case 3:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(true);
+                submitButton.setVisible(false);
                 dateRequirements.setVisible(false);
                 dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(false);
@@ -470,6 +494,7 @@ public class SharePatientDataView extends ViewFrame {
             case 4:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(true);
+                submitButton.setVisible(false);
                 dateRequirements.setVisible(false);
                 dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(false);
@@ -480,6 +505,7 @@ public class SharePatientDataView extends ViewFrame {
             case 5:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(false);
+                submitButton.setVisible(false);
                 dateRequirements.setVisible(false);
                 dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(false);
@@ -513,8 +539,11 @@ public class SharePatientDataView extends ViewFrame {
         saveSig.addClickListener(event -> {
             base64Signature = signature.getImageBase64();
             //todo create fhir consent resource and pdf for review in flow and final submittal of consent
-            forwardButton.setEnabled(true);
             dialog.close();
+            submitButton.setVisible(true);
+            getHumanReadable();
+            docDialog.open();
+
         });
         Button cancelSign = new Button("Cancel");
         cancelSign.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CLOSE));
@@ -537,6 +566,125 @@ public class SharePatientDataView extends ViewFrame {
         dialog.add(signHere, signature, hLayout);
 
         return dialog;
+    }
+
+    private StreamResource setFieldsCreatePDF() {
+
+            //get consent period
+            String sDate = "";
+            String eDate = "";
+            if (timeSettings.getValue().equals("Use Default Option")) {
+                LocalDateTime defDate = LocalDateTime.now();
+                if (consentDefaultPeriod.equals("24 Hours")) {
+                    defDate = LocalDateTime.now().plusDays(1);
+                }
+                else if (consentDefaultPeriod.getValue().equals("1 year")) {
+                    defDate = LocalDateTime.now().plusYears(1);
+                }
+                else if (consentDefaultPeriod.getValue().equals("5 years")) {
+                    defDate = LocalDateTime.now().plusYears(5);
+                }
+                else if (consentDefaultPeriod.getValue().equals("10 years")) {
+                    defDate = LocalDateTime.now().plusYears(10);
+                }
+                else {
+                    defDate = null;
+                }
+                sDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                eDate = defDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            }
+            else if (timeSettings.getValue().equals("Custom Date Option")) {
+                sDate = startDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                eDate = endDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            }
+            else {
+                //this is an error...
+            }
+            //get domain constraints
+            String dataDomainConstraintlist = "Limit information to following; ";
+            if (constrainDataClass.getValue().equals("Limit information to following;")) {
+                Set<String> classList = dataClassComboBox.getSelectedItems();
+                Iterator iterClass = classList.iterator();
+                while (iterClass.hasNext()) {
+                    String s = (String)iterClass.next();
+                    dataDomainConstraintlist = dataDomainConstraintlist + s +" ";
+                }
+            }
+            else {
+                //this is the default when none selected
+                dataDomainConstraintlist = "Allow all types of data to be exchanged";
+            }
+            //set custodian
+            String custodian = "";
+            if (custodianType.getValue().equals("Practitioner")) {
+                custodian = practitionerComboBoxSource.getValue().getName().get(0).getNameAsSingleString();
+            }
+            else if (custodianType.getValue().equals("Organization")) {
+                custodian = organizationComboBoxSource.getValue().getName();
+            }
+            else {
+                custodian = "ERROR! - No custodian value selected from list";
+            }
+
+            //set recipient
+            String recipient = "";
+            if (destinationType.getValue().equals("Practitioner")) {
+                recipient = practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString();
+            }
+            else if (destinationType.getValue().equals("Organization")) {
+                recipient = organizationComboBoxDestination.getValue().getName();
+            }
+            else {
+                recipient = "ERROR! - No recipient value selected from list";
+            }
+
+            //set sensitivity constraints
+            String sensitivities = "Remove following sensitivity types if found in my record; ";
+            if (sensConstraints.getValue().equals("Remove them")) {
+                Set<String> sensSet = sensitivityOptions.getSelectedItems();
+                Iterator sensIter = sensSet.iterator();
+                while (sensIter.hasNext()) {
+                    String s = (String)sensIter.next();
+                    sensitivities = sensitivities + s + " ";
+                }
+            }
+            else if (sensConstraints.getValue().equals("I do not have privacy concerns")) {
+                sensitivities = "I do not have privacy concerns";
+            }
+            else {
+                //default if none selected
+                sensitivities = "I do not have privacy concerns";
+            }
+            PDFPatientPrivacyHandler pdfHandler = new PDFPatientPrivacyHandler();
+            StreamResource res = pdfHandler.retrievePDFForm(sDate, eDate, dataDomainConstraintlist, custodian,
+                                recipient, sensitivities, base64Signature);
+            return  res;
+    }
+
+    private void getHumanReadable() {
+        StreamResource streamResource = setFieldsCreatePDF();
+        docDialog = new Dialog();
+
+        streamResource.setContentType("application/pdf");
+
+        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
+        viewer.setHeight("800px");
+        viewer.setWidth("840px");
+
+        Button closeButton = new Button("Close", e -> docDialog.close());
+        closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
+
+        FlexBoxLayout content = new FlexBoxLayout(viewer, closeButton);
+        content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        content.setBoxSizing(BoxSizing.BORDER_BOX);
+        content.setHeightFull();
+        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+
+        docDialog.add(content);
+
+        docDialog.setModal(false);
+        docDialog.setResizable(true);
+        docDialog.setDraggable(true);
     }
 
 }
