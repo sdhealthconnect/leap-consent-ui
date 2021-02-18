@@ -123,6 +123,7 @@ public class LivingWill extends ViewFrame {
         return dialog;
     }
 
+
     private void saveLivingWill() {
         ConsentSession consentSession = (ConsentSession)VaadinSession.getCurrent().getAttribute("consentSession");
         Patient patient = consentSession.getFhirPatient();

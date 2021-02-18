@@ -39,6 +39,7 @@ public class PDFPatientPrivacyHandler {
     private byte[] patientSignatureImage;
     private String signatureLocation;
     private ConsentSession consentSession;
+    private byte[] pdfAsByteArray;
 
     public StreamResource retrievePDFForm(String sDate, String eDate, String dataDomainConstraintList, String custodian,
                                           String recipient, String sensitivities, byte[] patientSignatureImage) {
@@ -69,6 +70,7 @@ public class PDFPatientPrivacyHandler {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdfdocument.save(out);
             pdfdocument.close();
+            pdfAsByteArray = out.toByteArray();
             InputStream bi = new ByteArrayInputStream(out.toByteArray());
             InputStreamFactory iFactory = new InputStreamFactory() {
                 @Override
@@ -109,6 +111,7 @@ public class PDFPatientPrivacyHandler {
                 if (field.getFullyQualifiedName().equals("patientName")) field.setValue(fullName);
                 if (field.getFullyQualifiedName().equals("signatureDate")) field.setValue(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
                 if (field.getFullyQualifiedName().equals("signatureLocation")) field.setValue(signatureLocation);
+                field.setReadOnly(true);
             }
         }
         catch (Exception ex) {
@@ -121,5 +124,13 @@ public class PDFPatientPrivacyHandler {
         COSDictionary fieldDict = field.getCOSObject();
         COSArray fieldAreaArray = (COSArray) fieldDict.getDictionaryObject(COSName.RECT);
         return new PDRectangle(fieldAreaArray);
+    }
+
+    public byte[] getPdfAsByteArray() {
+        return pdfAsByteArray;
+    }
+
+    public void setPdfAsByteArray(byte[] pdfAsByteArray) {
+        this.pdfAsByteArray = pdfAsByteArray;
     }
 }

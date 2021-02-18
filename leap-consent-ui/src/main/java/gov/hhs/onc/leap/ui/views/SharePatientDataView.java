@@ -7,9 +7,12 @@ import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.MultiSelectListBox;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -21,9 +24,13 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceWriter;
+import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIROrganization;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRPractitioner;
+import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.ui.MainLayout;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.Component;
@@ -37,17 +44,20 @@ import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPatientPrivacyHandler;
+import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.hl7.fhir.r4.model.Organization;
-import org.hl7.fhir.r4.model.Practitioner;
+import org.hl7.fhir.r4.model.*;
 import org.joda.time.DateTime;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -90,6 +100,10 @@ public class SharePatientDataView extends ViewFrame {
     private RadioButtonGroup<String> sensConstraints;
 
     private SignaturePad signature;
+    private LocalDateTime provisionStartDateTime;
+    private LocalDateTime provisionEndDateTime;
+    private byte[] consentPDFAsByteArray;
+    private FHIRConsent fhirConsentClient = new FHIRConsent();
 
 
     public SharePatientDataView() {
@@ -436,6 +450,14 @@ public class SharePatientDataView extends ViewFrame {
            evalNavigation();
         });
         submitButton = new Button("Submit", new Icon(VaadinIcon.STORAGE));
+        submitButton.addClickListener(event -> {
+           createFHIRConsent();
+           successNotification();
+           //todo test for fhir consent create success
+           resetQuestionNavigation();
+           submitButton.setVisible(false);
+           evalNavigation();
+        });
         submitButton.setVisible(false);
 
         HorizontalLayout footer = new HorizontalLayout(returnButton, forwardButton, submitButton);
@@ -573,8 +595,8 @@ public class SharePatientDataView extends ViewFrame {
             //get consent period
             String sDate = "";
             String eDate = "";
+            LocalDateTime defDate = LocalDateTime.now();
             if (timeSettings.getValue().equals("Use Default Option")) {
-                LocalDateTime defDate = LocalDateTime.now();
                 if (consentDefaultPeriod.equals("24 Hours")) {
                     defDate = LocalDateTime.now().plusDays(1);
                 }
@@ -592,10 +614,17 @@ public class SharePatientDataView extends ViewFrame {
                 }
                 sDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                 eDate = defDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                //for use later
+                provisionStartDateTime = LocalDateTime.now();
+                provisionEndDateTime = defDate;
             }
             else if (timeSettings.getValue().equals("Custom Date Option")) {
                 sDate = startDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                 eDate = endDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                //for use later
+                provisionStartDateTime = startDateTime.getValue();
+                provisionEndDateTime = endDateTime.getValue();
+
             }
             else {
                 //this is an error...
@@ -658,6 +687,7 @@ public class SharePatientDataView extends ViewFrame {
             PDFPatientPrivacyHandler pdfHandler = new PDFPatientPrivacyHandler();
             StreamResource res = pdfHandler.retrievePDFForm(sDate, eDate, dataDomainConstraintlist, custodian,
                                 recipient, sensitivities, base64Signature);
+            consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
             return  res;
     }
 
@@ -670,6 +700,7 @@ public class SharePatientDataView extends ViewFrame {
         PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
         viewer.setHeight("800px");
         viewer.setWidth("840px");
+
 
         Button closeButton = new Button("Close", e -> docDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
@@ -686,5 +717,252 @@ public class SharePatientDataView extends ViewFrame {
         docDialog.setResizable(true);
         docDialog.setDraggable(true);
     }
+
+    private void createFHIRConsent() {
+        ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
+        Patient patient = consentSession.getFhirPatient();
+
+        Consent patientPrivacyConsent = new Consent();
+        patientPrivacyConsent.setId(UUID.randomUUID().toString());
+        patientPrivacyConsent.setStatus(Consent.ConsentState.ACTIVE);
+
+        patientPrivacyConsent.setDateTime(new Date());
+
+        //set consent scope
+        CodeableConcept cConcept = new CodeableConcept();
+        Coding coding = new Coding();
+        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
+        coding.setCode("patient-privacy");
+        cConcept.addCoding(coding);
+        patientPrivacyConsent.setScope(cConcept);
+
+        List<CodeableConcept> cList = new ArrayList<>();
+        CodeableConcept cConceptCat = new CodeableConcept();
+        Coding codingCat = new Coding();
+        codingCat.setSystem("http://loinc.org");
+        codingCat.setCode("59284-6");
+        cConceptCat.addCoding(codingCat);
+        cList.add(cConceptCat);
+        patientPrivacyConsent.setCategory(cList);
+
+        //set patient ref
+        Reference patientRef = new Reference();
+        patientRef.setReference("Patient/"+patient.getId());
+        patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
+        patientPrivacyConsent.setPatient(patientRef);
+
+        //set custodian of this consent
+        String custodian = "";
+        String custodianRef = "";
+        if (custodianType.getValue().equals("Practitioner")) {
+            custodian = practitionerComboBoxSource.getValue().getName().get(0).getNameAsSingleString();
+            custodianRef = "Practitioner/"+practitionerComboBoxSource.getValue().getId();
+        }
+        else if (custodianType.getValue().equals("Organization")) {
+            custodian = organizationComboBoxSource.getValue().getName();
+            custodianRef = "Organization/"+organizationComboBoxSource.getValue().getId();
+        }
+
+        //this does not accept
+        List<Reference> refList = new ArrayList<>();
+        Reference orgRef = new Reference();
+        orgRef.setReference(custodianRef);
+        orgRef.setDisplay(custodian);
+        refList.add(orgRef);
+        patientPrivacyConsent.setOrganization(refList);
+
+        //set rule
+        CodeableConcept policyCode = new CodeableConcept();
+        Coding codes = new Coding();
+        codes.setCode("OPTOUT");
+        codes.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode");
+        policyCode.addCoding(codes);
+        patientPrivacyConsent.setPolicyRule(policyCode);
+
+        //set dates
+        Consent.provisionComponent provision = new Consent.provisionComponent();
+        Period period = new Period();
+        Date startDate = Date.from(provisionStartDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(provisionEndDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        period.setStart(startDate);
+        period.setEnd(endDate);
+        provision.setPeriod(period);
+
+        //create provisions for classes
+        if (constrainDataClass.getValue().equals("Limit information to following;")) {
+            Consent.provisionComponent dataClassProvision = new Consent.provisionComponent();
+            dataClassProvision.setType(Consent.ConsentProvisionType.PERMIT);
+            String dataClassSystem = "http://hl7.org/fhir/resource-types";
+            List<Coding> classList = new ArrayList<>();
+            Set<String> itemList = dataClassComboBox.getSelectedItems();
+            Iterator iter = itemList.iterator();
+            while (iter.hasNext()) {
+                String classCode = (String)iter.next();
+                Coding classcoding = new Coding();
+                classcoding.setSystem(dataClassSystem);
+                classcoding.setCode(classCode);
+                classList.add(classcoding);
+            }
+            dataClassProvision.setClass_(classList);
+
+            //set actor
+            Consent.provisionActorComponent actor = new Consent.provisionActorComponent();
+            CodeableConcept roleConcept = new CodeableConcept();
+            Coding rolecoding = new Coding();
+            rolecoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ParticipationType");
+            rolecoding.setCode("IRCP");
+            roleConcept.addCoding(rolecoding);
+            actor.setRole(roleConcept);
+
+            Reference actorRef = new Reference();
+            if (destinationType.getValue().equals("Practitioner")) {
+                actorRef.setReference("Practitioner/"+practitionerComboBoxDestination.getValue().getId());
+                actorRef.setDisplay(practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString());
+            }
+            else if (destinationType.getValue().equals("Organization")) {
+                actorRef.setReference("Organization/"+organizationComboBoxDestination.getValue().getId());
+                actorRef.setDisplay(organizationComboBoxDestination.getValue().getName());
+            }
+
+            actor.setReference(actorRef);
+
+            List<Consent.provisionActorComponent> actorList = new ArrayList<>();
+            actorList.add(actor);
+
+            dataClassProvision.setActor(actorList);
+
+            //set action
+            Coding actioncoding = new Coding();
+            actioncoding.setSystem("http://terminology.hl7.org/CodeSystem/consentaction");
+            actioncoding.setCode("access");
+
+            List<CodeableConcept> actionCodeList = new ArrayList<>();
+            CodeableConcept actionConcept = new CodeableConcept();
+            actionConcept.addCoding(actioncoding);
+            actionCodeList.add(actionConcept);
+
+            dataClassProvision.setAction(actionCodeList);
+
+            provision.addProvision(dataClassProvision);
+        }
+
+        //create provision for sensitivity
+        if (sensConstraints.getValue().equals("Remove them")) {
+            Consent.provisionComponent sensitivityProvision = new Consent.provisionComponent();
+            sensitivityProvision.setType(Consent.ConsentProvisionType.DENY);
+
+            //security label
+            Coding senscoding = new Coding();
+            senscoding.setCode("R");
+            senscoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-Confidentiality");
+            sensitivityProvision.addSecurityLabel(senscoding);
+
+            //actor
+            Consent.provisionActorComponent sensActor = new Consent.provisionActorComponent();
+            CodeableConcept sensRoleConcept = new CodeableConcept();
+            Coding sensRolecoding = new Coding();
+            sensRolecoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ParticipationType");
+            sensRolecoding.setCode("IRCP");
+            sensRoleConcept.addCoding(sensRolecoding);
+            sensActor.setRole(sensRoleConcept);
+
+            Reference sensActorRef = new Reference();
+            if (destinationType.getValue().equals("Practitioner")) {
+                sensActorRef.setReference("Practitioner/"+practitionerComboBoxDestination.getValue().getId());
+                sensActorRef.setDisplay(practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString());
+            }
+            else if (destinationType.getValue().equals("Organization")) {
+                sensActorRef.setReference("Organization/"+organizationComboBoxDestination.getValue().getId());
+                sensActorRef.setDisplay(organizationComboBoxDestination.getValue().getName());
+            }
+
+            sensActor.setReference(sensActorRef);
+
+            List<Consent.provisionActorComponent> sensActorList = new ArrayList<>();
+            sensActorList.add(sensActor);
+
+            sensitivityProvision.setActor(sensActorList);
+
+            //set action
+            Coding sensactioncoding = new Coding();
+            sensactioncoding.setSystem("http://terminology.hl7.org/CodeSystem/consentaction");
+            sensactioncoding.setCode("access");
+
+            List<CodeableConcept> sensActionCodeList = new ArrayList<>();
+            CodeableConcept sensActionConcept = new CodeableConcept();
+            sensActionConcept.addCoding(sensactioncoding);
+            sensActionCodeList.add(sensActionConcept);
+
+            sensitivityProvision.setAction(sensActionCodeList);
+
+            provision.addProvision(sensitivityProvision);
+        }
+        patientPrivacyConsent.setProvision(provision);
+
+        //create attachment
+        Attachment attachment = new Attachment();
+        attachment.setContentType("application/pdf");
+        attachment.setCreation(new Date());
+        attachment.setTitle("patient-privacy");
+
+        ByteArrayInputStream bais = null;
+        try {
+            bais = new ByteArrayInputStream(consentPDFAsByteArray);
+        }
+        catch (Exception ex) {
+            //blah blah
+        }
+        byte[] bArray = bais.readAllBytes();
+        String encodedString = Base64.getEncoder().encodeToString(bArray);
+        attachment.setSize(encodedString.length());
+        attachment.setData(encodedString.getBytes());
+
+        patientPrivacyConsent.setSource(attachment);
+
+        fhirConsentClient.createConsent(patientPrivacyConsent);
+    }
+
+    private void resetQuestionNavigation() {
+        questionPosition = 0;
+        timeSettings.clear();
+        consentDefaultPeriod.clear();
+        startDateTime.clear();
+        endDateTime.clear();
+        constrainDataClass.clear();
+        dataClassComboBox.clear();
+        practitionerComboBoxSource.clear();
+        practitionerComboBoxDestination.clear();
+        organizationComboBoxDestination.clear();
+        organizationComboBoxSource.clear();
+        sensitivityOptions.clear();
+        allSensitivityOptions.clear();
+        custodianType.clear();
+        destinationType.clear();
+        sensConstraints.clear();
+        //hide fields not in flow at start
+        consentDefaultPeriod.setVisible(false);
+        startDateTime.setVisible(false);
+        endDateTime.setVisible(false);
+        dataClassComboBox.setVisible(false);
+        practitionerComboBoxDestination.setVisible(false);
+        practitionerComboBoxSource.setVisible(false);
+        organizationComboBoxSource.setVisible(false);
+        organizationComboBoxDestination.setVisible(false);
+        allSensitivityOptions.setVisible(false);
+        sensitivityOptions.setVisible(false);
+    }
+
+    private void successNotification() {
+        Span content = new Span("FHIR patient-privacy consent successfully created!");
+        Button buttonInside = new Button("Close");
+
+        Notification notification = new Notification(content, buttonInside);
+        notification.setDuration(3000);
+        buttonInside.addClickListener(event -> notification.close());
+        notification.setPosition(Notification.Position.MIDDLE);
+
+        notification.open();
+    }
+
 
 }
