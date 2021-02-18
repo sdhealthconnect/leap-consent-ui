@@ -89,7 +89,6 @@ public class SharePatientDataView extends ViewFrame {
     private int questionPosition = 0;
     private Button returnButton;
     private Button forwardButton;
-    private Button submitButton;
     private Dialog dialog;
     private Dialog docDialog;
     private byte[] base64Signature;
@@ -449,18 +448,9 @@ public class SharePatientDataView extends ViewFrame {
            questionPosition++;
            evalNavigation();
         });
-        submitButton = new Button("Submit", new Icon(VaadinIcon.STORAGE));
-        submitButton.addClickListener(event -> {
-           createFHIRConsent();
-           successNotification();
-           //todo test for fhir consent create success
-           resetQuestionNavigation();
-           submitButton.setVisible(false);
-           evalNavigation();
-        });
-        submitButton.setVisible(false);
 
-        HorizontalLayout footer = new HorizontalLayout(returnButton, forwardButton, submitButton);
+
+        HorizontalLayout footer = new HorizontalLayout(returnButton, forwardButton);
         footer.setAlignItems(FlexComponent.Alignment.CENTER);
         footer.setPadding(true);
         footer.setSpacing(true);
@@ -472,7 +462,6 @@ public class SharePatientDataView extends ViewFrame {
             case 0:
                 returnButton.setEnabled(false);
                 forwardButton.setEnabled(true);
-                submitButton.setVisible(false);
                 dateRequirements.setVisible(true);
                 dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(false);
@@ -483,7 +472,6 @@ public class SharePatientDataView extends ViewFrame {
             case 1:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(true);
-                submitButton.setVisible(false);
                 dateRequirements.setVisible(false);
                 dataClassRequirements.setVisible(true);
                 sourceRequirements.setVisible(false);
@@ -494,7 +482,6 @@ public class SharePatientDataView extends ViewFrame {
             case 2:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(true);
-                submitButton.setVisible(false);
                 dateRequirements.setVisible(false);
                 dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(true);
@@ -505,7 +492,6 @@ public class SharePatientDataView extends ViewFrame {
             case 3:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(true);
-                submitButton.setVisible(false);
                 dateRequirements.setVisible(false);
                 dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(false);
@@ -516,7 +502,6 @@ public class SharePatientDataView extends ViewFrame {
             case 4:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(true);
-                submitButton.setVisible(false);
                 dateRequirements.setVisible(false);
                 dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(false);
@@ -527,7 +512,6 @@ public class SharePatientDataView extends ViewFrame {
             case 5:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(false);
-                submitButton.setVisible(false);
                 dateRequirements.setVisible(false);
                 dataClassRequirements.setVisible(false);
                 sourceRequirements.setVisible(false);
@@ -562,7 +546,6 @@ public class SharePatientDataView extends ViewFrame {
             base64Signature = signature.getImageBase64();
             //todo create fhir consent resource and pdf for review in flow and final submittal of consent
             dialog.close();
-            submitButton.setVisible(true);
             getHumanReadable();
             docDialog.open();
 
@@ -702,10 +685,24 @@ public class SharePatientDataView extends ViewFrame {
         viewer.setWidth("840px");
 
 
-        Button closeButton = new Button("Close", e -> docDialog.close());
+        Button closeButton = new Button("Cancel", e -> docDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
-        FlexBoxLayout content = new FlexBoxLayout(viewer, closeButton);
+        Button acceptButton = new Button("Accept and Submit");
+        acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
+        acceptButton.addClickListener(event -> {
+            docDialog.close();
+            createFHIRConsent();
+            successNotification();
+            //todo test for fhir consent create success
+            resetQuestionNavigation();
+            evalNavigation();
+        });
+
+        HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
+
+
+        FlexBoxLayout content = new FlexBoxLayout(viewer, hLayout);
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -954,11 +951,10 @@ public class SharePatientDataView extends ViewFrame {
 
     private void successNotification() {
         Span content = new Span("FHIR patient-privacy consent successfully created!");
-        Button buttonInside = new Button("Close");
 
-        Notification notification = new Notification(content, buttonInside);
+        Notification notification = new Notification(content);
         notification.setDuration(3000);
-        buttonInside.addClickListener(event -> notification.close());
+
         notification.setPosition(Notification.Position.MIDDLE);
 
         notification.open();
