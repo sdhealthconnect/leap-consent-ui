@@ -95,10 +95,14 @@ public class SharePatientDataView extends ViewFrame {
     private LocalDateTime provisionEndDateTime;
     private byte[] consentPDFAsByteArray;
     private FHIRConsent fhirConsentClient = new FHIRConsent();
+    private String fhirBase;
+    private ConsentSession consentSession;
 
 
     public SharePatientDataView() {
         setId("sharePatientDataView");
+        ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
+        fhirBase = consentSession.getFhirbase();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
     }
@@ -736,7 +740,7 @@ public class SharePatientDataView extends ViewFrame {
 
         //set patient ref
         Reference patientRef = new Reference();
-        patientRef.setReference("Patient/"+patient.getId());
+        patientRef.setReference("Patient/"+patient.getId().replace(fhirBase, ""));
         patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
         patientPrivacyConsent.setPatient(patientRef);
 
@@ -745,11 +749,11 @@ public class SharePatientDataView extends ViewFrame {
         String custodianRef = "";
         if (custodianType.getValue().equals("Practitioner")) {
             custodian = practitionerComboBoxSource.getValue().getName().get(0).getNameAsSingleString();
-            custodianRef = "Practitioner/"+practitionerComboBoxSource.getValue().getId();
+            custodianRef = practitionerComboBoxSource.getValue().getId().replace(fhirBase, "");
         }
         else if (custodianType.getValue().equals("Organization")) {
             custodian = organizationComboBoxSource.getValue().getName();
-            custodianRef = "Organization/"+organizationComboBoxSource.getValue().getId();
+            custodianRef = organizationComboBoxSource.getValue().getId().replace(fhirBase, "");
         }
 
         //this does not accept
@@ -805,11 +809,11 @@ public class SharePatientDataView extends ViewFrame {
 
             Reference actorRef = new Reference();
             if (destinationType.getValue().equals("Practitioner")) {
-                actorRef.setReference("Practitioner/"+practitionerComboBoxDestination.getValue().getId());
+                actorRef.setReference(practitionerComboBoxDestination.getValue().getId().replace(fhirBase, ""));
                 actorRef.setDisplay(practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString());
             }
             else if (destinationType.getValue().equals("Organization")) {
-                actorRef.setReference("Organization/"+organizationComboBoxDestination.getValue().getId());
+                actorRef.setReference(organizationComboBoxDestination.getValue().getId().replace(fhirBase, ""));
                 actorRef.setDisplay(organizationComboBoxDestination.getValue().getName());
             }
 
@@ -857,11 +861,11 @@ public class SharePatientDataView extends ViewFrame {
 
             Reference sensActorRef = new Reference();
             if (destinationType.getValue().equals("Practitioner")) {
-                sensActorRef.setReference("Practitioner/"+practitionerComboBoxDestination.getValue().getId());
+                sensActorRef.setReference(practitionerComboBoxDestination.getValue().getId().replace(fhirBase, ""));
                 sensActorRef.setDisplay(practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString());
             }
             else if (destinationType.getValue().equals("Organization")) {
-                sensActorRef.setReference("Organization/"+organizationComboBoxDestination.getValue().getId());
+                sensActorRef.setReference(organizationComboBoxDestination.getValue().getId().replace(fhirBase, ""));
                 sensActorRef.setDisplay(organizationComboBoxDestination.getValue().getName());
             }
 

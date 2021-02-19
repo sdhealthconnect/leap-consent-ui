@@ -16,6 +16,7 @@ public class ConsentSession {
     private Practitioner primaryPhysician;
     private Consent currentConsentObject;
     private ConsentUser consentUser;
+    private String fhirbase = "http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/";
 
     public String getUsername() {
         return username;
@@ -87,5 +88,13 @@ public class ConsentSession {
 
     public void setConsentUser(ConsentUser consentUser) {
         this.consentUser = consentUser;
+    }
+
+    public String getFhirbase() {
+        return fhirbase;
+    }
+
+    public void setFhirbase(String fhirbase) {
+        this.fhirbase = fhirbase;
     }
 }
