@@ -1,0 +1,18 @@
+{
+  "hook": "patient-consent-consult",
+  "hookInstance": "privacy-consent-scenario-H-UI",
+  "context": {
+    "patientId": [{
+      "system": "urn:oid:2.2",
+      "value": "D123408"
+    }],
+    "scope": "patient-privacy",
+    "purposeOfUse": "TREAT",
+    "actor": [
+      {
+        "system": "http://sdhealthconnect.github.io/leap/samples/ids",
+        "value": "privacy-consent-scenario-H-healthcurrent"
+      }
+    ]
+  }
+}

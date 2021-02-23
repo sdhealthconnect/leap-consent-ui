@@ -1,0 +1,24 @@
+{
+  "hook": "patient-consent-consult",
+  "hookInstance": "privacy-consent-scenario-H-UI",
+  "context": {
+    "patientId": [{
+      "system": "urn:oid:2.2",
+      "value": "D123408"
+    }],
+    "scope": "patient-privacy",
+    "class":[
+      {
+        "system":"http://hl7.org/fhir/resource-types",
+        "value":"BodyStructure"
+      }
+    ],
+    "purposeOfUse": "TREAT",
+    "actor": [
+      {
+        "system": "urn:ietf:rfc:3986",
+        "value": "urn:oid:1.1.1"
+      }
+    ]
+  }
+}

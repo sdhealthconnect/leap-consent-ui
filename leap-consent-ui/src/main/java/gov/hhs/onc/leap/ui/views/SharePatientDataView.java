@@ -25,6 +25,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIROrganization;
@@ -160,14 +161,14 @@ public class SharePatientDataView extends ViewFrame {
 
         constrainDataClass = new RadioButtonGroup<>();
         constrainDataClass.setLabel("Control what types of clinical information are exchanged");
-        constrainDataClass.setItems("Limit information to following;", "Allow all types of data to be exchanged");
+        constrainDataClass.setItems("Deny access to following;", "Allow all types of data to be exchanged");
         constrainDataClass.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         constrainDataClass.addValueChangeListener(event -> {
             if (event.getValue() == null) {
                 //do nothing
             }
             else {
-                if (event.getValue().equals("Limit information to following;")) {
+                if (event.getValue().equals("Deny access to following;")) {
                     dataClassComboBox.setVisible(true);
                 }
                 else {
@@ -184,7 +185,13 @@ public class SharePatientDataView extends ViewFrame {
                 "FamilyMemberHistory", "Goal", "ImagingStudy", "Immunization", "InsurancePlan", "MeasureReport",
                 "MedicationStatement","Observation", "Patient", "RelatedPerson", "ResearchSubject", "RiskAssessment",
                 "ServiceRequest", "Specimen");
-        dataClassComboBox.setHeight("100px");
+        WebBrowser browser = VaadinSession.getCurrent().getBrowser();
+        if (browser.isAndroid() || browser.isIPhone() || browser.isWindowsPhone()) {
+            dataClassComboBox.setHeight("150px");
+        }
+        else {
+            dataClassComboBox.setHeight("400px");
+        }
         dataClassComboBox.setVisible(false);
 
 
@@ -609,8 +616,8 @@ public class SharePatientDataView extends ViewFrame {
                 //this is an error...
             }
             //get domain constraints
-            String dataDomainConstraintlist = "Limit information to following; ";
-            if (constrainDataClass.getValue().equals("Limit information to following;")) {
+            String dataDomainConstraintlist = "Deny access to following; ";
+            if (constrainDataClass.getValue().equals("Deny access to following;")) {
                 Set<String> classList = dataClassComboBox.getSelectedItems();
                 Iterator iterClass = classList.iterator();
                 while (iterClass.hasNext()) {
@@ -767,7 +774,7 @@ public class SharePatientDataView extends ViewFrame {
         //set rule
         CodeableConcept policyCode = new CodeableConcept();
         Coding codes = new Coding();
-        codes.setCode("OPTOUT");
+        codes.setCode("OPTIN");
         codes.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode");
         policyCode.addCoding(codes);
         patientPrivacyConsent.setPolicyRule(policyCode);
@@ -781,10 +788,11 @@ public class SharePatientDataView extends ViewFrame {
         period.setEnd(endDate);
         provision.setPeriod(period);
 
+
         //create provisions for classes
-        if (constrainDataClass.getValue().equals("Limit information to following;")) {
+        if (constrainDataClass.getValue().equals("Deny access to following;")) {
             Consent.provisionComponent dataClassProvision = new Consent.provisionComponent();
-            dataClassProvision.setType(Consent.ConsentProvisionType.PERMIT);
+            dataClassProvision.setType(Consent.ConsentProvisionType.DENY);
             String dataClassSystem = "http://hl7.org/fhir/resource-types";
             List<Coding> classList = new ArrayList<>();
             Set<String> itemList = dataClassComboBox.getSelectedItems();
@@ -829,9 +837,15 @@ public class SharePatientDataView extends ViewFrame {
             actioncoding.setSystem("http://terminology.hl7.org/CodeSystem/consentaction");
             actioncoding.setCode("access");
 
+            Coding actioncodingcorrect = new Coding();
+            actioncodingcorrect.setSystem("http://terminology.hl7.org/CodeSystem/consentaction");
+            actioncodingcorrect.setCode("correct");
+
+
             List<CodeableConcept> actionCodeList = new ArrayList<>();
             CodeableConcept actionConcept = new CodeableConcept();
             actionConcept.addCoding(actioncoding);
+            actionConcept.addCoding(actioncodingcorrect);
             actionCodeList.add(actionConcept);
 
             dataClassProvision.setAction(actionCodeList);
@@ -881,9 +895,14 @@ public class SharePatientDataView extends ViewFrame {
             sensactioncoding.setSystem("http://terminology.hl7.org/CodeSystem/consentaction");
             sensactioncoding.setCode("access");
 
+            Coding sensactioncodingcorrect = new Coding();
+            sensactioncodingcorrect.setSystem("http://terminology.hl7.org/CodeSystem/consentaction");
+            sensactioncodingcorrect.setCode("correct");
+
             List<CodeableConcept> sensActionCodeList = new ArrayList<>();
             CodeableConcept sensActionConcept = new CodeableConcept();
             sensActionConcept.addCoding(sensactioncoding);
+            sensActionConcept.addCoding(sensactioncodingcorrect);
             sensActionCodeList.add(sensActionConcept);
 
             sensitivityProvision.setAction(sensActionCodeList);

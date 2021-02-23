@@ -189,6 +189,12 @@
             <version>2.0.0-RC3</version>
         </dependency>
 
+        <dependency>
+            <groupId>gov.hhs.onc.leap</groupId>
+            <artifactId>leap-ces-sls-client</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>
