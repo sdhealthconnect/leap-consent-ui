@@ -3,15 +3,15 @@
   "hookInstance": "privacy-consent-scenario-H-UI",
   "context": {
     "patientId": [{
-      "system": "urn:oid:2.2",
-      "value": "D123408"
+      "system": "http://hl7.org/fhir/sid/us-ssn",
+      "value": "111111199"
     }],
     "scope": "patient-privacy",
     "purposeOfUse": "TREAT",
     "actor": [
       {
-        "system": "http://sdhealthconnect.github.io/leap/samples/ids",
-        "value": "privacy-consent-scenario-H-healthcurrent"
+        "system": "urn:ietf:rfc:3986",
+        "value": "urn:oid:1.1.8"
       }
     ]
   }
