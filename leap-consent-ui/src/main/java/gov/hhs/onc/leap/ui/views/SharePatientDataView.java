@@ -30,6 +30,7 @@ import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIROrganization;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRPractitioner;
 import gov.hhs.onc.leap.session.ConsentSession;
+import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.components.navigation.BasicDivider;
@@ -43,7 +44,9 @@ import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPatientPrivacyHandler;
+import org.apache.commons.io.IOUtils;
 import org.hl7.fhir.r4.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
 import java.io.ByteArrayInputStream;
@@ -95,12 +98,14 @@ public class SharePatientDataView extends ViewFrame {
     private LocalDateTime provisionEndDateTime;
     private byte[] consentPDFAsByteArray;
     private FHIRConsent fhirConsentClient = new FHIRConsent();
+    private PDFSigningService PDFSigningService;
 
 
-    public SharePatientDataView() {
+    public SharePatientDataView(@Autowired PDFSigningService PDFSigningService) {
         setId("sharePatientDataView");
         setViewContent(createViewContent());
         setViewFooter(getFooter());
+        this.PDFSigningService = PDFSigningService;
     }
 
     private Component createViewContent() {
@@ -659,7 +664,7 @@ public class SharePatientDataView extends ViewFrame {
                 //default if none selected
                 sensitivities = "I do not have privacy concerns";
             }
-            PDFPatientPrivacyHandler pdfHandler = new PDFPatientPrivacyHandler();
+            PDFPatientPrivacyHandler pdfHandler = new PDFPatientPrivacyHandler(PDFSigningService);
             StreamResource res = pdfHandler.retrievePDFForm(sDate, eDate, dataDomainConstraintlist, custodian,
                                 recipient, sensitivities, base64Signature);
             consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
@@ -895,13 +900,14 @@ public class SharePatientDataView extends ViewFrame {
         attachment.setTitle("patient-privacy");
 
         ByteArrayInputStream bais = null;
+        byte[] bArray = null;
         try {
             bais = new ByteArrayInputStream(consentPDFAsByteArray);
+            bArray = IOUtils.toByteArray(bais);
         }
         catch (Exception ex) {
             //blah blah
         }
-        byte[] bArray = bais.readAllBytes();
         String encodedString = Base64.getEncoder().encodeToString(bArray);
         attachment.setSize(encodedString.length());
         attachment.setData(encodedString.getBytes());
