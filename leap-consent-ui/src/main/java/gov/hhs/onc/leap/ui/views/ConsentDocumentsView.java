@@ -345,10 +345,10 @@ public class ConsentDocumentsView extends SplitViewFrame {
             String constrainDomains = "No";
             try {
                 if (c.getProvision() != null) {
-                    if (c.getProvision().getProvision().get(0).getType().equals(Consent.ConsentProvisionType.DENY)) {
-                        if (c.getProvision().getSecurityLabel().get(0).getCode().equals("R")) {
+                    if (c.getProvision().getProvision().get(0).getSecurityLabel().get(0).getCode().equals("R")) {
+                        //if (c.getProvision().getSecurityLabel().get(0).getCode().equals("R")) {
                             constrainSensitivity = "Yes";
-                        }
+                        //}
                     }
                 }
             }
@@ -356,8 +356,8 @@ public class ConsentDocumentsView extends SplitViewFrame {
 
             }
 
-            LocalDate localStart = LocalDate.of(2021, 1, 1);
-            LocalDate localEnd = LocalDate.of(2031, 1, 1);
+            LocalDate localStart = LocalDate.of(2021, 2, 24);
+            LocalDate localEnd = LocalDate.of(2031, 2, 23);
             if (startDate != null && endDate != null) {
                 localStart = startDate.toInstant()
                         .atZone(ZoneId.systemDefault())

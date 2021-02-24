@@ -209,6 +209,13 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>gov.hhs.onc.leap</groupId>
+            <artifactId>leap-ces-sls-client</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

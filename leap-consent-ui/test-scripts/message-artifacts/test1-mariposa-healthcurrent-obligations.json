@@ -1,0 +1,18 @@
+{
+  "hook": "patient-consent-consult",
+  "hookInstance": "privacy-consent-scenario-H-UI",
+  "context": {
+    "patientId": [{
+      "system": "http://hl7.org/fhir/sid/us-ssn",
+      "value": "111111199"
+    }],
+    "scope": "patient-privacy",
+    "purposeOfUse": "TREAT",
+    "actor": [
+      {
+        "system": "urn:ietf:rfc:3986",
+        "value": "urn:oid:1.1.8"
+      }
+    ]
+  }
+}
