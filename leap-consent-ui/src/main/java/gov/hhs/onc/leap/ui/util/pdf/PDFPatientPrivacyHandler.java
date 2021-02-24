@@ -4,14 +4,12 @@ import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.session.ConsentSession;
+import gov.hhs.onc.leap.signature.PDFSigningService;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -44,6 +42,12 @@ public class PDFPatientPrivacyHandler {
     private String signatureLocation;
     private ConsentSession consentSession;
     private byte[] pdfAsByteArray;
+    private PDFSigningService PDFSigningService;
+
+
+    public PDFPatientPrivacyHandler(PDFSigningService PDFSigningService){
+        this.PDFSigningService = PDFSigningService;
+    }
 
     public StreamResource retrievePDFForm(String sDate, String eDate, String dataDomainConstraintList, String custodian,
                                           String recipient, String sensitivities, byte[] patientSignatureImage) {
@@ -71,6 +75,7 @@ public class PDFPatientPrivacyHandler {
             bArray = IOUtils.toByteArray(getClass().getResourceAsStream(fullFormPath));
             pdfdocument = PDDocument.load(bArray);
             pdfdocument = setFields(pdfdocument);
+            pdfdocument = signDocumentWithCert(pdfdocument);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdfdocument.save(out);
             pdfdocument.close();
@@ -89,6 +94,16 @@ public class PDFPatientPrivacyHandler {
             //add handling
         }
         return stream;
+    }
+
+    private PDDocument signDocumentWithCert(PDDocument pdDocument) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        pdDocument.save(byteArrayOutputStream);
+
+        byte[] pdfSigned = PDFSigningService.signPdf(byteArrayOutputStream.toByteArray());
+        pdDocument.close(); //We need to close the document that will be modified
+        PDDocument signedDoc = PDDocument.load(pdfSigned);
+        return signedDoc;
     }
 
     private PDDocument setFields(PDDocument doc) {

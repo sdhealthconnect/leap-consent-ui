@@ -164,13 +164,14 @@ public class LivingWill extends ViewFrame {
         String fullFormPath =  "/advanced_directives/Arizona/LivingWill/English/LivingWill.pdf";
 
         ByteArrayInputStream bais = null;
+        byte[] bArray = null;
         try {
             bais = new ByteArrayInputStream(IOUtils.toByteArray(getClass().getResourceAsStream(fullFormPath)));
+            bArray = IOUtils.toByteArray(bais);//.readAllBytes();
         }
         catch (Exception ex) {
             //blah blah
         }
-        byte[] bArray = bais.readAllBytes();
         String encodedString = Base64.getEncoder().encodeToString(bArray);
         attachment.setSize(encodedString.length());
         attachment.setData(encodedString.getBytes());
