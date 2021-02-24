@@ -42,7 +42,7 @@ public class PDFDocumentHandler {
         try {
             bArray = IOUtils.toByteArray(getClass().getResourceAsStream(fullFormPath));
             pdfdocument = PDDocument.load(bArray);
-            pdfdocument = setFields(pdfdocument);
+            //pdfdocument = setFields(pdfdocument);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdfdocument.save(out);
             pdfdocument.close();
