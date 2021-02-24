@@ -1,6 +1,6 @@
 keystore:
   path: classpath:keystore.jks
-  password: changeme
+  password: leap2021
   certificate-alias: leap_certificate
 timestamp-authority:
   url:

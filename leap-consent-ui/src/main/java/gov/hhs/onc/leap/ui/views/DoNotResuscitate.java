@@ -585,9 +585,10 @@ public class DoNotResuscitate extends ViewFrame {
         String witnesssignaturedate = getDateString(witnessDate);
 
         byte[] imageBytes = null;
+        byte[] bytes = null;
         try {
             ByteArrayInputStream bais = new ByteArrayInputStream(IOUtils.toByteArray(uploadBuffer.getInputStream()));
-            byte[] bytes = bais.readAllBytes();
+            bytes = IOUtils.toByteArray(bais);
             imageBytes = Base64.getEncoder().encode(bytes);
         }
         catch (Exception ex) {
