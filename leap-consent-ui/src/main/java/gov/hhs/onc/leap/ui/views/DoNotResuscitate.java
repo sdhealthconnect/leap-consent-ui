@@ -26,6 +26,7 @@ import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.session.ConsentSession;
+import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.components.navigation.BasicDivider;
@@ -42,10 +43,13 @@ import gov.hhs.onc.leap.ui.util.pdf.PDFDNRHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
 import org.apache.commons.io.IOUtils;
 import org.hl7.fhir.r4.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
 import java.io.ByteArrayInputStream;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -56,6 +60,7 @@ import java.util.List;
 @Route(value = "dnrview", layout = MainLayout.class)
 public class DoNotResuscitate extends ViewFrame {
 
+    private PDFSigningService PDFSigningService;
     private Button returnButton;
     private Button forwardButton;
     private Button viewStateForm;
@@ -108,13 +113,13 @@ public class DoNotResuscitate extends ViewFrame {
 
     private FHIRConsent fhirConsentClient = new FHIRConsent();
 
-    public DoNotResuscitate() {
+    public DoNotResuscitate(@Autowired PDFSigningService PDFSigningService) {
         setId("dnrview");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
-
+        this.PDFSigningService = PDFSigningService;
     }
 
     private Component createViewContent() {
@@ -596,7 +601,7 @@ public class DoNotResuscitate extends ViewFrame {
         }
 
 
-        PDFDNRHandler pdfHandler = new PDFDNRHandler();
+        PDFDNRHandler pdfHandler = new PDFDNRHandler(PDFSigningService);
         StreamResource res = pdfHandler.retrievePDFForm(patientName, base64PatientSignature, patientsignatureDate, poaHealthcare, base64HealthcarePOASignature,
                                                         dateOfBirth, gender, ethnicity, eyeColor, hairColor, imageBytes,
                                                         primaryPhysician, primaryPhysicianPhoneNumber, hospiceProgram, base64AttestationSignature,
@@ -616,15 +621,15 @@ public class DoNotResuscitate extends ViewFrame {
 
     private void createFHIRConsent() {
         Patient patient = consentSession.getFhirPatient();
-        Consent livingWillDirective = new Consent();
-        livingWillDirective.setId("DNR-"+patient.getId());
-        livingWillDirective.setStatus(Consent.ConsentState.ACTIVE);
+        Consent dnrDirective = new Consent();
+        dnrDirective.setId("DNR-"+patient.getId());
+        dnrDirective.setStatus(Consent.ConsentState.ACTIVE);
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
         coding.setCode("adr");
         cConcept.addCoding(coding);
-        livingWillDirective.setScope(cConcept);
+        dnrDirective.setScope(cConcept);
         List<CodeableConcept> cList = new ArrayList<>();
         CodeableConcept cConceptCat = new CodeableConcept();
         Coding codingCat = new Coding();
@@ -632,17 +637,19 @@ public class DoNotResuscitate extends ViewFrame {
         codingCat.setCode("59284-6");
         cConceptCat.addCoding(codingCat);
         cList.add(cConceptCat);
-        livingWillDirective.setCategory(cList);
+        dnrDirective.setCategory(cList);
         Reference patientRef = new Reference();
         patientRef.setReference("Patient/"+patient.getId());
         patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
-        livingWillDirective.setPatient(patientRef);
+        dnrDirective.setPatient(patientRef);
         List<Reference> refList = new ArrayList<>();
         Reference orgRef = new Reference();
+        //todo - this is the deployment and custodian organization for advanced directives and should be valid in fhir consent repository
+        //todo - autowire reference and display name
         orgRef.setReference("Organization/privacy-consent-scenario-H-healthcurrent");
         orgRef.setDisplay("HealthCurrent FHIR Connectathon");
         refList.add(orgRef);
-        livingWillDirective.setOrganization(refList);
+        dnrDirective.setOrganization(refList);
         Attachment attachment = new Attachment();
         attachment.setContentType("application/pdf");
         attachment.setCreation(new Date());
@@ -653,9 +660,23 @@ public class DoNotResuscitate extends ViewFrame {
         attachment.setSize(encodedString.length());
         attachment.setData(encodedString.getBytes());
 
-        livingWillDirective.setSource(attachment);
+        dnrDirective.setSource(attachment);
 
-        fhirConsentClient.createConsent(livingWillDirective);
+        Consent.provisionComponent provision = new Consent.provisionComponent();
+        Period period = new Period();
+        LocalDate sDate = LocalDate.now();
+        LocalDate eDate = LocalDate.now().plusYears(10);
+        Date startDate = Date.from(sDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(eDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        period.setStart(startDate);
+        period.setEnd(endDate);
+        
+        provision.setPeriod(period);
+        
+        dnrDirective.setProvision(provision);
+
+        fhirConsentClient.createConsent(dnrDirective);
     }
 
     private void successNotification() {
