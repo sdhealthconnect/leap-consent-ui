@@ -5,6 +5,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.backend.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
+import gov.hhs.onc.leap.signature.PDFSigningService;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -60,6 +61,12 @@ public class PDFDNRHandler {
 
     private ConsentUser consentUser;
 
+    private PDFSigningService PDFSigningService;
+
+    public PDFDNRHandler (PDFSigningService PDFSigningService) {
+        this.PDFSigningService = PDFSigningService;
+    }
+
 
     public StreamResource retrievePDFForm(String patientFullName, byte[] patientsignatureImage, String patientsignatureDate, String poaHealthcare, byte[] poaSignatureImage,
                                           String dateOfBirth, String gender, String ethnicity, String eyeColor, String hairColor, byte[] patientPhotoImage,
@@ -102,6 +109,7 @@ public class PDFDNRHandler {
             bArray = IOUtils.toByteArray(getClass().getResourceAsStream(fullFormPath));
             pdfdocument = PDDocument.load(bArray);
             pdfdocument = setFields(pdfdocument);
+            pdfdocument = signDocumentWithCert(pdfdocument);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdfdocument.save(out);
             pdfdocument.close();
@@ -120,6 +128,16 @@ public class PDFDNRHandler {
             //add handling
         }
         return stream;
+    }
+
+    private PDDocument signDocumentWithCert(PDDocument pdDocument) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        pdDocument.save(byteArrayOutputStream);
+
+        byte[] pdfSigned = PDFSigningService.signPdf(byteArrayOutputStream.toByteArray());
+        pdDocument.close(); //We need to close the document that will be modified
+        PDDocument signedDoc = PDDocument.load(pdfSigned);
+        return signedDoc;
     }
 
     private PDDocument setFields(PDDocument doc) {

@@ -229,6 +229,12 @@ public class ConsentDocumentsView extends SplitViewFrame {
         else if (consentDocument.getStatus().getName().equals("Revoked")) {
             consentAction.setText("Reinstate Consent");
             consentAction.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.START_COG));
+            if (consentDocument.getPolicyType().equals("adr")) {
+                consentAction.setEnabled(false);
+            }
+            else {
+                consentAction.setEnabled(true);
+            }
         }
         else {
             consentAction.setText("No Actions Available");
