@@ -239,7 +239,7 @@ public class PDFDNRHandler {
             }
 
             pdAppearanceDictionary.setNormalAppearance(pdAppearanceStream);
-            System.out.println("Signature inserted");
+            System.out.println("Signature inserted in field " + field.getFullyQualifiedName());
         }
     }
 

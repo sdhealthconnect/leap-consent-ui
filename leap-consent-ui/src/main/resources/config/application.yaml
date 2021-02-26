@@ -4,3 +4,9 @@ keystore:
   certificate-alias: leap_certificate
 timestamp-authority:
   url:
+sls:
+  url: http://34.94.253.50:9091
+hapi-fhir:
+  url: http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/
+  org-reference: Organization/privacy-consent-scenario-H-healthcurrent
+  org-display: HealthCurrent FHIR Connectathon
