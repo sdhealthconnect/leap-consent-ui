@@ -14,8 +14,7 @@
     <name>leap-consent-ui-parent</name>
     <packaging>pom</packaging>
     <modules>
-        <module>leap-consent-ui</module>
-        <module>signature-pad</module>
+        <module>leap-consent-ui</module>       
     </modules>
 
 </project>
