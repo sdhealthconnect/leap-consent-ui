@@ -209,13 +209,14 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <!-- Enable next dependency when we remove the SLSRequestCLient from the project and when
+             we add it to some commons artifactory.
         <dependency>
             <groupId>gov.hhs.onc.leap</groupId>
             <artifactId>leap-ces-sls-client</artifactId>
             <version>0.0.1</version>
         </dependency>
-
+        -->
     </dependencies>
 
     <build>
