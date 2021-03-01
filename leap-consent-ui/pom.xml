@@ -346,9 +346,8 @@
                 </plugins>
             </build>
         </profile>
-        <!--
         <profile>
-            <id>production</id>
+            <id>docker</id>
             <properties>
                 <vaadin.productionMode>true</vaadin.productionMode>
             </properties>
@@ -367,6 +366,7 @@
                         <executions>
                             <execution>
                                 <goals>
+                                    <goal>prepare-frontend</goal>
                                     <goal>build-frontend</goal>
                                 </goals>
                             </execution>
@@ -375,7 +375,6 @@
                 </plugins>
             </build>
         </profile>
-        -->
     </profiles>
 
 </project>

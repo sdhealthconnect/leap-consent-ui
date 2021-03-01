@@ -1,0 +1,14 @@
+version: '3.6'
+
+services:
+  leap-consent-ui:
+    image: leap-consent-ui
+    container_name: leap-consent-ui
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SLS_HOST_URL: ${SLS_HOST_URL}
+      HAPI_FHIR_URL: ${HAPI_FHIR_URL}
+    ports:
+      - 8080:8080
