@@ -44,6 +44,7 @@ import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
 import org.apache.commons.io.IOUtils;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
 import java.io.ByteArrayInputStream;
@@ -112,6 +113,12 @@ public class DoNotResuscitate extends ViewFrame {
     private ConsentUser consentUser;
 
     private FHIRConsent fhirConsentClient = new FHIRConsent();
+
+    @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
+    private String orgReference;
+
+    @Value("${org-display:HealthCurrent FHIR Connectathon}")
+    private String orgDisplay;
 
     public DoNotResuscitate(@Autowired PDFSigningService PDFSigningService) {
         setId("dnrview");
@@ -645,9 +652,8 @@ public class DoNotResuscitate extends ViewFrame {
         List<Reference> refList = new ArrayList<>();
         Reference orgRef = new Reference();
         //todo - this is the deployment and custodian organization for advanced directives and should be valid in fhir consent repository
-        //todo - autowire reference and display name
-        orgRef.setReference("Organization/privacy-consent-scenario-H-healthcurrent");
-        orgRef.setDisplay("HealthCurrent FHIR Connectathon");
+        orgRef.setReference(orgReference);
+        orgRef.setDisplay(orgDisplay);
         refList.add(orgRef);
         dnrDirective.setOrganization(refList);
         Attachment attachment = new Attachment();

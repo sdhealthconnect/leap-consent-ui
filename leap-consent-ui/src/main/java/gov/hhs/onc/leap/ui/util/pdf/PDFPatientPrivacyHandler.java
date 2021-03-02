@@ -5,6 +5,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
+import gov.hhs.onc.leap.ui.MainLayout;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -18,6 +19,8 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -32,6 +35,7 @@ import java.util.List;
 
 public class PDFPatientPrivacyHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(PDFPatientPrivacyHandler.class);
     private String sDate;
     private String eDate;
     private String dataDomainConstraintList;
@@ -174,7 +178,7 @@ public class PDFPatientPrivacyHandler {
             }
 
             pdAppearanceDictionary.setNormalAppearance(pdAppearanceStream);
-            System.out.println("Signature inserted");
+            log.debug("Signature inserted in field {}", field.getFullyQualifiedName());
         }
     }
 

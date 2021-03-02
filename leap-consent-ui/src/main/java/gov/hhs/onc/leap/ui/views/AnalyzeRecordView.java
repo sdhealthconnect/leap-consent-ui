@@ -33,6 +33,7 @@ import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -52,8 +53,8 @@ public class AnalyzeRecordView extends ViewFrame {
     private Upload upload;
     private TextField outcomeField;
     private TextArea notesField;
-    //todo set configuration
-    private String slsHost = "http://34.94.253.50:9091";
+    @Value("${sls.url:http://34.94.253.50:9091}")
+    private String slsHost;
     private String msg;
     private Html optionLabel = new Html("<p><b>-OR-</b></p>");
 

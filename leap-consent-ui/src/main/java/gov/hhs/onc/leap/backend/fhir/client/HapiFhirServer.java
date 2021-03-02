@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Level;
 import org.hl7.fhir.instance.model.api.IBaseOperationOutcome;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -32,8 +33,8 @@ public class HapiFhirServer {
         IGenericClient hapiClient;
 
         @Getter
-        //@Value("${hapi.fhir.url}")
-        private String baseURL = "http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/";  //default for demonstrations
+        @Value("${hapi-fhir.url:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}")
+        private String baseURL;
 
         @PostConstruct
         public void setUp() {
