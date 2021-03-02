@@ -6,6 +6,7 @@ import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.backend.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
+import gov.hhs.onc.leap.ui.MainLayout;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -22,6 +23,8 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -36,6 +39,7 @@ import java.util.List;
 
 public class PDFDNRHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(PDFDNRHandler.class);
     private String patientFullName;
     private byte[] patientsignatureImage;
     private String patientsignatureDate;
@@ -213,6 +217,7 @@ public class PDFDNRHandler {
      */
     private void insertImageInField(final PDField field, final byte[] baImage,
                                     PDDocument doc) throws IOException {
+        //TODO: Move this to some utils to nor replicate the code
         List<PDAnnotationWidget> widgets = field.getWidgets();
         if (widgets != null && widgets.size() > 0) {
             PDAnnotationWidget annotationWidget = widgets.get(0); // We need the first widget to manipulate the field element
@@ -239,7 +244,7 @@ public class PDFDNRHandler {
             }
 
             pdAppearanceDictionary.setNormalAppearance(pdAppearanceStream);
-            System.out.println("Signature inserted");
+            log.debug("Signature inserted in field {}", field.getFullyQualifiedName());
         }
     }
 

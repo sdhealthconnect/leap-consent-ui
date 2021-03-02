@@ -5,6 +5,7 @@ import org.hl7.fhir.r4.model.Consent;
 import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Practitioner;
+import org.springframework.beans.factory.annotation.Value;
 
 public class ConsentSession {
     private String username;
@@ -16,7 +17,8 @@ public class ConsentSession {
     private Practitioner primaryPhysician;
     private Consent currentConsentObject;
     private ConsentUser consentUser;
-    private String fhirbase = "http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/";
+    @Value("${hapi-fhir.url:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}")
+    private String fhirbase;
 
     public String getUsername() {
         return username;
