@@ -11,8 +11,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.hl7.fhir.instance.model.api.IBaseOperationOutcome;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -25,22 +23,19 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class HapiFhirServer {
 
-        private static final Logger log = LoggerFactory.getLogger(HapiFhirServer.class);
-
         @Getter
         FhirContext ctx;
 
         @Getter
         IGenericClient hapiClient;
 
-        @Getter
         @Value("${hapi-fhir.url:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}")
         private String baseURL;
 
         @PostConstruct
         public void setUp() {
             ctx = FhirContext.forR4();
-
+            log.info("Hapi FHIR URL : {} ", baseURL);
             hapiClient = ctx.newRestfulGenericClient(baseURL);
             hapiClient.registerInterceptor(createLoggingInterceptor());
 
