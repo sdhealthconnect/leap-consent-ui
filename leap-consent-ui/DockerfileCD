@@ -28,8 +28,9 @@ ARG ARG_SLS_HOST_URL
 ARG ARG_HAPI_FHIR_URL
 
 # Environment Variables declaration, needed to execute stand-alone Dockerfile with custom argumens if they are specified
-ENV SLS_HOST_URL=${ARG_SLS_HOST_URL}
-ENV HAPI_FHIR_URL=${ARG_HAPI_FHIR_URL}
+ENV SLS-HOST-URL=${ARG_SLS_HOST_URL}
+ENV SLS_HOST_URL=http://127.0.0.1/test
+ENV HAPI-FHIR-URL=${ARG_HAPI_FHIR_URL}
 
 COPY --from=builder /leap-consent/leap-consent-ui/${JAR_FILE} app.jar
 ENTRYPOINT ["java", "-Dspring.profiles.active=docker", "-Dserver.tomcat.remote-ip-header=x-forwarded-for", "-Dserver.tomcat.protocol-header=x-forwarded-proto", "-jar", "/app.jar"]

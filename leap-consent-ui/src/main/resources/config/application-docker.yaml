@@ -1,5 +1,5 @@
 sls:
-  url: ${SLS_HOST_URL}
+  url: ${SLS-HOST-URL}
 
 hapi-fhir:
-  url: ${HAPI_FHIR_URL}
+  url: ${HAPI-FHIR-URL}
