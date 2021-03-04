@@ -147,6 +147,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         createOrganDonationSelection();
         createBurialSelection();
         createAttestation();
+        createHipaa();
 
 
         createInfoDialog();
@@ -498,6 +499,32 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         attestationLayout.getStyle().set("margin-left", "10px");
         attestationLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         attestationLayout.setVisible(false);
+
+    }
+
+    private void createHipaa() {
+        Html intro13 = new Html("<p><b>HIPAA WAIVER OF CONFIDENTIALITY FOR MY AGENT</b></p>");
+
+        hipaaButton = new RadioButtonGroup();
+        hipaaButton.setItems("I intend for my agent to be treated as I would be with respect to my rights regarding "+
+                "the use and disclosure of my individually identifiable health information or other medical " +
+                "records. This release authority applies to any information governed by the Health Insurance "+
+                "Portability and Accountability Act of 1996 (aka HIPAA), 42 USC 1320d and 45 CFR 160-164.");
+        hipaaButton.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+
+        hipaaLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro13, new BasicDivider(),
+                hipaaButton);
+        hipaaLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        hipaaLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        hipaaLayout.setHeightFull();
+        hipaaLayout.setBackgroundColor("white");
+        hipaaLayout.setShadow(Shadow.S);
+        hipaaLayout.setBorderRadius(BorderRadius.S);
+        hipaaLayout.getStyle().set("margin-bottom", "10px");
+        hipaaLayout.getStyle().set("margin-right", "10px");
+        hipaaLayout.getStyle().set("margin-left", "10px");
+        hipaaLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        hipaaLayout.setVisible(false);
 
     }
 
