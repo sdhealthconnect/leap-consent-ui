@@ -3,17 +3,24 @@ package gov.hhs.onc.leap.backend;
 import gov.hhs.onc.leap.session.ConsentSession;
 import org.hl7.fhir.r4.model.Address;
 import org.hl7.fhir.r4.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
+@Service
 public class TestData {
     private static final Random random = new Random(1);
 
     private static final Map<Long, ConsentDocument> CONSENT = new HashMap<>();
 
     private static final Map<Long, ConsentLog> CONSENT_LOG_MAP = new HashMap<>();
+
+    //Injected in setter
+    private static String fhirBase;
 
     public static Collection<ConsentDocument> getConsents() {
         return CONSENT.values();
@@ -191,7 +198,7 @@ public class TestData {
     }
 
     public static ConsentSession getConsentSession() {
-        ConsentSession sessionInfo = new ConsentSession();
+        ConsentSession sessionInfo = new ConsentSession(fhirBase);
         sessionInfo.setFhirCustodian(getPrimaryOrganization());
         sessionInfo.setFhirPatient(getPatient());
         sessionInfo.setLanguagePreference(getLanguagePreference());
@@ -201,6 +208,11 @@ public class TestData {
         sessionInfo.setPrimaryPhysician(getPrimaryPractioner());
         sessionInfo.setConsentUser(getConsentUser());
         return sessionInfo;
+    }
+
+    @Value("${hapi-fhir.url:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}")
+    public void setFhirBase(String fhirBase) {
+        TestData.fhirBase = fhirBase;
     }
 
     private static ConsentUser getConsentUser() {

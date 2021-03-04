@@ -15,9 +15,6 @@ import org.springframework.context.annotation.ComponentScan;
 public class Application extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
-        System.out.println("SLS URL: "+ System.getenv("SLS-HOST-URL"));
-        System.out.println("SLS URL UNDERSCORE: "+ System.getenv("SLS_HOST_URL"));
-        System.out.println("HAPI FHIR URL: "+ System.getenv("HAPI-FHIR-URL"));
         SpringApplication.run(gov.hhs.onc.leap.Application.class, args);
     }
 

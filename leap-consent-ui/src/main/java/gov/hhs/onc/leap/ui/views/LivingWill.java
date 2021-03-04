@@ -22,8 +22,10 @@ import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
 import org.apache.commons.io.IOUtils;
 import org.hl7.fhir.r4.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
+import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -39,12 +41,18 @@ import java.util.List;
 public class LivingWill extends ViewFrame {
     private Dialog dialog;
     private PdfBrowserViewer viewer;
-    private FHIRConsent fhirConsentClient = new FHIRConsent();
+    @Autowired
+    private FHIRConsent fhirConsentClient;
     private PDFDocumentHandler pdfHandler = new PDFDocumentHandler();
+
 
     public LivingWill() {
         setId("livingwillview");
         dialog = createDialog();
+    }
+
+    @PostConstruct
+    public void setup(){
         setViewContent(createViewContent());
     }
 

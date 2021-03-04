@@ -44,6 +44,7 @@ import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.WhiteSpace;
 import org.hl7.fhir.r4.model.Consent;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
 import javax.swing.*;
@@ -60,10 +61,11 @@ public class ConsentDocumentsView extends SplitViewFrame {
     private Grid<ConsentDocument> grid;
     private ListDataProvider<ConsentDocument> dataProvider;
     private DetailsDrawer detailsDrawer;
-    private FHIRConsent fhirConsentClient = new FHIRConsent();
+    @Autowired
+    private FHIRConsent fhirConsentClient;
     private Dialog docDialog;
 
-    @Override
+   @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         initAppBar();
