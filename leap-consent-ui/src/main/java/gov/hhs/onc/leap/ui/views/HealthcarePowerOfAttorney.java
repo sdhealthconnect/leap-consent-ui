@@ -107,6 +107,18 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     private TextField ashesDispositionField;
     private FlexBoxLayout burialSelectionLayout;
 
+    private TextField attestationDRName;
+    private TextField attestationPatientName;
+    private TextField attestationDate;
+    private SignaturePad physcianSignature;
+    private byte[] base64PhysicianSignature;
+    private FlexBoxLayout attestationLayout;
+
+    private RadioButtonGroup hipaaButton;
+    private FlexBoxLayout hipaaLayout;
+
+
+
 
     public HealthcarePowerOfAttorney(@Autowired PDFSigningService PDFSigningService) {
         setId("healthcarepowerofattorney");
@@ -134,6 +146,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         createAutopsySelection();
         createOrganDonationSelection();
         createBurialSelection();
+        createAttestation();
+
 
         createInfoDialog();
 
@@ -416,7 +430,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         ashesDispositionField = new TextField("I direct the following to be done with my ashes:");
         ashesDispositionField.setVisible(false);
 
-        burialSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro10,
+        burialSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro10, new BasicDivider(),
                 burialSelectionButtonGroup, buriedInField, ashesDispositionField);
         burialSelectionLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         burialSelectionLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -429,6 +443,62 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         burialSelectionLayout.getStyle().set("margin-left", "10px");
         burialSelectionLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         burialSelectionLayout.setVisible(false);
+    }
+
+    private void createAttestation() {
+        Html intro11 = new Html("<p><b>Physician Affidavit(Optional)</b></p>");
+        Html intro12 = new Html("<p>You may wish to ask questions of your physician regarding a particular treatment or about the options "+
+                "in the form. If you do speak with your physician it is a good idea to ask your physician to complete" +
+                " this affidavit and keep a copy for his/her file.</p>");
+
+        Html para1 = new Html("<p>I Dr.</p>");
+        attestationDRName = new TextField("Physicians Name");
+        Html para2 = new Html("<p>have reviewed this document and have discussed with</p>");
+        attestationPatientName = new TextField("Patients Name");
+        attestationPatientName.setValue(consentUser.getFirstName()+" "+consentUser.getMiddleName()+" "+consentUser.getLastName());
+        Html para3 = new Html("any questions regarding the probable medical consequences of the treatment choices provided above. "+
+                "This discussion with the principal occurred on this day</p>");
+        attestationDate = new TextField("Date");
+        attestationDate.setValue(getDateString(new Date()));
+        Html para4 = new Html("<p>I have agreed to comply with the provisions of this directive.</p>");
+
+        physcianSignature = new SignaturePad();
+        physcianSignature.setHeight("100px");
+        physcianSignature.setWidth("400px");
+        physcianSignature.setPenColor("#2874A6");
+
+        Button clearPatientSig = new Button("Clear Signature");
+        clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
+        clearPatientSig.addClickListener(event -> {
+            physcianSignature.clear();
+        });
+        Button savePatientSig = new Button("Accept Signature");
+        savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
+        savePatientSig.addClickListener(event -> {
+            base64PhysicianSignature = physcianSignature.getImageBase64();
+            questionPosition++;
+            evalNavigation();
+        });
+
+        HorizontalLayout sigLayout = new HorizontalLayout(clearPatientSig, savePatientSig);
+        sigLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        sigLayout.setPadding(true);
+        sigLayout.setSpacing(true);
+
+        attestationLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro11, intro12, new BasicDivider(),
+                para1, attestationDRName, para2, attestationPatientName, para3, attestationDate, para4, physcianSignature, sigLayout);
+        attestationLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        attestationLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        attestationLayout.setHeightFull();
+        attestationLayout.setBackgroundColor("white");
+        attestationLayout.setShadow(Shadow.S);
+        attestationLayout.setBorderRadius(BorderRadius.S);
+        attestationLayout.getStyle().set("margin-bottom", "10px");
+        attestationLayout.getStyle().set("margin-right", "10px");
+        attestationLayout.getStyle().set("margin-left", "10px");
+        attestationLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        attestationLayout.setVisible(false);
+
     }
 
 
