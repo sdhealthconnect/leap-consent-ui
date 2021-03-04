@@ -6,8 +6,8 @@
       "system": "http://hl7.org/fhir/sid/us-ssn",
       "value": "111111199"
     }],
-    "scope": "patient-privacy",
-    "purposeOfUse": "TREAT",
+    "scope": "adr",
+    "purposeOfUse": "ETREAT",
     "actor": [
       {
         "system": "urn:ietf:rfc:3986",
