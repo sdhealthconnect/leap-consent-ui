@@ -173,7 +173,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         createInfoDialog();
 
         FlexBoxLayout content = new FlexBoxLayout(intro, patientInitialsLayout, patientGeneralInfoLayout, poaSelectionLayout,
-                altSelectionLayout, autopsySelectionLayout, organDonationSelectionLayout, burialSelectionLayout);
+                altSelectionLayout, authorizationLayout, authExceptionLayout, autopsySelectionLayout, organDonationSelectionLayout, burialSelectionLayout,
+                attestationLayout, hipaaLayout, patientSignatureLayout, patientUnableSignatureLayout, witnessSignatureLayout);
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -236,7 +237,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
         //set values
         patientFullNameField.setValue(consentUser.getFirstName()+" "+consentUser.getMiddleName()+" "+consentUser.getLastName());
-        patientAddress1Field.setValue(consentUser.getStreetAddress1()+" "+consentUser.getStreetAddress1());
+        patientAddress1Field.setValue(consentUser.getStreetAddress1()+" "+consentUser.getStreetAddress2());
         patientAddress2Field.setValue(consentUser.getCity()+" "+consentUser.getState()+" "+consentUser.getZipCode());
         patientPhoneNumberField.setValue(consentUser.getPhone());
         patientDateOfBirthField.setValue(getDateString(consentUser.getDateOfBirth()));
@@ -982,7 +983,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 break;
             case 13:
                 returnButton.setEnabled(true);
-                forwardButton.setEnabled(true);
+                forwardButton.setEnabled(false);
                 patientInitialsLayout.setVisible(false);
                 patientGeneralInfoLayout.setVisible(false);
                 poaSelectionLayout.setVisible(false);
