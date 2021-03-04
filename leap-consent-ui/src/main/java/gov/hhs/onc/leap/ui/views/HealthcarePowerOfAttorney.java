@@ -117,8 +117,26 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     private RadioButtonGroup hipaaButton;
     private FlexBoxLayout hipaaLayout;
 
+    private SignaturePad patientSignature;
+    private byte[] base64PatientSignature;
+    private TextField patientSignatureDateField;
+    private Date patientSignatureDate;
+    private FlexBoxLayout patientSignatureLayout;
 
+    private SignaturePad patientUnableSignature;
+    private byte[] base64PatientUnableSignature;
+    private TextField patientUnableSignatureDateField;
+    private Date patientUnableSignatureDate;
+    private TextField patientUnableSignatureNameField;
+    private FlexBoxLayout patientUnableSignatureLayout;
 
+    private SignaturePad witnessSignature;
+    private byte[] base64WitnessSignature;
+    private TextField witnessSignatureDateField;
+    private Date witnessSignatureDate;
+    private TextField witnessName;
+    private TextField witnessAddress;
+    private FlexBoxLayout witnessSignatureLayout;
 
     public HealthcarePowerOfAttorney(@Autowired PDFSigningService PDFSigningService) {
         setId("healthcarepowerofattorney");
@@ -148,7 +166,9 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         createBurialSelection();
         createAttestation();
         createHipaa();
-
+        createPatientSignature();
+        createPatientUnableSignature();
+        createWitnessSignature();
 
         createInfoDialog();
 
@@ -528,7 +548,143 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
     }
 
+    private void createPatientSignature() {
+        Html intro14 = new Html("<p><b>MY SIGNATURE VERIFICATION FOR THE HEALTH CARE POWER OF ATTORNEY</b></p>");
 
+        patientSignature = new SignaturePad();
+        patientSignature.setHeight("100px");
+        patientSignature.setWidth("400px");
+        patientSignature.setPenColor("#2874A6");
+
+        Button clearPatientSig = new Button("Clear Signature");
+        clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
+        clearPatientSig.addClickListener(event -> {
+            patientSignature.clear();
+        });
+        Button savePatientSig = new Button("Accept Signature");
+        savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
+        savePatientSig.addClickListener(event -> {
+            base64PatientSignature = patientSignature.getImageBase64();
+            patientSignatureDate = new Date();
+            questionPosition++;
+            evalNavigation();
+        });
+
+        HorizontalLayout sigLayout = new HorizontalLayout(clearPatientSig, savePatientSig);
+        sigLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        sigLayout.setPadding(true);
+        sigLayout.setSpacing(true);
+
+        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro14, new BasicDivider(),
+                patientSignature, sigLayout);
+        patientSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        patientSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        patientSignatureLayout.setHeightFull();
+        patientSignatureLayout.setBackgroundColor("white");
+        patientSignatureLayout.setShadow(Shadow.S);
+        patientSignatureLayout.setBorderRadius(BorderRadius.S);
+        patientSignatureLayout.getStyle().set("margin-bottom", "10px");
+        patientSignatureLayout.getStyle().set("margin-right", "10px");
+        patientSignatureLayout.getStyle().set("margin-left", "10px");
+        patientSignatureLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        patientSignatureLayout.setVisible(false);
+
+    }
+
+    private void createPatientUnableSignature() {
+        Html intro15 = new Html("<p><b>If you are unable to physically sign this document, "+
+                "your witness/notary may sign and initial for you. If applicable have your witness/notary sign below.</b></p>");
+        Html intro16 = new Html("<p>Witness/Notary Verification: The principal of this document directly indicated to me "+
+                "that this Health Care Power of Attorney expresses their wishes and that they intend to adopt it at this time.</p>");
+
+        patientUnableSignatureNameField = new TextField("Name");
+
+        patientUnableSignature = new SignaturePad();
+        patientUnableSignature.setHeight("100px");
+        patientUnableSignature.setWidth("400px");
+        patientUnableSignature.setPenColor("#2874A6");
+
+        Button clearPatientUnableSig = new Button("Clear Signature");
+        clearPatientUnableSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
+        clearPatientUnableSig.addClickListener(event -> {
+            patientUnableSignature.clear();
+        });
+        Button savePatientUnableSig = new Button("Accept Signature");
+        savePatientUnableSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
+        savePatientUnableSig.addClickListener(event -> {
+            base64PatientUnableSignature = patientUnableSignature.getImageBase64();
+            patientUnableSignatureDate = new Date();
+            questionPosition++;
+            evalNavigation();
+        });
+
+        HorizontalLayout sigLayout = new HorizontalLayout(clearPatientUnableSig, savePatientUnableSig);
+        sigLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        sigLayout.setPadding(true);
+        sigLayout.setSpacing(true);
+
+        patientUnableSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro15, intro16, new BasicDivider(),
+                patientUnableSignatureNameField, patientUnableSignature, sigLayout);
+        patientUnableSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        patientUnableSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        patientUnableSignatureLayout.setHeightFull();
+        patientUnableSignatureLayout.setBackgroundColor("white");
+        patientUnableSignatureLayout.setShadow(Shadow.S);
+        patientUnableSignatureLayout.setBorderRadius(BorderRadius.S);
+        patientUnableSignatureLayout.getStyle().set("margin-bottom", "10px");
+        patientUnableSignatureLayout.getStyle().set("margin-right", "10px");
+        patientUnableSignatureLayout.getStyle().set("margin-left", "10px");
+        patientUnableSignatureLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        patientUnableSignatureLayout.setVisible(false);
+    }
+
+    private void createWitnessSignature() {
+        Html intro17 = new Html("<p><b>SIGNATURE OF WITNESS</b></p>");
+        Html intro18 = new Html("<p>I was present when this form was signed (or marked). The principal appeared to "+
+                "be of sound mind and was not forced to sign this form. I affirm that I meet the requirements to be a witness "+
+                "as indicated on page one of the health care power of attorney form.</p>");
+
+        witnessName = new TextField("Witness Name");
+        witnessAddress = new TextField("Address");
+
+        witnessSignature = new SignaturePad();
+        witnessSignature.setHeight("100px");
+        witnessSignature.setWidth("400px");
+        witnessSignature.setPenColor("#2874A6");
+
+        Button clearWitnessSig = new Button("Clear Signature");
+        clearWitnessSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
+        clearWitnessSig.addClickListener(event -> {
+            witnessSignature.clear();
+        });
+        Button saveWitnessSig = new Button("Accept Signature");
+        saveWitnessSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
+        saveWitnessSig.addClickListener(event -> {
+            base64WitnessSignature = witnessSignature.getImageBase64();
+            witnessSignatureDate = new Date();
+            questionPosition++;
+            evalNavigation();
+        });
+
+        HorizontalLayout sigLayout = new HorizontalLayout(clearWitnessSig, saveWitnessSig);
+        sigLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        sigLayout.setPadding(true);
+        sigLayout.setSpacing(true);
+
+        witnessSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro17, intro18, new BasicDivider(),
+                witnessName, witnessAddress, witnessSignature, sigLayout);
+        witnessSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        witnessSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        witnessSignatureLayout.setHeightFull();
+        witnessSignatureLayout.setBackgroundColor("white");
+        witnessSignatureLayout.setShadow(Shadow.S);
+        witnessSignatureLayout.setBorderRadius(BorderRadius.S);
+        witnessSignatureLayout.getStyle().set("margin-bottom", "10px");
+        witnessSignatureLayout.getStyle().set("margin-right", "10px");
+        witnessSignatureLayout.getStyle().set("margin-left", "10px");
+        witnessSignatureLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        witnessSignatureLayout.setVisible(false);
+    }
 
     private Component getFooter() {
         returnButton = new Button("Back", new Icon(VaadinIcon.BACKWARDS));
