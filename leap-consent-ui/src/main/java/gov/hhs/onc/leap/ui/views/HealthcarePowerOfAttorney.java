@@ -260,7 +260,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
     private void createPOASelection() {
         Html intro4 = new Html("<p><b>Selection of my Healthcare Power of Attorney and Alternate:</b> "+
-                "I choose the following person to act as my agent to make health care decisions for me.</p>");
+                "I choose the following person to act as my <b>agent</b> to make health care decisions for me.</p>");
 
         poaFullNameField = new TextField("Name");
         poaAddress1Field = new TextField("Address");
@@ -286,7 +286,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
     private void createALTSelection() {
         Html intro5 = new Html("<p><b>Selection of my Healthcare Power of Attorney and Alternate:</b> "+
-                "I choose the following person to act as an alternate to make health care decisions for me if my "+
+                "I choose the following person to act as an <b>alternate</b> to make health care decisions for me if my "+
                 "first agent is unavailable, unwilling, or unable to make decisions for me.</p>");
 
         altFullNameField = new TextField("Name");
@@ -388,14 +388,62 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 "I have already signed a written agreement or donor card regarding donation with the following individual or institution.",
                 "I DO WANT to make an organ or tissue donation when I die. Here are my directions:");
         organDonationButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        organDonationButtonGroup.addValueChangeListener(event -> {
+            String v = (String)event.getValue();
+            if (v == null) {
+                institutionAgreementField.setVisible(false);
+                whatTissuesButtonGroup.setVisible(false);
+                specificOrgansField.setVisible(false);
+                pouOrganDonationButtonGroup.setVisible(false);
+                otherPurposesField.setVisible(false);
+                organizationOrganDonationButtonGroup.setVisible(false);
+                patientChoiceOfOrganizations.setVisible(false);
+            }
+            else if (v.contains("I have already signed")) {
+                institutionAgreementField.setVisible(true);
+                whatTissuesButtonGroup.setVisible(false);
+                specificOrgansField.setVisible(false);
+                pouOrganDonationButtonGroup.setVisible(false);
+                otherPurposesField.setVisible(false);
+                organizationOrganDonationButtonGroup.setVisible(false);
+                patientChoiceOfOrganizations.setVisible(false);
+            }
+            else if (v.contains("I DO WANT")) {
+                institutionAgreementField.setVisible(false);
+                whatTissuesButtonGroup.setVisible(true);
+                //specificOrgansField.setVisible(true);
+                pouOrganDonationButtonGroup.setVisible(true);
+                //otherPurposesField.setVisible(true);
+                organizationOrganDonationButtonGroup.setVisible(true);
+                //patientChoiceOfOrganizations.setVisible(true);
+            }
+            else {
+                institutionAgreementField.setVisible(false);
+                whatTissuesButtonGroup.setVisible(false);
+                specificOrgansField.setVisible(false);
+                pouOrganDonationButtonGroup.setVisible(false);
+                otherPurposesField.setVisible(false);
+                organizationOrganDonationButtonGroup.setVisible(false);
+                patientChoiceOfOrganizations.setVisible(false);
+            }
+        });
 
         institutionAgreementField = new TextField("Institution");
         institutionAgreementField.setVisible(false);
 
         whatTissuesButtonGroup = new RadioButtonGroup();
         whatTissuesButtonGroup.setLabel("What organs/tissues I choose to donate");
-        whatTissuesButtonGroup.setItems("Whole body", "Any needed parts or organs","Specifc parts or organs only");
+        whatTissuesButtonGroup.setItems("Whole body", "Any needed parts or organs","Specific parts or organs only");
         whatTissuesButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        whatTissuesButtonGroup.addValueChangeListener(event -> {
+           String v = (String)event.getValue();
+           if (v.contains("Specific parts")) {
+               specificOrgansField.setVisible(true);
+           }
+           else {
+               specificOrgansField.setVisible(false);
+           }
+        });
         whatTissuesButtonGroup.setVisible(false);
 
         specificOrgansField = new TextField("Specific parts or organs only");
@@ -406,6 +454,15 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         pouOrganDonationButtonGroup.setItems("Any legally authorized purpose","Transplant or therapeutic purposes only",
                 "Research only","Other");
         pouOrganDonationButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        pouOrganDonationButtonGroup.addValueChangeListener(event -> {
+            String v = (String)event.getValue();
+            if (v.equals("Other")) {
+                otherPurposesField.setVisible(true);
+            }
+            else {
+                otherPurposesField.setVisible(false);
+            }
+        });
         pouOrganDonationButtonGroup.setVisible(false);
 
         otherPurposesField = new TextField("Other Purposes");
@@ -415,6 +472,15 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         organizationOrganDonationButtonGroup.setLabel("The organization or person I want my organs/tissue to go to are");
         organizationOrganDonationButtonGroup.setItems("My List", "Any that my agent chooses");
         organizationOrganDonationButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        organizationOrganDonationButtonGroup.addValueChangeListener(event -> {
+            String v = (String)event.getValue();
+            if (v.equals("My List")) {
+                patientChoiceOfOrganizations.setVisible(true);
+            }
+            else {
+                patientChoiceOfOrganizations.setVisible(false);
+            }
+        });
         organizationOrganDonationButtonGroup.setVisible(false);
 
         patientChoiceOfOrganizations = new TextField("List Organizations");
@@ -445,6 +511,21 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 "Upon my death, I direct my body to be buried in:", "Upon my death, I direct my body to be cremated.",
                 "Upon my death, I direct my body to be cremated with my ashes to be", "My agent will make all funeral and burial decisions.");
         burialSelectionButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        burialSelectionButtonGroup.addValueChangeListener(event -> {
+            String v = (String)event.getValue();
+            if (v.contains("I direct my body to be buried in")) {
+                buriedInField.setVisible(true);
+                ashesDispositionField.setVisible(false);
+            }
+            else if (v.contains("cremated with my ashes to be")) {
+                buriedInField.setVisible(false);
+                ashesDispositionField.setVisible(true);
+            }
+            else {
+                buriedInField.setVisible(false);
+                ashesDispositionField.setVisible(false);
+            }
+        });
 
         buriedInField = new TextField("I direct my body to be buried in following");
         buriedInField.setVisible(false);
