@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
+import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -61,7 +62,6 @@ import java.util.List;
 @Route(value = "dnrview", layout = MainLayout.class)
 public class DoNotResuscitate extends ViewFrame {
 
-    private PDFSigningService PDFSigningService;
     private Button returnButton;
     private Button forwardButton;
     private Button viewStateForm;
@@ -112,7 +112,10 @@ public class DoNotResuscitate extends ViewFrame {
 
     private ConsentUser consentUser;
 
-    private FHIRConsent fhirConsentClient = new FHIRConsent();
+    @Autowired
+    private FHIRConsent fhirConsentClient;
+    @Autowired
+    private PDFSigningService pdfSigningService;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -120,13 +123,17 @@ public class DoNotResuscitate extends ViewFrame {
     @Value("${org-display:HealthCurrent FHIR Connectathon}")
     private String orgDisplay;
 
-    public DoNotResuscitate(@Autowired PDFSigningService PDFSigningService) {
+
+    public DoNotResuscitate() {
         setId("dnrview");
+    }
+
+    @PostConstruct
+    public void setup(){
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
-        this.PDFSigningService = PDFSigningService;
     }
 
     private Component createViewContent() {
@@ -608,7 +615,7 @@ public class DoNotResuscitate extends ViewFrame {
         }
 
 
-        PDFDNRHandler pdfHandler = new PDFDNRHandler(PDFSigningService);
+        PDFDNRHandler pdfHandler = new PDFDNRHandler(pdfSigningService);
         StreamResource res = pdfHandler.retrievePDFForm(patientName, base64PatientSignature, patientsignatureDate, poaHealthcare, base64HealthcarePOASignature,
                                                         dateOfBirth, gender, ethnicity, eyeColor, hairColor, imageBytes,
                                                         primaryPhysician, primaryPhysicianPhoneNumber, hospiceProgram, base64AttestationSignature,

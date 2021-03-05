@@ -32,6 +32,7 @@ import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @PageTitle("My Record Disclosures")
 @Route(value = "auditview", layout = MainLayout.class)
@@ -43,6 +44,9 @@ public class AuditView extends ViewFrame {
     private ListDataProvider<ConsentLog> dataProvider;
     private FlexBoxLayout logLayout;
     private FlexBoxLayout chartLayout;
+
+    @Autowired
+    private TestData testData;
 
     public AuditView() {
         setId("auditview");
@@ -86,7 +90,7 @@ public class AuditView extends ViewFrame {
     }
 
     private Component createGrid() {
-        dataProvider = DataProvider.ofCollection(TestData.getConsentLogs());
+        dataProvider = DataProvider.ofCollection(testData.getConsentLogs());
 
         grid = new Grid<>();
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);

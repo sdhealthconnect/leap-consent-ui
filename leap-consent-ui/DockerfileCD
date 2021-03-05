@@ -1,0 +1,35 @@
+FROM maven:3.6.3-jdk-11 as builder
+ARG GITHUB_USERNAME
+ARG GITHUB_PWD
+# Copy local code to the container image.
+WORKDIR leap-consent
+COPY leap-consent-ui leap-consent-ui
+COPY pom.xml pom.xml
+RUN echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+          <settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.0.0\"\
+          		  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\
+             <servers>\
+             	<server>\
+                		<id>github</id>\
+                		<username>${GITHUB_USERNAME}</username>\
+          	      	<password>${GITHUB_PWD}</password>\
+              	</server>\
+             </servers>\
+             <offline>false</offline>\
+          </settings>" > settings.xml
+# Build a release artifact.
+RUN mvn clean install -Pdocker -DskipTests -s settings.xml
+
+FROM openjdk:11-jdk
+ARG JAR_FILE=target/leap-consent-ui-1.0-SNAPSHOT.war
+
+# Arguments declaration, needed to change ENV variables at build time
+ARG ARG_SLS_HOST_URL
+ARG ARG_HAPI_FHIR_URL
+
+# Environment Variables declaration, needed to execute stand-alone Dockerfile with custom argumens if they are specified
+ENV SLS_HOST_URL=${ARG_SLS_HOST_URL}
+ENV HAPI_FHIR_URL=${ARG_HAPI_FHIR_URL}
+
+COPY --from=builder /leap-consent/leap-consent-ui/${JAR_FILE} app.jar
+ENTRYPOINT ["java", "-Dspring.profiles.active=docker", "-Dserver.tomcat.remote-ip-header=x-forwarded-for", "-Dserver.tomcat.protocol-header=x-forwarded-proto", "-jar", "/app.jar"]

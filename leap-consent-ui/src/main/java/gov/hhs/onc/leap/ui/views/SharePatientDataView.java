@@ -50,6 +50,7 @@ import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
+import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -70,8 +71,6 @@ public class SharePatientDataView extends ViewFrame {
     private ComboBox<Organization> organizationComboBoxSource;
     private MultiSelectListBox<String> dataClassComboBox;
     private ComboBox<Organization> organizationComboBoxDestination;
-    private FHIROrganization fhirOrganization = new FHIROrganization();
-    private FHIRPractitioner fhirPractitioner = new FHIRPractitioner();
     private ListDataProvider<Practitioner> practitionerListDataProvider;
     private ListDataProvider<Organization> organizationListDataProvider;
     private CheckboxGroup<String> sensitivityOptions;
@@ -98,20 +97,25 @@ public class SharePatientDataView extends ViewFrame {
     private LocalDateTime provisionStartDateTime;
     private LocalDateTime provisionEndDateTime;
     private byte[] consentPDFAsByteArray;
-    private FHIRConsent fhirConsentClient = new FHIRConsent();
-    private PDFSigningService PDFSigningService;
+    @Autowired
+    private FHIROrganization fhirOrganization;
+    @Autowired
+    private FHIRPractitioner fhirPractitioner;
+    @Autowired
+    private FHIRConsent fhirConsentClient;
+    @Autowired
+    private PDFSigningService pdfSigningService;
     private String fhirBase;
-    private ConsentSession consentSession;
 
 
-    public SharePatientDataView(@Autowired PDFSigningService PDFSigningService) {
+
+    @PostConstruct
+    public void setup() {
         setId("sharePatientDataView");
-        ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
-        fhirBase = consentSession.getFhirbase();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
-        this.PDFSigningService = PDFSigningService;
     }
+
 
     private Component createViewContent() {
         Html intro = new Html("<p>The following allows you the <b>Patient</b> to create rules to control " +
@@ -675,7 +679,7 @@ public class SharePatientDataView extends ViewFrame {
                 //default if none selected
                 sensitivities = "I do not have privacy concerns";
             }
-            PDFPatientPrivacyHandler pdfHandler = new PDFPatientPrivacyHandler(PDFSigningService);
+            PDFPatientPrivacyHandler pdfHandler = new PDFPatientPrivacyHandler(pdfSigningService);
             StreamResource res = pdfHandler.retrievePDFForm(sDate, eDate, dataDomainConstraintlist, custodian,
                                 recipient, sensitivities, base64Signature);
             consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
@@ -725,6 +729,7 @@ public class SharePatientDataView extends ViewFrame {
 
     private void createFHIRConsent() {
         ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
+        fhirBase = consentSession.getFhirbase();
         Patient patient = consentSession.getFhirPatient();
 
         Consent patientPrivacyConsent = new Consent();
