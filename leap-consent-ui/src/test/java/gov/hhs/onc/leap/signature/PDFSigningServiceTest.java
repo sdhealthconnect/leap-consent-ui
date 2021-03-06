@@ -24,7 +24,7 @@ public class PDFSigningServiceTest {
 
     private PDFSigningService PDFSigningService;
 
-    @Value("${keystore.path}")
+    @Value("${keystore.classpath}")
     private String keyStorePath;
 
     @Value("${keystore.password}")

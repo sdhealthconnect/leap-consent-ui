@@ -1,5 +1,5 @@
 keystore:
-  path: classpath:keystore.jks
+  classpath: classpath:keystore.jks
   password: leap2021
   certificate-alias: leap_certificate
 timestamp-authority:
