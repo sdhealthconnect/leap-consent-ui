@@ -6,7 +6,7 @@
       "system": "http://hl7.org/fhir/sid/us-ssn",
       "value": "111111199"
     }],
-    "scope": "adr",
+    "scope": "",
     "purposeOfUse": "ETREAT",
     "actor": [
       {

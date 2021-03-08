@@ -1,11 +1,11 @@
-package gov.hhs.onc.leap.backend.model;
+package gov.hhs.onc.leap.adr.model;
 
 import java.util.Date;
 
 public class PrincipleAlternateSignature {
     private String nameOfWitnessOrNotary;
     private byte[] base64EncodedSignature;
-    private Date dateSigned;
+    private String dateSigned;
 
     public String getNameOfWitnessOrNotary() {
         return nameOfWitnessOrNotary;
@@ -23,11 +23,11 @@ public class PrincipleAlternateSignature {
         this.base64EncodedSignature = base64EncodedSignature;
     }
 
-    public Date getDateSigned() {
+    public String getDateSigned() {
         return dateSigned;
     }
 
-    public void setDateSigned(Date dateSigned) {
+    public void setDateSigned(String dateSigned) {
         this.dateSigned = dateSigned;
     }
 }

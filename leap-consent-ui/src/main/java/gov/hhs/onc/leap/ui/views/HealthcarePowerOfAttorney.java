@@ -19,7 +19,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
+import gov.hhs.onc.leap.adr.model.*;
 import gov.hhs.onc.leap.backend.ConsentUser;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -34,12 +36,21 @@ import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
+import gov.hhs.onc.leap.ui.util.pdf.PDFDNRHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
+import gov.hhs.onc.leap.ui.util.pdf.PDFPOAHealthcareHandler;
+import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 @PageTitle("Healthcare Power Of Attorney")
 @Route(value = "healthcarepowerofattorney", layout = MainLayout.class)
@@ -138,6 +149,18 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     private TextField witnessAddress;
     private FlexBoxLayout witnessSignatureLayout;
 
+    private byte[] consentPDFAsByteArray;
+
+    private Dialog docDialog;
+
+    private FHIRConsent fhirConsentClient = new FHIRConsent();
+
+    @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
+    private String orgReference;
+
+    @Value("${org-display:HealthCurrent FHIR Connectathon}")
+    private String orgDisplay;
+
     public HealthcarePowerOfAttorney(@Autowired PDFSigningService PDFSigningService) {
         setId("healthcarepowerofattorney");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
@@ -190,7 +213,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
         patientInitials = new SignaturePad();
         patientInitials.setHeight("100px");
-        patientInitials.setWidth("250px");
+        patientInitials.setWidth("150px");
         patientInitials.setPenColor("#2874A6");
 
         Button clearPatientInitials = new Button("Clear Initials");
@@ -744,8 +767,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         saveWitnessSig.addClickListener(event -> {
             base64WitnessSignature = witnessSignature.getImageBase64();
             witnessSignatureDate = new Date();
-            questionPosition++;
-            evalNavigation();
+            getHumanReadable();
+            docDialog.open();
         });
 
         HorizontalLayout sigLayout = new HorizontalLayout(clearWitnessSig, saveWitnessSig);
@@ -1114,5 +1137,289 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         infoDialog.setDraggable(true);
 
         return infoDialog;
+    }
+
+
+    private void getHumanReadable() {
+        StreamResource streamResource = setFieldsCreatePDF();
+        docDialog = new Dialog();
+
+        streamResource.setContentType("application/pdf");
+
+        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
+        viewer.setHeight("800px");
+        viewer.setWidth("840px");
+
+
+        Button closeButton = new Button("Cancel", e -> docDialog.close());
+        closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
+
+        Button acceptButton = new Button("Accept and Submit");
+        acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
+        acceptButton.addClickListener(event -> {
+            docDialog.close();
+            createFHIRConsent();
+            successNotification();
+            //todo test for fhir consent create success
+            //resetQuestionNavigation();
+            evalNavigation();
+        });
+
+        Button acceptAndPrintButton = new Button("Accept and Get Notarized");
+        acceptAndPrintButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
+
+        HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton, acceptAndPrintButton);
+
+
+        FlexBoxLayout content = new FlexBoxLayout(viewer, hLayout);
+        content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        content.setBoxSizing(BoxSizing.BORDER_BOX);
+        content.setHeightFull();
+        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+
+        docDialog.add(content);
+
+        docDialog.setModal(false);
+        docDialog.setResizable(true);
+        docDialog.setDraggable(true);
+    }
+
+
+
+    private StreamResource setFieldsCreatePDF() {
+        PowerOfAttorneyHealthCare poa = new PowerOfAttorneyHealthCare();
+        //Set principle
+        Principle principle = new Principle();
+        principle.setAddress1(patientAddress1Field.getValue());
+        principle.setAddress2(patientAddress2Field.getValue());
+        principle.setDateOfBirth(patientDateOfBirthField.getValue());
+        principle.setEmailAddress(patientEmailAddressField.getValue());
+        principle.setName(patientFullNameField.getValue());
+        principle.setPhoneNumber(patientPhoneNumberField.getValue());
+        poa.setPrinciple(principle);
+
+        Agent agent = new Agent();
+        agent.setAddress1(poaAddress1Field.getValue());
+        agent.setAddress2(poaAddress1Field.getValue());
+        agent.setCellPhone(poaCellPhoneField.getValue());
+        agent.setHomePhone(poaHomePhoneField.getValue());
+        agent.setName(poaFullNameField.getValue());
+        agent.setWorkPhone(poaWorkPhoneField.getValue());
+        poa.setAgent(agent);
+
+        Alternate alternate = new Alternate();
+        alternate.setAddress1(altAddress1Field.getValue());
+        alternate.setAddress2(altAddress2Field.getValue());
+        alternate.setCellPhone(altCellPhoneField.getValue());
+        alternate.setHomePhone(altHomePhoneField.getValue());
+        alternate.setName(altFullNameField.getValue());
+        alternate.setWorkPhone(altWorkPhoneField.getValue());
+        poa.setAlternate(alternate);
+
+        poa.setDoNotAuthorize1(authException1Field.getValue());
+        poa.setDoNotAuthorize2(authException2Field.getValue());
+        poa.setDoNotAuthorize3(authException3Field.getValue());
+
+        //Autopsy
+        String autopsy = (String)autopsyButtonGroup.getValue();
+        if (autopsy.contains("I DO NOT consent")) {
+            poa.setDenyAutopsy(true);
+        }
+        else if (autopsy.contains("I DO consent")) {
+            poa.setPermitAutopsy(true);
+        }
+        else if (autopsy.contains("My agent")) {
+            poa.setAgentDecidesAutopsy(true);
+        }
+        else {
+            //nothing to set
+        }
+
+        //Organ Donation
+        String organdonation = (String)organDonationButtonGroup.getValue();
+        if (organdonation.contains("I DO NOT WANT")) {
+            poa.setDenyOrganTissueDonation(true);
+        }
+        else if(organdonation.contains("I have already")) {
+            poa.setHaveExistingOrganTissueCardOrAgreement(true);
+            poa.setOrganTissueCardOrAgreementInstitution(institutionAgreementField.getValue());
+        }
+        else if (organdonation.contains("I DO WANT")) {
+            poa.setPermitOrganTissueDonation(true);
+            String whatOrgans = (String)whatTissuesButtonGroup.getValue();
+            if (whatOrgans.contains("Whole body")) {
+                poa.setWholeBodyDonation(true);
+            }
+            else if (whatOrgans.contains("Any needed")) {
+                poa.setAnyPartOrOrganNeeded(true);
+            }
+            else if (whatOrgans.contains("These parts")) {
+                poa.setSpecificPartsOrOrgans(true);
+                poa.setSpecificPartsOrOrgansList(specificOrgansField.getValue());
+            }
+            else {
+                //nothing to select in what tissues
+            }
+            String forWhatPurpose = (String)pouOrganDonationButtonGroup.getValue();
+            if (forWhatPurpose.contains("Any legal")) {
+                poa.setAnyLegalPurpose(true);
+            }
+            else if (forWhatPurpose.contains("Transplant")) {
+                poa.setTransplantOrTherapeutic(true);
+            }
+            else if (forWhatPurpose.contains("Research")) {
+                poa.setResearchOnly(true);
+            }
+            else if (forWhatPurpose.contains("Other")) {
+                poa.setOtherPurposes(true);
+                poa.setOtherPurposesList(otherPurposesField.getValue());
+            }
+            else {
+                //nothing to set
+            }
+            String whatOrganizations = (String)organizationOrganDonationButtonGroup.getValue();
+            if (whatOrganizations.contains("Any that my agent chooses")) {
+                poa.setAgentDecidedOrganTissueDestination(true);
+            }
+            else if(whatOrganizations.contains("My List")) {
+                poa.setPrincipleDefined(true);
+                poa.setPrincipleDefinedList(patientChoiceOfOrganizations.getValue());
+            }
+            else {
+                //no setting
+            }
+        }
+        else {
+            //nothing to set
+        }
+
+        //Burial
+        String burial = (String)burialSelectionButtonGroup.getValue();
+        if (burial.contains("buried.")) {
+            poa.setBodyToBeBuried(true);
+        }
+        else if (burial.contains("buried in")) {
+            poa.setBodyToBeBuriedIn(true);
+            poa.setBodyToBeBuriedInInstructions(buriedInField.getValue());
+        }
+        else if (burial.contains("cremated.")) {
+            poa.setBodyToBeCremated(true);
+        }
+        else if (burial.contains("cremated with my asshes")) {
+            poa.setBodyToBeCrematedAshesDisposition(true);
+            poa.setBodyToBeCrematedAshesDispositionInstructions(ashesDispositionField.getValue());
+        }
+        else if (burial.contains("My agent")) {
+            poa.setAgentDecidesBurial(true);
+        }
+        else {
+            //nothing to set
+        }
+
+        //todo write logic to evaluate if the have a DNR, Living Will, or POLST for time being set to false
+
+        poa.setSignedDNR(false);
+        poa.setNotSignedDNR(true);
+        poa.setSignedLivingWill(false);
+        poa.setNotSignedLivingWill(true);
+        poa.setSignedPOLST(false);
+        poa.setNotSignedPOLST(true);
+
+        //physician affidavit
+        PhysicansAffidavit affidavit = new PhysicansAffidavit();
+        affidavit.setBase64EncodedSignature(base64PhysicianSignature);
+        affidavit.setPhysiciansName(attestationDRName.getValue());
+        affidavit.setPrinciplesName(patientFullNameField.getValue());
+        affidavit.setSignatureDate(getDateString(new Date()));
+        poa.setPhysiciansAffidavit(affidavit);
+
+        //Hipaa waiver
+        HipaaWaiver hipaa = new HipaaWaiver();
+        String hipaaValue = (String)hipaaButton.getValue();
+        hipaa.setUseDisclosure(hipaaValue.contains("I intend"));
+        poa.setHipaaWaiver(hipaa);
+
+        PrincipleSignature principleSignature = new PrincipleSignature();
+        principleSignature.setBase64EncodeSignature(base64PatientSignature);
+        principleSignature.setDateSigned(getDateString(new Date()));
+        poa.setPrincipleSignature(principleSignature);
+
+        PrincipleAlternateSignature principleAlternateSignature = new PrincipleAlternateSignature();
+        principleAlternateSignature.setBase64EncodedSignature(base64PatientUnableSignature);
+        principleAlternateSignature.setNameOfWitnessOrNotary(patientUnableSignatureNameField.getValue());
+        principleAlternateSignature.setDateSigned(getDateString(new Date()));
+        poa.setPrincipleAlternateSignature(principleAlternateSignature);
+
+        WitnessSignature witnessSignature = new WitnessSignature();
+        witnessSignature.setBase64EncodedSignature(base64WitnessSignature);
+        witnessSignature.setDateSigned(getDateString(new Date()));
+        witnessSignature.setWitnessAddress(witnessAddress.getValue());
+        witnessSignature.setWitnessName(witnessName.getValue());
+        poa.setWitnessSignature(witnessSignature);
+
+        PDFPOAHealthcareHandler pdfHandler = new PDFPOAHealthcareHandler(PDFSigningService);
+        StreamResource res = pdfHandler.retrievePDFForm(poa, base64PatientInitials);
+
+        consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
+        return res;
+    }
+
+    private void createFHIRConsent() {
+        Patient patient = consentSession.getFhirPatient();
+        Consent poaDirective = new Consent();
+        poaDirective.setId("DNR-"+patient.getId());
+        poaDirective.setStatus(Consent.ConsentState.ACTIVE);
+        CodeableConcept cConcept = new CodeableConcept();
+        Coding coding = new Coding();
+        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
+        coding.setCode("adr");
+        cConcept.addCoding(coding);
+        poaDirective.setScope(cConcept);
+        List<CodeableConcept> cList = new ArrayList<>();
+        CodeableConcept cConceptCat = new CodeableConcept();
+        Coding codingCat = new Coding();
+        codingCat.setSystem("http://loinc.org");
+        codingCat.setCode("59284-6");
+        cConceptCat.addCoding(codingCat);
+        cList.add(cConceptCat);
+        poaDirective.setCategory(cList);
+        Reference patientRef = new Reference();
+        patientRef.setReference("Patient/"+patient.getId());
+        patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
+        poaDirective.setPatient(patientRef);
+        List<Reference> refList = new ArrayList<>();
+        Reference orgRef = new Reference();
+        //todo - this is the deployment and custodian organization for advanced directives and should be valid in fhir consent repository
+        orgRef.setReference(orgReference);
+        orgRef.setDisplay(orgDisplay);
+        refList.add(orgRef);
+        poaDirective.setOrganization(refList);
+        Attachment attachment = new Attachment();
+        attachment.setContentType("application/pdf");
+        attachment.setCreation(new Date());
+        attachment.setTitle("POA Healthcare");
+
+
+        String encodedString = Base64.getEncoder().encodeToString(consentPDFAsByteArray);
+        attachment.setSize(encodedString.length());
+        attachment.setData(encodedString.getBytes());
+
+        poaDirective.setSource(attachment);
+
+        Consent.provisionComponent provision = new Consent.provisionComponent();
+        Period period = new Period();
+        LocalDate sDate = LocalDate.now();
+        LocalDate eDate = LocalDate.now().plusYears(10);
+        Date startDate = Date.from(sDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(eDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        period.setStart(startDate);
+        period.setEnd(endDate);
+
+        provision.setPeriod(period);
+
+        poaDirective.setProvision(provision);
+
+        fhirConsentClient.createConsent(poaDirective);
     }
 }

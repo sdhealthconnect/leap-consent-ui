@@ -1,4 +1,4 @@
-package gov.hhs.onc.leap.backend.model;
+package gov.hhs.onc.leap.adr.model;
 
 public class LivingWill {
 
