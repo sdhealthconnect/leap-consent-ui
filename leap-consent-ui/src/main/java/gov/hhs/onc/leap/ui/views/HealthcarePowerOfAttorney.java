@@ -535,18 +535,18 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 "Upon my death, I direct my body to be cremated with my ashes to be", "My agent will make all funeral and burial decisions.");
         burialSelectionButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
         burialSelectionButtonGroup.addValueChangeListener(event -> {
-            String v = (String)event.getValue();
-            if (v.contains("I direct my body to be buried in")) {
-                buriedInField.setVisible(true);
-                ashesDispositionField.setVisible(false);
-            }
-            else if (v.contains("cremated with my ashes to be")) {
-                buriedInField.setVisible(false);
-                ashesDispositionField.setVisible(true);
-            }
-            else {
-                buriedInField.setVisible(false);
-                ashesDispositionField.setVisible(false);
+            if (event.getValue() != null) {
+                String v = (String) event.getValue();
+                if (v.contains("I direct my body to be buried in")) {
+                    buriedInField.setVisible(true);
+                    ashesDispositionField.setVisible(false);
+                } else if (v.contains("cremated with my ashes to be")) {
+                    buriedInField.setVisible(false);
+                    ashesDispositionField.setVisible(true);
+                } else {
+                    buriedInField.setVisible(false);
+                    ashesDispositionField.setVisible(false);
+                }
             }
         });
 
@@ -1161,7 +1161,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
             createFHIRConsent();
             successNotification();
             //todo test for fhir consent create success
-            //resetQuestionNavigation();
+            resetFormAndNavigation();
             evalNavigation();
         });
 
@@ -1422,4 +1422,48 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
         fhirConsentClient.createConsent(poaDirective);
     }
+
+    private void resetFormAndNavigation() {
+        patientInitials.clear();
+        poaFullNameField.clear();
+        poaAddress2Field.clear();
+        poaAddress1Field.clear();
+        poaHomePhoneField.clear();
+        poaWorkPhoneField.clear();
+        poaCellPhoneField.clear();
+        altFullNameField.clear();
+        altAddress1Field.clear();
+        altAddress2Field.clear();
+        altHomePhoneField.clear();
+        altWorkPhoneField.clear();
+        altCellPhoneField.clear();
+        authException1Field.clear();
+        authException2Field.clear();
+        authException3Field.clear();
+        autopsyButtonGroup.clear();
+        organDonationButtonGroup.clear();
+        whatTissuesButtonGroup.clear();
+        specificOrgansField.clear();
+        pouOrganDonationButtonGroup.clear();
+        otherPurposesField.clear();
+        organizationOrganDonationButtonGroup.clear();
+        patientChoiceOfOrganizations.clear();
+        burialSelectionButtonGroup.clear();
+        buriedInField.clear();
+        ashesDispositionField.clear();
+        attestationDate.clear();
+        attestationPatientName.clear();
+        attestationDRName.clear();
+        physcianSignature.clear();
+        hipaaButton.clear();
+        patientSignature.clear();
+        patientUnableSignature.clear();
+        patientUnableSignatureNameField.clear();
+        witnessSignature.clear();
+        witnessAddress.clear();
+        witnessName.clear();
+
+        questionPosition = 0;
+    }
+
 }

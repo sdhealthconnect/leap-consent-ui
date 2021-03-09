@@ -185,6 +185,7 @@ public class PDFPOAHealthcareHandler {
                         catch (Exception ex) {}
                     }
                 }
+                if (field.getFullyQualifiedName().equals("donorCardOrAgreementCustodian")) field.setValue(poaHealthcare.getOrganTissueCardOrAgreementInstitution());
                 if (field.getFullyQualifiedName().equals("permitOrganOrTissueDonation_af_image")) {
                     if (poaHealthcare.isPermitOrganTissueDonation()) {
                         try {
