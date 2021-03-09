@@ -1,7 +1,5 @@
 package gov.hhs.onc.leap.adr.model;
 
-import java.util.Date;
-
 public class PhysicansAffidavit {
     private String physiciansName;
     private String principlesName;

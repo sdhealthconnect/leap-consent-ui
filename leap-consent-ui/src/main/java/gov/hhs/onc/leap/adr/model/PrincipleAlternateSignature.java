@@ -1,6 +1,5 @@
 package gov.hhs.onc.leap.adr.model;
 
-import java.util.Date;
 
 public class PrincipleAlternateSignature {
     private String nameOfWitnessOrNotary;

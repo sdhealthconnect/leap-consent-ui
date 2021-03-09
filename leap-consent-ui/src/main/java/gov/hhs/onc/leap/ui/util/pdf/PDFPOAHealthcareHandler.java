@@ -93,7 +93,7 @@ public class PDFPOAHealthcareHandler {
             stream = new StreamResource("POAHealthcare.pdf", iFactory);
         }
         catch (IOException ix) {
-            //add handling
+            log.error("Failed PDF Processing Healthcare POA "+ix.getMessage());
         }
         return stream;
     }

@@ -94,7 +94,7 @@ public class PDFPOAMentalHealthHandler {
             stream = new StreamResource("POAMentalHealth.pdf", iFactory);
         }
         catch (IOException ix) {
-            //add handling
+            log.error("Failed PDF Processing Mental Health POA "+ix.getMessage());
         }
         return stream;
     }
