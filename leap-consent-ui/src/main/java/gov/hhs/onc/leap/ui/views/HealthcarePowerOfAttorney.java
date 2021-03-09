@@ -1397,7 +1397,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         Attachment attachment = new Attachment();
         attachment.setContentType("application/pdf");
         attachment.setCreation(new Date());
-        attachment.setTitle("POA Healthcare");
+        attachment.setTitle("POAHealthcare");
 
 
         String encodedString = Base64.getEncoder().encodeToString(consentPDFAsByteArray);

@@ -4,6 +4,7 @@ import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.adr.model.PowerOfAttorneyHealthCare;
+import gov.hhs.onc.leap.adr.model.PowerOfAttorneyMentalHealth;
 import gov.hhs.onc.leap.backend.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
@@ -35,11 +36,11 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
-public class PDFPOAHealthcareHandler {
+public class PDFPOAMentalHealthHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(PDFPOAHealthcareHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(PDFPOAMentalHealthHandler.class);
 
-    private PowerOfAttorneyHealthCare poaHealthcare;
+    private PowerOfAttorneyMentalHealth poaHealthcare;
     private byte[] initials;
 
     private ConsentSession consentSession;
@@ -50,12 +51,12 @@ public class PDFPOAHealthcareHandler {
 
     private PDFSigningService PDFSigningService;
 
-    public PDFPOAHealthcareHandler(PDFSigningService PDFSigningService) {
+    public PDFPOAMentalHealthHandler(PDFSigningService PDFSigningService) {
         this.PDFSigningService = PDFSigningService;
     }
 
 
-    public StreamResource retrievePDFForm(PowerOfAttorneyHealthCare poaHealthcare, byte[] initials) {
+    public StreamResource retrievePDFForm(PowerOfAttorneyMentalHealth poaHealthcare, byte[] initials) {
         this.poaHealthcare = poaHealthcare;
         this.initials = initials;
         consentSession = (ConsentSession)VaadinSession.getCurrent().getAttribute("consentSession");
@@ -69,7 +70,7 @@ public class PDFPOAHealthcareHandler {
         String patientState = consentSession.getPrimaryState();
         String languagePreference = consentSession.getLanguagePreference();
 
-        String fullFormPath = "/advanced_directives/"+patientState+"/POAHealthcare/"+languagePreference+"/POAHealthcare.pdf";
+        String fullFormPath = "/advanced_directives/"+patientState+"/POAMentalHealth/"+languagePreference+"/POAMentalHealth.pdf";
         byte[] bArray = null;
         PDDocument pdfdocument = null;
         StreamResource stream = null;
@@ -90,7 +91,7 @@ public class PDFPOAHealthcareHandler {
                     return bi;
                 }
             };
-            stream = new StreamResource("POAHealthcare.pdf", iFactory);
+            stream = new StreamResource("POAMentalHealth.pdf", iFactory);
         }
         catch (IOException ix) {
             //add handling
@@ -140,129 +141,32 @@ public class PDFPOAHealthcareHandler {
                 if (field.getFullyQualifiedName().equals("poaHealthcareAltWorkPhone")) field.setValue(poaHealthcare.getAlternate().getWorkPhone());
                 if (field.getFullyQualifiedName().equals("poaHealthcareAltCellPhone")) field.setValue(poaHealthcare.getAlternate().getCellPhone());
 
-                if (field.getFullyQualifiedName().equals("explicitDoNotAuthorizeTreatment1")) field.setValue(poaHealthcare.getDoNotAuthorize1());
-                if (field.getFullyQualifiedName().equals("explicitDoNotAuthorizeTreatment2")) field.setValue(poaHealthcare.getDoNotAuthorize2());
-                if (field.getFullyQualifiedName().equals("explicitDoNotAuthorizeTreatment3")) field.setValue(poaHealthcare.getDoNotAuthorize3());
-                //Autopsy
-                if (field.getFullyQualifiedName().equals("denyVoluntaryAutopsy_af_image")) {
-                    if (poaHealthcare.isDenyAutopsy()) {
+                if (field.getFullyQualifiedName().equals("authMedicalRecords_af_image")) {
+                    if (poaHealthcare.isAuthorizeReleaseOfRecords()) {
                         try {
                             insertImageInField(field, initials, doc);
                         }
                         catch (Exception ex) {}
                     }
                 }
-                if (field.getFullyQualifiedName().equals("permitVolunatryAutopsy_af_image")) {
-                    if (poaHealthcare.isPermitAutopsy()) {
+                if (field.getFullyQualifiedName().equals("authMedications_af_image")) {
+                    if (poaHealthcare.isAuthorizeMedicationAdminstration()) {
                         try {
                             insertImageInField(field, initials, doc);
                         }
                         catch (Exception ex) {}
                     }
                 }
-                if (field.getFullyQualifiedName().equals("poaDecisionVoluntaryAutopsy_af_image")) {
-                    if(poaHealthcare.isAgentDecidesAutopsy()) {
+                if (field.getFullyQualifiedName().equals("authInpatient_af_image")) {
+                    if (poaHealthcare.isAuthorizeCommitIfNecessary()) {
                         try {
                             insertImageInField(field, initials, doc);
                         }
                         catch (Exception ex) {}
                     }
                 }
-                //organ donation
-                if (field.getFullyQualifiedName().equals("denyOrganDonation_af_image")) {
-                    if (poaHealthcare.isDenyOrganTissueDonation()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("donorCardOrAgreementExists_af_image")) {
-                    if (poaHealthcare.isHaveExistingOrganTissueCardOrAgreement()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("donorCardOrAgreementCustodian")) field.setValue(poaHealthcare.getOrganTissueCardOrAgreementInstitution());
-                if (field.getFullyQualifiedName().equals("permitOrganOrTissueDonation_af_image")) {
-                    if (poaHealthcare.isPermitOrganTissueDonation()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("permitWholeBody_af_image")) {
-                    if (poaHealthcare.isWholeBodyDonation()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("permitAnyNeededPart_af_image")) {
-                    if (poaHealthcare.isAnyPartOrOrganNeeded()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("permitLimitedTo_af_image")) {
-                    if (poaHealthcare.isSpecificPartsOrOrgans()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("permittedPartsOrOrgansList")) field.setValue(poaHealthcare.getSpecificPartsOrOrgansList());
-                if (field.getFullyQualifiedName().equals("permitPOUAnyLegal_af_image")) {
-                    if (poaHealthcare.isAnyLegalPurpose()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("permitPOUTransplantTherapeutic_af_image")) {
-                    if (poaHealthcare.isTransplantOrTherapeutic()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("permitPOUResearch_af_image")) {
-                    if (poaHealthcare.isResearchOnly()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("permitPOUOther_af_image")) {
-                    if (poaHealthcare.isOtherPurposes()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("pouOrganTissueDonationPTRQTLIST")) field.setValue(poaHealthcare.getOtherPurposesList());
-                if (field.getFullyQualifiedName().equals("explicitOrganTissueDonationDestination_af_image")) {
-                    if (poaHealthcare.isPrincipleDefined()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("explicitOrganTissueDonationDestinationValue")) field.setValue(poaHealthcare.getPrincipleDefinedList());
-                if (field.getFullyQualifiedName().equals("poaDecidesOrganTissueDestination_af_image")) {
-                    if (poaHealthcare.isAgentDecidedOrganTissueDestination()) {
+                if (field.getFullyQualifiedName().equals("authOther_af_image")) {
+                    if (poaHealthcare.isAuthorizeOtherMentalHealthActions()) {
                         try {
                             insertImageInField(field, initials, doc);
                         }
@@ -270,112 +174,14 @@ public class PDFPOAHealthcareHandler {
                     }
                 }
 
-                //burial information
-                if (field.getFullyQualifiedName().equals("uponMyDeathBodyBuried_af_image")) {
-                    if (poaHealthcare.isBodyToBeBuried()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("uponMyDeathBodyBuriedIn_af_image")) {
-                    if (poaHealthcare.isBodyToBeBuriedIn()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("uponMyDeathBodyBuriedInValue")) field.setValue(poaHealthcare.getBodyToBeBuriedInInstructions());
-                if (field.getFullyQualifiedName().equals("uponMyDeathBodyCremated_af_image")) {
-                    if (poaHealthcare.isBodyToBeCremated()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("uponMyDeathBodyCrematedDisposition_af_image")) {
-                    if (poaHealthcare.isBodyToBeCrematedAshesDisposition()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("uponMyDeathBodyCrematedDispositionValue2")) field.setValue(poaHealthcare.getBodyToBeCrematedAshesDispositionInstructions());
-                if (field.getFullyQualifiedName().equals("poaMakesBurialDecisions_af_image")) {
-                    if (poaHealthcare.isAgentDecidesBurial()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
+                if (field.getFullyQualifiedName().equals("authOtherList1")) field.setValue(poaHealthcare.getMentalHealthActionsList1());
+                if (field.getFullyQualifiedName().equals("authOtherList2")) field.setValue(poaHealthcare.getMentalHealthActionsList2());
+                if (field.getFullyQualifiedName().equals("authOtherList3")) field.setValue(poaHealthcare.getMentalHealthActionsList3());
 
-                //support documents
-                if (field.getFullyQualifiedName().equals("signedLivingWill_af_image")) {
-                    if (poaHealthcare.isSignedLivingWill()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("notSignedLivingWill_af_image")) {
-                    if (poaHealthcare.isNotSignedLivingWill()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("signedPOLST_af_image")) {
-                    if (poaHealthcare.isSignedPOLST()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("notSignedPOLST_af_image")) {
-                    if (poaHealthcare.isNotSignedPOLST()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("signedDNR_af_image")) {
-                    if (poaHealthcare.isSignedDNR()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
-                if (field.getFullyQualifiedName().equals("notSignedDNR_af_image")) {
-                    if (poaHealthcare.isNotSignedDNR()) {
-                        try {
-                            insertImageInField(field, initials, doc);
-                        }
-                        catch (Exception ex) {}
-                    }
-                }
+                if (field.getFullyQualifiedName().equals("authExceptionsList1")) field.setValue(poaHealthcare.getDoNotAuthorizeActionList1());
+                if (field.getFullyQualifiedName().equals("authExceptionsList2")) field.setValue(poaHealthcare.getDoNotAuthorizeActionList2());
 
-                //attestation
-                if (field.getFullyQualifiedName().equals("affidavitPhysicianName")) field.setValue(poaHealthcare.getPhysiciansAffidavit().getPhysiciansName());
-                if (field.getFullyQualifiedName().equals("affidavitPatientName")) field.setValue(poaHealthcare.getPhysiciansAffidavit().getPrinciplesName());
-                if (field.getFullyQualifiedName().equals("affidavitDate")) field.setValue(poaHealthcare.getPhysiciansAffidavit().getSignatureDate());
-                if (field.getFullyQualifiedName().equals("affidavitPhysicianSignature_af_image")) {
-                    try {
-                        insertImageInField(field, poaHealthcare.getPhysiciansAffidavit().getBase64EncodedSignature(), doc);
-                    }
-                    catch (Exception ex) {}
-                }
-                //hipaa waiver
-                if (field.getFullyQualifiedName().equals("hipaaInitials_af_image")) {
+                if (field.getFullyQualifiedName().equals("hipaa_af_image")) {
                     if (poaHealthcare.getHipaaWaiver().isUseDisclosure()) {
                         try {
                             insertImageInField(field, initials, doc);
@@ -383,6 +189,7 @@ public class PDFPOAHealthcareHandler {
                         catch (Exception ex) {}
                     }
                 }
+
                 //patient principle signature
                 if (field.getFullyQualifiedName().equals("patientSignature_af_image")) {
                     try {
