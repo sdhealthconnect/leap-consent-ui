@@ -5,21 +5,24 @@ import gov.hhs.onc.leap.backend.fhir.client.HapiFhirServer;
 import gov.hhs.onc.leap.session.ConsentSession;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Organization;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+@Service
 public class FHIROrganization {
-
-    private HapiFhirServer client;
+    @Autowired
+    private HapiFhirServer hapiFhirServer;
 
     public Collection<Organization> getAllOrganizationsWithinState() {
         ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         String state = consentSession.getPrimaryState();
         Collection<Organization> consentCollection = new ArrayList<>();
-        Bundle bundle = getClient().getAllOrganizations(state);
+        Bundle bundle = hapiFhirServer.getAllOrganizations(state);
         List<Bundle.BundleEntryComponent> resourceList = bundle.getEntry();
         Iterator iter = resourceList.iterator();
         while(iter.hasNext()) {
@@ -28,13 +31,5 @@ public class FHIROrganization {
             consentCollection.add(c);
         }
         return consentCollection;
-    }
-
-    private HapiFhirServer getClient() {
-        if (client == null) {
-            client = new HapiFhirServer();
-            client.setUp();
-        }
-        return client;
     }
 }

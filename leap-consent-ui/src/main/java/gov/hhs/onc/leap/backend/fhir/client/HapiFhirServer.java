@@ -4,12 +4,10 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.SearchTotalModeEnum;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
-import ca.uhn.fhir.rest.gclient.TokenClientParam;
-import gov.hhs.onc.leap.backend.fhir.client.exceptions.*;
+import gov.hhs.onc.leap.backend.fhir.client.exceptions.HapiFhirCreateException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.logging.log4j.Level;
 import org.hl7.fhir.instance.model.api.IBaseOperationOutcome;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
@@ -19,7 +17,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 
 @Component
@@ -32,14 +29,12 @@ public class HapiFhirServer {
         @Getter
         IGenericClient hapiClient;
 
-        @Getter
         @Value("${hapi-fhir.url:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}")
         private String baseURL;
 
-        @PostConstruct
-        public void setUp() {
+    @PostConstruct
+    public void setUp() {
             ctx = FhirContext.forR4();
-
             hapiClient = ctx.newRestfulGenericClient(baseURL);
             hapiClient.registerInterceptor(createLoggingInterceptor());
 

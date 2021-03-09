@@ -9,6 +9,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -38,7 +39,7 @@ public class PDFSigningService {
     private final String tsaUrl;
     private static final Logger log = LoggerFactory.getLogger(PDFSigningService.class);
 
-    public PDFSigningService(@Value("${keystore.path}") String keyStorePath,
+    public PDFSigningService(@Value("${keystore.classpath}") String keyStorePath,
                              @Value("${keystore.password}") String keyStorePassword,
                              @Value("${keystore.certificate-alias}") String certificateAlias,
                              @Value("${timestamp-authority.url}") String tsaUrl) {
@@ -81,8 +82,9 @@ public class PDFSigningService {
 
     private KeyStore getKeyStore() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         KeyStore keyStore = KeyStore.getInstance(KEY_STORE_TYPE);
-        File key = ResourceUtils.getFile(keyStorePath);
-        keyStore.load(new FileInputStream(key), keyStorePassword.toCharArray());
+        ClassPathResource classPathResource = new ClassPathResource(keyStorePath);
+        InputStream keyInputStream = classPathResource.getInputStream();
+        keyStore.load(keyInputStream, keyStorePassword.toCharArray());
         return keyStore;
     }
 
