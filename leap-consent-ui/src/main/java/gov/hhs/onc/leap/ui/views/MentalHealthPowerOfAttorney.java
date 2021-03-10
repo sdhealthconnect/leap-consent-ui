@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
+import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -135,20 +136,25 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
     private Dialog docDialog;
 
-    private FHIRConsent fhirConsentClient = new FHIRConsent();
+    @Autowired
+    private PDFSigningService pdfSigningService;
+
+    @Autowired
+    private FHIRConsent fhirConsentClient;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
 
     @Value("${org-display:HealthCurrent FHIR Connectathon}")
     private String orgDisplay;
-    public MentalHealthPowerOfAttorney(@Autowired PDFSigningService PDFSigningService) {
+
+    @PostConstruct
+    public void setup() {
         setId("mentalhealthpowerofattorney");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
-        this.PDFSigningService = PDFSigningService;
     }
 
     private Component createViewContent() {
@@ -156,7 +162,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
                 "to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose"+
                 " and trust can make medical decisions for you. Be sure you review and understand the importance of the document that is created at the end of this process."+
                 " It is a good idea to talk to your doctor and loved ones if you have questions about the type of health care you do or do not want. At anytime click on "+
-                "the <b>View your states Healthcare Power of Attorney form and instructions</b> button for additional information." );
+                "the <b>View your states Healthcare Power of Attorney form and instructions</b> button for additional information.</p>" );
 
 
         createPatientsInitials();
@@ -942,7 +948,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         witnessSignature.setWitnessName(witnessName.getValue());
         poa.setWitnessSignature(witnessSignature);
 
-        PDFPOAMentalHealthHandler pdfHandler = new PDFPOAMentalHealthHandler(PDFSigningService);
+        PDFPOAMentalHealthHandler pdfHandler = new PDFPOAMentalHealthHandler(pdfSigningService);
         StreamResource res = pdfHandler.retrievePDFForm(poa, base64PatientInitials);
 
         consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
