@@ -127,7 +127,11 @@ public class LivingWill extends ViewFrame {
 
     private Dialog docDialog;
 
-    private FHIRConsent fhirConsentClient = new FHIRConsent();
+    @Autowired
+    private FHIRConsent fhirConsentClient;
+
+    @Autowired
+    private PDFSigningService pdfSigningService;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -135,13 +139,13 @@ public class LivingWill extends ViewFrame {
     @Value("${org-display:HealthCurrent FHIR Connectathon}")
     private String orgDisplay;
 
-    public LivingWill(@Autowired gov.hhs.onc.leap.signature.PDFSigningService PDFSigningService) {
+    @PostConstruct
+    public void setup() {
         setId("livingwillview");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
-        this.PDFSigningService = PDFSigningService;
     }
 
     private Component createViewContent() {
@@ -795,7 +799,7 @@ public class LivingWill extends ViewFrame {
         witnessSignature.setWitnessName(witnessName.getValue());
         livingWill.setWitnessSignature(witnessSignature);
 
-        PDFLivingWillHandler pdfHandler = new PDFLivingWillHandler(PDFSigningService);
+        PDFLivingWillHandler pdfHandler = new PDFLivingWillHandler(pdfSigningService);
         StreamResource res = pdfHandler.retrievePDFForm(livingWill, base64PatientInitials);
 
         consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();

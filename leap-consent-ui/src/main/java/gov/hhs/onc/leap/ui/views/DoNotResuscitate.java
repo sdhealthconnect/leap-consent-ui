@@ -130,6 +130,7 @@ public class DoNotResuscitate extends ViewFrame {
 
     @PostConstruct
     public void setup(){
+        setId("dnrview");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
         setViewContent(createViewContent());

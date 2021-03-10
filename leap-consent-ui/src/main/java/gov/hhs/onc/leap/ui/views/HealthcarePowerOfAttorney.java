@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
+import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -153,7 +154,11 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
     private Dialog docDialog;
 
-    private FHIRConsent fhirConsentClient = new FHIRConsent();
+    @Autowired
+    private PDFSigningService pdfSigningService;
+
+    @Autowired
+    private FHIRConsent fhirConsentClient;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -161,13 +166,13 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     @Value("${org-display:HealthCurrent FHIR Connectathon}")
     private String orgDisplay;
 
-    public HealthcarePowerOfAttorney(@Autowired PDFSigningService PDFSigningService) {
+    @PostConstruct
+    public void setup() {
         setId("healthcarepowerofattorney");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
-        this.PDFSigningService = PDFSigningService;
     }
 
     private Component createViewContent() {
@@ -1357,7 +1362,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         witnessSignature.setWitnessName(witnessName.getValue());
         poa.setWitnessSignature(witnessSignature);
 
-        PDFPOAHealthcareHandler pdfHandler = new PDFPOAHealthcareHandler(PDFSigningService);
+        PDFPOAHealthcareHandler pdfHandler = new PDFPOAHealthcareHandler(pdfSigningService);
         StreamResource res = pdfHandler.retrievePDFForm(poa, base64PatientInitials);
 
         consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
