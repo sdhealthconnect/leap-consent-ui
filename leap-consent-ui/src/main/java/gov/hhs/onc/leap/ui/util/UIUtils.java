@@ -3,6 +3,7 @@ package gov.hhs.onc.leap.ui.util;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -10,10 +11,20 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.server.StreamResource;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.layout.size.Right;
 import gov.hhs.onc.leap.ui.util.css.*;
+import gov.hhs.onc.leap.ui.util.pdf.PDFDNRHandler;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -24,6 +35,7 @@ import java.util.Locale;
 public class UIUtils {
 
 	public static final String IMG_PATH = "images/";
+	private static final Logger log = LoggerFactory.getLogger(UIUtils.class);
 
 	/**
 	 * Thread-unsafe formatters.
@@ -369,6 +381,28 @@ public class UIUtils {
 		i.addClassNames(size.getClassName());
 		setTextColor(color, i);
 		return i;
+	}
+
+	public static Image createImage(final String path, final String name, final String alt){
+		if (StringUtils.isEmpty(path) || StringUtils.isEmpty(name)) {
+			log.warn("Image could not be created, path or name is empty");
+			return null;
+		}
+		final byte[] imageBytes;
+		StreamResource resource = null;
+		try {
+			ClassPathResource classPathResource = new ClassPathResource(path + "/" + name);
+			InputStream imageInputStream = classPathResource.getInputStream();
+			imageBytes = IOUtils.toByteArray(imageInputStream);
+			resource = new StreamResource(name, () -> new ByteArrayInputStream(imageBytes));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new Image(resource, alt);
+	}
+
+	public static Image createImage(final String path, final String name){
+		return createImage(path, name, "");
 	}
 
 	/* === DATES === */
