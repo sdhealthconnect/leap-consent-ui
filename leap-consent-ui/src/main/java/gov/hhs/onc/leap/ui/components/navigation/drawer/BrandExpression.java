@@ -25,13 +25,6 @@ public class BrandExpression extends Div {
 	public BrandExpression(String text) {
 		setClassName(CLASS_NAME);
 
-		/**
-		logo = new Image(UIUtils.IMG_PATH + "logos/healthit-logo.png", "");
-		logo.setAlt(text + " logo");
-		logo.setClassName(CLASS_NAME + "__logo");
-		*/
-
-
 		String fullFormPath = "/images/logos/healthit-logo.png";
 		try {
 			byte[] imageBytes = IOUtils.toByteArray(getClass().getResourceAsStream(fullFormPath));
