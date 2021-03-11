@@ -20,6 +20,9 @@ public class BrandExpression extends Div {
 		logo = UIUtils.createImage(fullFormPath,"healthit-logo.png", "");
        	logo.setAlt(text + " logo");
 		logo.setClassName(CLASS_NAME + "__logo");
+
+		title = UIUtils.createH3Label(text);
+		title.addClassName(CLASS_NAME + "__title");
 		add(logo, title);
 	}
 }
