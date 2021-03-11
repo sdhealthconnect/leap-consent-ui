@@ -231,7 +231,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
         else if (consentDocument.getStatus().getName().equals("Revoked")) {
             consentAction.setText("Reinstate Consent");
             consentAction.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.START_COG));
-            if (consentDocument.getPolicyType().equals("adr")) {
+            if (consentDocument.getPolicyType().contains("adr-")) {
                 consentAction.setEnabled(false);
             }
             else {
@@ -374,6 +374,10 @@ public class ConsentDocumentsView extends SplitViewFrame {
                 localEnd = endDate.toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
+            }
+            //augment if policy type is adr
+            if (policyType.equals("adr")) {
+                policyType = policyType +"-"+ c.getSourceAttachment().getTitle();
             }
 
             CONSENT.put(i , new ConsentDocument(status, true, policyType, source, destination, localStart, localEnd, constrainSensitivity, constrainDomains, c));
