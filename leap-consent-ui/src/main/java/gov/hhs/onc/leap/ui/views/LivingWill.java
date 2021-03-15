@@ -831,7 +831,7 @@ public class LivingWill extends ViewFrame {
     private void createFHIRConsent() {
         Patient patient = consentSession.getFhirPatient();
         Consent poaDirective = new Consent();
-        poaDirective.setId("DNR-"+patient.getId());
+        poaDirective.setId("LivingWill-"+patient.getId());
         poaDirective.setStatus(Consent.ConsentState.ACTIVE);
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
