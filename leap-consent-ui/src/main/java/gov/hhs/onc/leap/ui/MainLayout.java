@@ -138,6 +138,8 @@ public class MainLayout extends FlexBoxLayout
 		menu.addNaviItem(advDirective, "Mental Healthcare Power of Attorney", MentalHealthPowerOfAttorney.class);
 		menu.addNaviItem(advDirective, "PreHospital Medical Care Directive(DNR)", DoNotResuscitate.class);
 
+		menu.addNaviItem(VaadinIcon.CLIPBOARD, "National Portable Medical Order", PortableMedicalOrder.class);
+
 		menu.addNaviItem(VaadinIcon.BUILDING, "Participate In Research", ResearchView.class);
 		menu.addNaviItem(VaadinIcon.LIST, "Activity Logs", AuditView.class );
 		menu.addNaviItem(VaadinIcon.ENVELOPES, "Notifications", NotificationView.class);

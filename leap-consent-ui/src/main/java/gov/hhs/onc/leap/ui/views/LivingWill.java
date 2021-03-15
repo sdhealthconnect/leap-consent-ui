@@ -3,6 +3,7 @@ package gov.hhs.onc.leap.ui.views;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -85,16 +86,17 @@ public class LivingWill extends ViewFrame {
     private TextField patientPhoneNumberField;
     private FlexBoxLayout patientGeneralInfoLayout;
 
-    private RadioButtonGroup comfortCareOnly;
-    private RadioButtonGroup comfortCareOnlyButNo;
+    private Checkbox comfortCareOnly;
+    private Checkbox comfortCareOnlyButNo;
 
-    private RadioButtonGroup noCardioPulmonaryRecusitation;
-    private RadioButtonGroup noArtificialFluidsOrFood;
-    private RadioButtonGroup avoidTakingToHospital;
+    private Checkbox noCardioPulmonaryRecusitation;
+    private Checkbox noArtificialFluidsOrFood;
+    private Checkbox avoidTakingToHospital;
+    private FlexBoxLayout notWantedTreatmentsLayout;
 
-    private RadioButtonGroup ifPregnantSaveFetus;
-    private RadioButtonGroup careUntilDoctorConcludesNoHope;
-    private RadioButtonGroup prolongLifeToGreatestExtentPossible;
+    private Checkbox ifPregnantSaveFetus;
+    private Checkbox careUntilDoctorConcludesNoHope;
+    private Checkbox prolongLifeToGreatestExtentPossible;
 
     private FlexBoxLayout instructionsLayout;
 
@@ -259,63 +261,91 @@ public class LivingWill extends ViewFrame {
                 "treatment and other matters relating to your health care. You may select any combination of " +
                 "items 1, 2, 3 and 4, BUT if you 'select' item 5 the others will not be selected.</p>");
 
-        comfortCareOnly = new RadioButtonGroup();
-        comfortCareOnly.setItems("1. If I have a terminal condition I do not want my life to be prolonged, and I do not want lifesustaining " +
+        comfortCareOnly = new Checkbox();
+        comfortCareOnly.setLabel("1. If I have a terminal condition I do not want my life to be prolonged, and I do not want lifesustaining " +
                 "treatment, beyond comfort care, that would serve only to artificially delay the " +
                 "moment of my death.");
+        comfortCareOnly.addValueChangeListener(event -> {
+            Boolean b = (Boolean)event.getValue();
+            if (b) {
+                prolongLifeToGreatestExtentPossible.clear();
+            }
+        });
         Html intro5 = new Html("<p><b>**Comfort care</b> is treatment given in an attempt to protect and enhance the " +
                 "quality of life without artificially prolonging life.</p>");
 
-        comfortCareOnlyButNo = new RadioButtonGroup();
-        comfortCareOnlyButNo.setItems("2. If I am in a terminal condition or an irreversible coma or a persistent vegetative state that my " +
+        comfortCareOnlyButNo = new Checkbox();
+        comfortCareOnlyButNo.setLabel("2. If I am in a terminal condition or an irreversible coma or a persistent vegetative state that my " +
                 "doctors reasonably feel to be irreversible or incurable, I do want the medical treatment " +
                 "necessary to provide care that would keep me comfortable, but I DO NOT want the " +
                 "following:");
         comfortCareOnlyButNo.addValueChangeListener(event -> {
-           String s = (String)event.getValue();
-           if (s != null && s.contains("I DO NOT want the following:")) {
-               noArtificialFluidsOrFood.setVisible(true);
-               noCardioPulmonaryRecusitation.setVisible(true);
-               avoidTakingToHospital.setVisible(true);
+           Boolean s = (Boolean)event.getValue();
+           if (s) {
+               prolongLifeToGreatestExtentPossible.clear();
+               notWantedTreatmentsLayout.setVisible(true);
            }
            else {
-               noArtificialFluidsOrFood.setVisible(false);
-               noCardioPulmonaryRecusitation.setVisible(false);
-               avoidTakingToHospital.setVisible(false);
+               notWantedTreatmentsLayout.setVisible(false);
            }
         });
 
-        noCardioPulmonaryRecusitation = new RadioButtonGroup();
-        noCardioPulmonaryRecusitation.setItems("a. Cardiopulmonary resuscitation (CPR). For example: the use of drugs, electric " +
+        noCardioPulmonaryRecusitation = new Checkbox();
+        noCardioPulmonaryRecusitation.setLabel("a. Cardiopulmonary resuscitation (CPR). For example: the use of drugs, electric " +
                 "shock and artificial breathing.");
-        noCardioPulmonaryRecusitation.setVisible(false);
 
-        noArtificialFluidsOrFood = new RadioButtonGroup();
-        noArtificialFluidsOrFood.setItems("b. Artificially administered food and fluids.");
-        noArtificialFluidsOrFood.setVisible(false);
 
-        avoidTakingToHospital = new RadioButtonGroup();
-        avoidTakingToHospital.setItems("c. To be taken to a hospital if at all avoidable.");
-        avoidTakingToHospital.setVisible(false);
+        noArtificialFluidsOrFood = new Checkbox();
+        noArtificialFluidsOrFood.setLabel("b. Artificially administered food and fluids.");
 
-        ifPregnantSaveFetus = new RadioButtonGroup();
-        ifPregnantSaveFetus.setItems("3. Regardless of any other directions I have given in this Living Will, if I am known to be " +
+
+        avoidTakingToHospital = new Checkbox();
+        avoidTakingToHospital.setLabel("c. To be taken to a hospital if at all avoidable.");
+
+
+        notWantedTreatmentsLayout = new FlexBoxLayout(noCardioPulmonaryRecusitation, noArtificialFluidsOrFood, avoidTakingToHospital);
+        notWantedTreatmentsLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        notWantedTreatmentsLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        notWantedTreatmentsLayout.setHeightFull();
+        notWantedTreatmentsLayout.setBackgroundColor("white");
+        notWantedTreatmentsLayout.setShadow(Shadow.S);
+        notWantedTreatmentsLayout.setBorderRadius(BorderRadius.S);
+        notWantedTreatmentsLayout.getStyle().set("margin-bottom", "10px");
+        notWantedTreatmentsLayout.getStyle().set("margin-right", "10px");
+        notWantedTreatmentsLayout.getStyle().set("margin-left", "10px");
+        notWantedTreatmentsLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        notWantedTreatmentsLayout.setVisible(false);
+
+        ifPregnantSaveFetus = new Checkbox();
+        ifPregnantSaveFetus.setLabel("3. Regardless of any other directions I have given in this Living Will, if I am known to be " +
                 "pregnant, I do not want life-sustaining treatment withheld or withdrawn if it is possible that " +
                 "the embryo/fetus will develop to the point of live birth with the continued application of lifesustaining " +
                 "treatment.");
         if (consentSession.getConsentUser().getGender().equals("M")) {
             ifPregnantSaveFetus.setEnabled(false);
         }
-        careUntilDoctorConcludesNoHope = new RadioButtonGroup();
-        careUntilDoctorConcludesNoHope.setItems("4. Regardless of any other directions I have given in this Living Will, I do want the use of all " +
+        ifPregnantSaveFetus.addValueChangeListener(event -> {
+           Boolean b = (Boolean)event.getValue();
+           if (b) {
+               prolongLifeToGreatestExtentPossible.clear();
+           }
+        });
+        careUntilDoctorConcludesNoHope = new Checkbox();
+        careUntilDoctorConcludesNoHope.setLabel("4. Regardless of any other directions I have given in this Living Will, I do want the use of all " +
                 "medical care necessary to treat my condition until my doctors reasonably conclude that my " +
                 "condition is terminal or is irreversible and incurable or I am in a persistent vegetative state.");
-        prolongLifeToGreatestExtentPossible = new RadioButtonGroup();
-        prolongLifeToGreatestExtentPossible.setItems("5. I want my life to be prolonged to the greatest extent possible (If you select here, all others " +
+        careUntilDoctorConcludesNoHope.addValueChangeListener(event -> {
+            Boolean b = (Boolean)event.getValue();
+            if (b) {
+                prolongLifeToGreatestExtentPossible.clear();
+            }
+        });
+        prolongLifeToGreatestExtentPossible = new Checkbox();
+        prolongLifeToGreatestExtentPossible.setLabel("5. I want my life to be prolonged to the greatest extent possible (If you select here, all others " +
                 "will be unselected).");
         prolongLifeToGreatestExtentPossible.addValueChangeListener(event -> {
-            String s = (String)event.getValue();
-            if (s != null &&  s.contains("my life to be prolonged")) {
+            Boolean s = (Boolean)event.getValue();
+            if (s) {
                 //clear all others
                 try {
                     comfortCareOnlyButNo.clear();
@@ -323,6 +353,7 @@ public class LivingWill extends ViewFrame {
                     noCardioPulmonaryRecusitation.clear();
                     noArtificialFluidsOrFood.clear();
                     avoidTakingToHospital.clear();
+                    notWantedTreatmentsLayout.setVisible(false);
                     ifPregnantSaveFetus.clear();
                     careUntilDoctorConcludesNoHope.clear();
                 }
@@ -332,7 +363,7 @@ public class LivingWill extends ViewFrame {
             }
         });
         instructionsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Living Will"),intro4, new BasicDivider(),
-                comfortCareOnly, intro5, comfortCareOnlyButNo, noCardioPulmonaryRecusitation, noArtificialFluidsOrFood, avoidTakingToHospital,
+                comfortCareOnly, intro5, comfortCareOnlyButNo, notWantedTreatmentsLayout,
                 ifPregnantSaveFetus, careUntilDoctorConcludesNoHope, prolongLifeToGreatestExtentPossible);
         instructionsLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         instructionsLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -733,37 +764,29 @@ public class LivingWill extends ViewFrame {
         livingWill.setPrinciple(principle);
 
         //instructions
-        String prolongLife = (String)prolongLifeToGreatestExtentPossible.getValue();
-        if (prolongLife != null && prolongLife.contains("my life to be prolonged")) {
+        if (prolongLifeToGreatestExtentPossible.getValue()) {
             livingWill.setProlongLifeToGreatestExtentPossible(true);
         }
         else {
-            String comfortOnly = (String) comfortCareOnly.getValue();
-            if (comfortOnly != null && comfortOnly.contains("I do not want my life to be prolonged")) {
+            if (comfortCareOnly.getValue()) {
                 livingWill.setComfortCareOnly(true);
             }
-            String comfortAndNot = (String) comfortCareOnlyButNo.getValue();
-            if (comfortAndNot != null && comfortAndNot.contains("terminal condition or an irreversible")) {
+            if (comfortCareOnlyButNo.getValue()) {
                 livingWill.setComfortCareOnlyButNot(true);
-                String noCPR = (String) noCardioPulmonaryRecusitation.getValue();
-                if (noCPR != null && noCPR.contains("Cardiopulmonary resuscitation")) {
+                if (noCardioPulmonaryRecusitation.getValue()) {
                     livingWill.setNoCardioPulmonaryRecusitation(true);
                 }
-                String noFluidsFood = (String) noArtificialFluidsOrFood.getValue();
-                if (noFluidsFood != null && noFluidsFood.contains("Artificially administered")) {
+                if (noArtificialFluidsOrFood.getValue()) {
                     livingWill.setNoArtificalFluidsFoods(true);
                 }
-                String noHospital = (String) avoidTakingToHospital.getValue();
-                if (noHospital != null && noHospital.contains("taken to a hospital")) {
+                if (avoidTakingToHospital.getValue()) {
                     livingWill.setAvoidTakingToHospital(true);
                 }
             }
-            String pregnant = (String) ifPregnantSaveFetus.getValue();
-            if (pregnant != null && pregnant.contains("pregnant")) {
+            if (ifPregnantSaveFetus.getValue()) {
                 livingWill.setPregnantSaveFetus(true);
             }
-            String noHope = (String) careUntilDoctorConcludesNoHope.getValue();
-            if (noHope != null && noHope.contains("doctors reasonably conclude")) {
+            if (careUntilDoctorConcludesNoHope.getValue()) {
                 livingWill.setCareUntilDoctorsConcludeNoHope(true);
             }
         }
@@ -808,7 +831,7 @@ public class LivingWill extends ViewFrame {
     private void createFHIRConsent() {
         Patient patient = consentSession.getFhirPatient();
         Consent poaDirective = new Consent();
-        poaDirective.setId("DNR-"+patient.getId());
+        poaDirective.setId("LivingWill-"+patient.getId());
         poaDirective.setStatus(Consent.ConsentState.ACTIVE);
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
