@@ -22,6 +22,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
+import gov.hhs.onc.leap.adr.model.POLSTPortableMedicalOrder;
 import gov.hhs.onc.leap.backend.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.session.ConsentSession;
@@ -39,6 +40,9 @@ import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
+import gov.hhs.onc.leap.ui.util.pdf.PDFPOAHealthcareHandler;
+import gov.hhs.onc.leap.ui.util.pdf.PDFPOLSTHandler;
+import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +51,12 @@ import org.vaadin.alejandro.PdfBrowserViewer;
 
 import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 @PageTitle("National POLST Form - A Portable Medical Order")
 @Route(value = "portablemedicalorderview", layout = MainLayout.class)
@@ -119,7 +128,7 @@ public class PortableMedicalOrder extends ViewFrame {
     private TextField healthcareProviderPhoneNumberField;
     private TextField healthcareProviderLicenseField;
     private FlexBoxLayout healthcareProviderSignatureLayout;
-    // if required by state
+    // if required by state or institution
     private SignaturePad supervisingPhysicianSignature;
     private byte[] base64SupervisingPhysicianSignature;
     private TextField supervisingPhysicianLicenseField;
@@ -994,7 +1003,7 @@ public class PortableMedicalOrder extends ViewFrame {
         return header;
     }
     private String getDateString(Date dt) {
-        String pattern = "yyyy-MM-dd";
+        String pattern = "MM/dd/yyyy";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
 
         String date = simpleDateFormat.format(dt);
@@ -1301,7 +1310,7 @@ public class PortableMedicalOrder extends ViewFrame {
                 break;
             case 13:
                 returnButton.setEnabled(true);
-                forwardButton.setEnabled(false);
+                forwardButton.setEnabled(true);
                 patientGeneralInfoLayout.setVisible(false);
                 cardiopulmonaryResuscitationOrdersLayout.setVisible(false);
                 initialTreatmentOrders.setVisible(false);
@@ -1317,8 +1326,261 @@ public class PortableMedicalOrder extends ViewFrame {
                 participantLayout.setVisible(false);
                 whoAssistedLayout.setVisible(true);
                 break;
+            case 14:
+                returnButton.setEnabled(true);
+                forwardButton.setEnabled(false);
+                getHumanReadable();
+                docDialog.open();
+                break;
             default:
                 break;
         }
     }
+
+    private void getHumanReadable() {
+        StreamResource streamResource = setFieldsCreatePDF();
+        docDialog = new Dialog();
+
+        streamResource.setContentType("application/pdf");
+
+        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
+        viewer.setHeight("800px");
+        viewer.setWidth("840px");
+
+
+        Button closeButton = new Button("Cancel", e -> docDialog.close());
+        closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
+        closeButton.addClickListener(event -> {
+            docDialog.close();
+            questionPosition--;
+            evalNavigation();
+        });
+
+        Button acceptButton = new Button("Accept and Submit");
+        acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
+        acceptButton.addClickListener(event -> {
+            docDialog.close();
+            createFHIRConsent();
+            successNotification();
+            //todo test for fhir consent create success
+            resetFormAndNavigation();
+            evalNavigation();
+        });
+
+        HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
+
+        FlexBoxLayout content = new FlexBoxLayout(viewer, hLayout);
+        content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        content.setBoxSizing(BoxSizing.BORDER_BOX);
+        content.setHeightFull();
+        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+
+        docDialog.add(content);
+
+        docDialog.setModal(false);
+        docDialog.setResizable(true);
+        docDialog.setDraggable(true);
+    }
+
+    private StreamResource setFieldsCreatePDF() {
+        POLSTPortableMedicalOrder polst = new POLSTPortableMedicalOrder();
+        //demographics
+        polst.setPatientFirstName(patientFirstName.getValue());
+        polst.setPatientMiddleName(patientMiddleName.getValue());
+        polst.setPatientLastName(patientLastName.getValue());
+        polst.setPatientPreferredName(patientPreferredName.getValue());
+        polst.setPatientSuffix(patientNameSuffix.getValue());
+        polst.setGenderF(patientGenderF.getValue());
+        polst.setGenderM(patientGenderM.getValue());
+        polst.setGenderX(patientGenderX.getValue());
+        polst.setPatientDateOfBirth(patientDobMonth.getValue()+"/"+patientDobDay.getValue()+"/"+patientDobYear.getValue());
+        polst.setLast4SSN(last4ssn1.getValue()+last4ssn2.getValue()+last4ssn3.getValue()+last4ssn4.getValue());
+        polst.setPatientHomeState(consentSession.getPrimaryState());
+        //cardiopulmonaryresuscitation
+        polst.setYesCPR(yesCPR.getValue());
+        polst.setNoCPR(noCPR.getValue());
+        //initial treatment
+        polst.setFullTreatments(fullTreatments.getValue());
+        polst.setSelectiveTreatments(selectiveTreatments.getValue());
+        polst.setComfortFocusedTreament(comfortTreatments.getValue());
+        //additional orders
+        polst.setAdditionalTreatments(additionalOrdersInstructions.getValue());
+        //nutrition
+        polst.setNutritionByArtificialMeans(provideFeeding.getValue());
+        polst.setTrialNutritionByArtificialMeans(trialPeriodFeeding.getValue());
+        polst.setNoArtificialMeans(noArtificialMeans.getValue());
+        polst.setNoNutritionDecisionMade(discussedNoDecision.getValue());
+
+        //patient or representative signature
+        polst.setBase64EncodedSignature(base64PatientOrRepresentativeSignature);
+        polst.setRepresentativeSigning(notPatientSigning.getValue());
+        polst.setRepresentativeName(patientOrRepresentativeNameField.getValue());
+        polst.setRepresentativeAuthority(authorityField.getValue());
+
+        //healthcare provider signature
+        polst.setHealthcareProviderFullName(healthcareProviderNameField.getValue());
+        polst.setHealthcareProviderLicenseOrCert(healthcareProviderLicenseField.getValue());
+        polst.setSignatureDate(getDateString(healthcareProviderSignatureDate));
+        polst.setHealthcareProviderPhoneNumber(healthcareProviderPhoneNumberField.getValue());
+        polst.setBase64EncodedSignatureHealthcareProvider(base64HealthcareProviderSignature);
+        //supervisor
+        polst.setSupervisingPhysicianLicense(supervisingPhysicianLicenseField.getValue());
+        polst.setRequiredSupervisingPhysicianSignature(supervisorSignatureChk.getValue());
+        polst.setBase64EncodedSupervisingPhysicianSignature(base64SupervisingPhysicianSignature);
+
+        //emergency contact
+        polst.setEmergencyContactFullName(emergencyContactNameField.getValue());
+        polst.setOtherEmergencyType(otherContactType.getValue());
+        polst.setLegalSurrogateOrHealthcareAgent(legalOrSurrogate.getValue());
+        polst.setEmergencyContactPhoneNumberDay(dayPhoneNumber.getValue());
+        polst.setEmergencyContactPhoneNumberNight(nightPhoneNumber.getValue());
+
+        //advance directive review
+        polst.setAdvancedDirectiveReviewed(livingWillReviewed.getValue());
+        polst.setDateAdvancedDirectiveReviewed(reviewedDate.getValue());
+        polst.setAdvanceDirectiveConflictExists(livingWillConflict.getValue());
+        polst.setAdvanceDirectiveNotAvailable(advanceDirectiveNotAvailable.getValue());
+        polst.setNoAdvanceDirectiveExists(noAdvanceDirective.getValue());
+
+        //who particpated
+        polst.setPatientWithDecisionMakingCapacity(patientParticipated.getValue());
+        polst.setLegalSurrogateOrHealthcareAgent(legalOrSurrogate.getValue());
+        polst.setCourtAppointedGuardian(courtAppointedGuardian.getValue());
+        polst.setParentOfMinor(parentOfMinor.getValue());
+        polst.setOtherParticipants(otherParticipant.getValue());
+        polst.setOtherParticipantsList(otherParticipantList.getValue());
+
+        polst.setAssistingHealthcareProviderFullName(whoAssistedInFormCompletionName.getValue());
+        polst.setDateAssistedByHealthcareProvider(dateAssisted.getValue());
+        polst.setAssistingHealthcareProviderPhoneNumber(whoAssistedPhoneNumber.getValue());
+
+        polst.setSocialWorker(socialWorkerAssist.getValue());
+        polst.setNurse(nurseAssisted.getValue());
+        polst.setClergy(clergyAssisted.getValue());
+        polst.setAssistingOther(otherAssisted.getValue());
+        polst.setAssistingOtherList(otherAssistedList.getValue());
+
+        PDFPOLSTHandler pdfHandler = new PDFPOLSTHandler(pdfSigningService);
+        StreamResource res = pdfHandler.retrievePDFForm(polst);
+
+        consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
+        return res;
+    }
+
+    private void createFHIRConsent() {
+        Patient patient = consentSession.getFhirPatient();
+        Consent polstDirective = new Consent();
+        polstDirective.setId("POLST-"+patient.getId());
+        polstDirective.setStatus(Consent.ConsentState.ACTIVE);
+        CodeableConcept cConcept = new CodeableConcept();
+        Coding coding = new Coding();
+        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
+        coding.setCode("adr");
+        cConcept.addCoding(coding);
+        polstDirective.setScope(cConcept);
+        List<CodeableConcept> cList = new ArrayList<>();
+        CodeableConcept cConceptCat = new CodeableConcept();
+        Coding codingCat = new Coding();
+        codingCat.setSystem("http://loinc.org");
+        codingCat.setCode("59284-6");
+        cConceptCat.addCoding(codingCat);
+        cList.add(cConceptCat);
+        polstDirective.setCategory(cList);
+        Reference patientRef = new Reference();
+        patientRef.setReference("Patient/"+patient.getId());
+        patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
+        polstDirective.setPatient(patientRef);
+        List<Reference> refList = new ArrayList<>();
+        Reference orgRef = new Reference();
+        //todo - this is the deployment and custodian organization for advanced directives and should be valid in fhir consent repository
+        orgRef.setReference(orgReference);
+        orgRef.setDisplay(orgDisplay);
+        refList.add(orgRef);
+        polstDirective.setOrganization(refList);
+        Attachment attachment = new Attachment();
+        attachment.setContentType("application/pdf");
+        attachment.setCreation(new Date());
+        attachment.setTitle("POLST");
+
+
+        String encodedString = Base64.getEncoder().encodeToString(consentPDFAsByteArray);
+        attachment.setSize(encodedString.length());
+        attachment.setData(encodedString.getBytes());
+
+        polstDirective.setSource(attachment);
+
+        Consent.provisionComponent provision = new Consent.provisionComponent();
+        Period period = new Period();
+        LocalDate sDate = LocalDate.now();
+        LocalDate eDate = LocalDate.now().plusYears(10);
+        Date startDate = Date.from(sDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(eDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        period.setStart(startDate);
+        period.setEnd(endDate);
+
+        provision.setPeriod(period);
+
+        polstDirective.setProvision(provision);
+
+        fhirConsentClient.createConsent(polstDirective);
+    }
+
+    private void resetFormAndNavigation() {
+        last4ssn4.clear();
+        last4ssn3.clear();
+        last4ssn2.clear();
+        last4ssn1.clear();
+        yesCPR.clear();
+        noCPR.clear();
+        fullTreatments.clear();
+        selectiveTreatments.clear();
+        comfortTreatments.clear();
+        additionalOrdersInstructions.clear();
+        provideFeeding.clear();
+        trialPeriodFeeding.clear();
+        noArtificialMeans.clear();
+        discussedNoDecision.clear();
+        patientOrRepresentativeSignature.clear();
+        notPatientSigning.clear();
+        patientOrRepresentativeNameField.clear();
+        authorityField.clear();
+        healthcareProviderSignature.clear();
+        healthcareProviderLicenseField.clear();
+        healthcareProviderNameField.clear();
+        healthcareProviderPhoneNumberField.clear();
+        supervisingPhysicianSignature.clear();
+        supervisingPhysicianLicenseField.clear();
+        supervisorSignatureChk.clear();
+        emergencyContactNameField.clear();
+        legalOrSurrogate.clear();
+        otherContactType.clear();
+        primaryProviderPhoneNumber.clear();
+        primaryProviderName.clear();
+        inHospiceCare.clear();
+        hospicePhoneNumber.clear();
+        hospiceName.clear();
+        livingWillReviewed.clear();
+        reviewedDate.clear();
+        livingWillConflict.clear();
+        advanceDirectiveNotAvailable.clear();
+        noAdvanceDirective.clear();
+        patientParticipated.clear();
+        legalOrSurrogate.clear();
+        courtAppointedGuardian.clear();
+        parentOfMinor.clear();
+        otherParticipant.clear();
+        otherParticipantList.clear();
+        whoAssistedInFormCompletionName.clear();
+        whoAssistedPhoneNumber.clear();
+        dateAssisted.clear();
+        socialWorkerAssist.clear();
+        nurseAssisted.clear();
+        clergyAssisted.clear();
+        otherAssisted.clear();
+        otherAssistedList.clear();
+
+        questionPosition = 0;
+    }
+
 }
