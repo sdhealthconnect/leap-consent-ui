@@ -1367,11 +1367,7 @@ public class PortableMedicalOrder extends ViewFrame {
             evalNavigation();
         });
 
-        Button acceptAndPrintButton = new Button("Accept and Get Notarized");
-        acceptAndPrintButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
-
-        HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton, acceptAndPrintButton);
-
+        HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
 
         FlexBoxLayout content = new FlexBoxLayout(viewer, hLayout);
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
