@@ -8,14 +8,10 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.server.StreamResource;
-import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
-import gov.hhs.onc.leap.ui.layout.size.Right;
 import gov.hhs.onc.leap.ui.util.css.*;
-import gov.hhs.onc.leap.ui.util.pdf.PDFDNRHandler;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -381,6 +377,15 @@ public class UIUtils {
 		i.addClassNames(size.getClassName());
 		setTextColor(color, i);
 		return i;
+	}
+
+	public static Image createImage(final byte[] imageBytes, final String name, final String alt){
+		if (imageBytes==null) {
+			log.warn("Image could not be created, bytearray is empty");
+			return null;
+		}
+		StreamResource resource = new StreamResource(name, () -> new ByteArrayInputStream(imageBytes));
+		return new Image(resource, alt);
 	}
 
 	public static Image createImage(final String path, final String name, final String alt){

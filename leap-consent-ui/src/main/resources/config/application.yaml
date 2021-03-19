@@ -10,3 +10,19 @@ hapi-fhir:
   url: http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/
   org-reference: Organization/privacy-consent-scenario-H-healthcurrent
   org-display: HealthCurrent FHIR Connectathon
+
+spring:
+  liquibase:
+    change-log: classpath:db/changelog/changelog.xml
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+  datasource:
+     url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/leap_consent?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&jdbcCompliantTruncation=false&createDatabaseIfNotExist=true
+     username: ${MYSQL_USERNAME:root}
+     password: ${MYSQL_PASSWORD:root}
+
+logging:
+  level:
+    liquibase: INFO

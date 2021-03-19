@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <property name="autoIncrement" value="true"/>
+
+    <!--
+        Security tables.
+    -->
+    <changeSet id="00000000000001" author="sgroh">
+        <createTable tableName="user">
+            <column name="user_id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints unique="true" nullable="false" uniqueConstraintName="ux_user_email"/>
+            </column>
+            <column name="active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_name" type="varchar(100)">
+                <constraints unique="true" nullable="false" uniqueConstraintName="ux_user_name"/>
+            </column>
+            <column name="last_name" type="varchar(100)"/>
+            <column name="name" type="varchar(100)"/>
+            <column name="password" type="varchar(100)"/>
+            <column name="photo" type="blob"/>
+        </createTable>
+
+        <createTable tableName="role">
+            <column name="role_id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="role" type="varchar(100)"/>
+        </createTable>
+
+        <createTable tableName="user_role">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="user_id, role_id" tableName="user_role"/>
+
+        <addForeignKeyConstraint baseColumnNames="role_id"
+                                 baseTableName="user_role"
+                                 constraintName="fk_role_id"
+                                 referencedColumnNames="role_id"
+                                 referencedTableName="role"/>
+
+        <addForeignKeyConstraint baseColumnNames="user_id"
+                                 baseTableName="user_role"
+                                 constraintName="fk_user_id"
+                                 referencedColumnNames="user_id"
+                                 referencedTableName="user"/>
+
+        <loadData
+                file="db/data/user.csv"
+                separator=";"
+                tableName="user">
+            <column name="user_id" type="numeric"/>
+            <column name="email" type="string"/>
+            <column name="active" type="boolean"/>
+            <column name="user_name" type="string"/>
+            <column name="last_name" type="string"/>
+            <column name="name" type="string"/>
+            <column name="password" type="string"/>
+        </loadData>
+        <loadData
+                file="db/data/role.csv"
+                separator=";"
+                tableName="role">
+        </loadData>
+        <loadData
+                file="db/data/user_role.csv"
+                separator=";"
+                tableName="user_role">
+        </loadData>
+
+    </changeSet>
+</databaseChangeLog>
