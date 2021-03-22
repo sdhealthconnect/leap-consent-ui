@@ -246,8 +246,8 @@
         <!-- Needed to connect in gcloud env -->
         <dependency>
             <groupId>com.google.cloud.sql</groupId>
-            <artifactId>mysql-socket-factory</artifactId>
-            <version>1.0.2</version>
+            <artifactId>mysql-socket-factory-connector-j-8</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <!-- Liquibase -->
         <dependency>
