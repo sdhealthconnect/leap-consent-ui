@@ -6,4 +6,4 @@ hapi-fhir:
 
 spring:
   datasource:
-    url: jdbc:mysql://google/${DB_NAME}?cloudSqlInstance=${CLOUD_SQL_CONNECTION_NAME}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&autoReconnect=true&useSSL=false
+    url: jdbc:mysql:///${DB_NAME}?cloudSqlInstance=${CLOUD_SQL_CONNECTION_NAME}&socketFactory=com.google.cloud.sql.mysql.SocketFactory&user=${DB_USER}&password=${DB_PASS}&autoReconnect=true&useSSL=false
