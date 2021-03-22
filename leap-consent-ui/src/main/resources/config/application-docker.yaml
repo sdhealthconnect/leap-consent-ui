@@ -3,13 +3,3 @@ sls:
 
 hapi-fhir:
   url: ${HAPI_FHIR_URL}
-
-spring:
-  datasource:
-    hikari:
-      jdbc-url: jdbc:mysql:///${DB_NAME}?useSSL=false
-      username: ${DB_USER}
-      password: ${DB_PASS}
-      data-source-properties:
-        socketFactory: com.google.cloud.sql.mysql.SocketFactory
-        cloudSqlInstance: ${CLOUD_SQL_CONNECTION_NAME}
