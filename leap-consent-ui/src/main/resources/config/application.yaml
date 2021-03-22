@@ -19,9 +19,9 @@ spring:
     hibernate:
       ddl-auto: none
   datasource:
-     url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/leap_consent?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&jdbcCompliantTruncation=false&createDatabaseIfNotExist=true
-     username: ${MYSQL_USERNAME:root}
-     password: ${MYSQL_PASSWORD:root}
+     url: jdbc:mysql://${DB_NAME:localhost:3306/leap_consent?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&jdbcCompliantTruncation=false&createDatabaseIfNotExist=true}
+     username: ${DB_USER:root}
+     password: ${DB_PASS:root}
 
 logging:
   level:

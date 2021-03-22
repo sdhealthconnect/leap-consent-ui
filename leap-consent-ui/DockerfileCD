@@ -26,10 +26,16 @@ ARG JAR_FILE=target/leap-consent-ui-1.0-SNAPSHOT.war
 # Arguments declaration, needed to change ENV variables at build time
 ARG ARG_SLS_HOST_URL
 ARG ARG_HAPI_FHIR_URL
+ARG ARG_DB_NAME
+ARG ARG_DB_USER
+ARG ARG_DB_PASS
 
 # Environment Variables declaration, needed to execute stand-alone Dockerfile with custom argumens if they are specified
 ENV SLS_HOST_URL=${ARG_SLS_HOST_URL}
 ENV HAPI_FHIR_URL=${ARG_HAPI_FHIR_URL}
+ENV DB_NAME=${ARG_DB_NAME}
+ENV DB_USER=${ARG_DB_USER}
+ENV DB_PASS=${ARG_DB_PASS}
 
 COPY --from=builder /leap-consent/leap-consent-ui/${JAR_FILE} app.jar
 ENTRYPOINT ["java", "-Dspring.profiles.active=docker", "-Dserver.tomcat.remote-ip-header=x-forwarded-for", "-Dserver.tomcat.protocol-header=x-forwarded-proto", "-jar", "/app.jar"]
