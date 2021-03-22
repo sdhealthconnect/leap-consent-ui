@@ -24,7 +24,11 @@
 
         <vaadin.version>18.0.5</vaadin.version>
         <!--<jetty.version>9.4.15.v20190215</jetty.version> -->
-    </properties>
+
+        <!-- The liquibase version should match the one managed by
+        https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies/${spring-boot.version} -->
+        <liquibase.version>3.8.7</liquibase.version>
+        <liquibase-hibernate5.version>3.8</liquibase-hibernate5.version>    </properties>
 
     <repositories>
         <!-- The order of definitions matters. Explicitly defining central here to make sure it has the highest priority. -->
@@ -106,6 +110,11 @@
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
             <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -224,6 +233,24 @@
             <version>0.0.1</version>
         </dependency>
         -->
+        <!-- JPA dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Liquibase -->
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <!-- Inherited version from Spring Boot can't be used because of regressions -->
+            <version>${liquibase.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -1,9 +1,7 @@
 package gov.hhs.onc.leap.backend;
 
 import gov.hhs.onc.leap.session.ConsentSession;
-import org.hl7.fhir.r4.model.Address;
 import org.hl7.fhir.r4.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

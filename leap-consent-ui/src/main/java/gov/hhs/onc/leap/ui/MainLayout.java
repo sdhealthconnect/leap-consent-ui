@@ -16,6 +16,7 @@ import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.Lumo;
 import gov.hhs.onc.leap.backend.TestData;
+import gov.hhs.onc.leap.security.model.User;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.components.navigation.bar.AppBar;
@@ -29,6 +30,8 @@ import gov.hhs.onc.leap.ui.util.css.Overflow;
 import gov.hhs.onc.leap.ui.views.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @CssImport(value = "./styles/components/charts.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value = "./styles/components/floating-action-button.css", themeFor = "vaadin-button")
@@ -79,8 +82,16 @@ public class MainLayout extends FlexBoxLayout
 				});
 
 		//for initial testing and modeling
+		//TODO: This object should be replaced or use non-harcoded information
 		consentSession = TestData.getConsentSession();
 		VaadinSession.getCurrent().setAttribute("consentSession", consentSession);
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		User user = (User) authentication.getPrincipal();
+		//Clearing the password to not have this information in the bean
+		user.setPassword("");
+		// Adding a new attribute to start using user logged information, we can just, this can be replaced by attributes
+		// on ConsentSession object.
+		VaadinSession.getCurrent().setAttribute("authUser", user);
 
 		addClassName(CLASS_NAME);
 		setFlexDirection(FlexDirection.COLUMN);

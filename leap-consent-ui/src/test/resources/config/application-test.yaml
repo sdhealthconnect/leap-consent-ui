@@ -4,3 +4,7 @@ keystore:
   certificate-alias: leap_certificate
 timestamp-authority:
   url:
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none

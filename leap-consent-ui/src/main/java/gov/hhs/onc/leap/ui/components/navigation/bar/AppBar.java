@@ -8,7 +8,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.html.Image;
@@ -19,8 +18,9 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
+import gov.hhs.onc.leap.security.model.User;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.components.navigation.tab.NaviTab;
@@ -30,10 +30,9 @@ import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.views.Home;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.Optional;
-
-import static gov.hhs.onc.leap.ui.util.UIUtils.IMG_PATH;
 
 @CssImport("./styles/components/app-bar.css")
 public class AppBar extends Header {
@@ -114,11 +113,17 @@ public class AppBar extends Header {
 	}
 
 	private void initAvatar() {
+		User u = (User) VaadinSession.getCurrent().getAttribute("authUser");
+		Blob b = u.getPhoto();
 		avatar = new Image();
+		try {
+			if ( b != null) {
+				avatar = UIUtils.createImage(b.getBytes(1, (int) b.length()), "ironmanbike.jpg", "User menu");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		avatar.setClassName(CLASS_NAME + "__avatar");
-		avatar.setSrc(IMG_PATH + "ironmanbike.jpg");
-		avatar.setAlt("User menu");
-
 		ContextMenu contextMenu = new ContextMenu(avatar);
 		contextMenu.setOpenOnClick(true);
 		contextMenu.addItem("Settings",
