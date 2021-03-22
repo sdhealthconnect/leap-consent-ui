@@ -243,6 +243,12 @@
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- Needed to connect in gcloud env -->
+        <dependency>
+            <groupId>com.google.cloud.sql</groupId>
+            <artifactId>mysql-socket-factory</artifactId>
+            <version>1.0.2</version>
+        </dependency>
         <!-- Liquibase -->
         <dependency>
             <groupId>org.liquibase</groupId>
