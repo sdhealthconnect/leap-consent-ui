@@ -14,9 +14,9 @@
   "date": "2021",
   "code": [
     {
-      "system": "http://sdhealthconnect.com/leap/adr/dnr",
+      "system": "http://sdhealthconnect.com/leap/adr/poahealthcare",
       "code": "2021-03-01",
-      "display": "DNR Questionnaire Version 1"
+      "display": "Power of Attorney Healthcare Questionnaire Version 1"
     }
   ],
   "item": [
