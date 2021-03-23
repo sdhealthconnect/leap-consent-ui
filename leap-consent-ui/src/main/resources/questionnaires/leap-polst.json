@@ -1,0 +1,407 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "leap-polst",
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre>Health care providers, the patient, or patient representative, should complete this form only after the health care provider has had conversation with their patient or the patient’s representative. The POLST decision-making process is for patients who are at risk for a life-threatening clinical event because they have a serious life-limiting medical condition, which may include advanced frailty (www.polst.org/guidance-appropriate-patients-pdf).</pre></div>"
+  },
+  "url": "http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/Questionnaire/leap-polst",
+  "status": "active",
+  "experimental": "true",
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2021",
+  "code": [
+    {
+      "system": "http://sdhealthconnect.com/leap/adr/polst",
+      "code": "2021-03-01",
+      "display": "National Portable Medical Order Version 1"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "1",
+      "text": "A. Cardiopulmonary Resuscitation Orders - Follow these orders if patient has no pulse and is not breathing.",
+      "type": "group"
+    },
+    {
+      "linkId": "1.1",
+      "text": "YES CPR: Attempt Resuscitation, including mechanical ventilation, defibrillation and cardioversion. (Requires choosing Full Treatments in Section B)",
+      "type": "boolean"
+    },
+    {
+      "linkId": "1.2",
+      "text": "NO CPR: Do Not Attempt Resuscitation.</b> (May choose any option in Section B)",
+      "type": "boolean"
+    },
+    {
+      "linkId": "2",
+      "text": "B. Initial Treatment Orders - Follow these orders if patient has a pulse and/or is breathing.",
+      "type": "group"
+    },
+    {
+      "linkId": "2.1",
+      "text": "Full Treatments (required if choose CPR in Section A). Goal: Attempt to sustain life by all medically effective means. Provide appropriate medical and surgical treatments as indicated to attempt to prolong life, including intensive care.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "2.2",
+      "text": "Selective Treatments. Goal: Attempt to restore function while avoiding intensive care and resuscitation efforts (ventilator, defibrillation and cardioversion). May use non-invasive positive airway pressure, antibiotics and IV fluids as indicated. Avoid intensive care. Transfer to hospital if treatment needs cannot be met in current location.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "2.3",
+      "text": "Comfort-focused Treatments. Goal: Maximize comfort through symptom management; allow natural death. Use oxygen, suction and manual treatment of airway obstruction as needed for comfort. Avoid treatments listed in full or select treatments unless consistent with comfort goal. Transfer to hospital <b>only</b> if comfort cannot be achieved in current setting.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3",
+      "text": "C. Additional Orders or Instructions - These orders are in addition to those in section B (e.g., blood products, dialysis). [EMS protocols may limit emergency responder ability to act on orders in this section.]",
+      "type": "string"
+    },
+    {
+      "linkId": "4",
+      "text": "D. Medically Assisted Nutrition - (Offer food by mouth if desired by patient, safe and tolerated)\n\n",
+      "type": "group"
+    },
+    {
+      "linkId": "4.1",
+      "text": "Provide feeding through new or existing surgically-placed tubes",
+      "type": "boolean"
+    },
+    {
+      "linkId": "4.2",
+      "text": "Trial period for artificial nutrition but no surgically-placed tubes",
+      "type": "boolean"
+    },
+    {
+      "linkId": "4.3",
+      "text": "No artificial means of nutrition desired",
+      "type": "boolean"
+    },
+    {
+      "linkId": "4.4",
+      "text": "Discussed but no decision made (standard of care provided)",
+      "type": "boolean"
+    },
+    {
+      "linkId": "5",
+      "text": "E. Signature: Patient or Patient Representative - I understand this form is voluntary. I have discussed my treatment options and goals of care with my provider. If signing as the patient’s representative, the treatments are consistent with the patient’s known wishes and in their best interest.\n\nThe most recently completed valid POLST form supersedes allpreviously completed POLST forms.",
+      "type": "group"
+    },
+    {
+      "linkId": "5.1",
+      "text": "Patient signature acquired",
+      "type": "boolean"
+    },
+    {
+      "linkId": "5.2",
+      "text": "If other than patient, enter full name, and provide authority if any.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "5.2.1",
+      "text": "Full Name",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "5.2",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "5.2.2",
+      "text": "Authority",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "5.2",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "6",
+      "text": "F. Signature: Health Care Provider - Verbal orders are acceptable with follow up signature. I have discussed this order with the patient or his/her representative. The orders reflect the patient’s known wishes, to the best of my knowledge.\n\n[Note: Only licensed health care providers authorized by law to sign POLST form in state where completed may sign this order]\n\n ",
+      "type": "group"
+    },
+    {
+      "linkId": "6.1",
+      "text": "Health care provider signature acquired",
+      "type": "boolean"
+    },
+    {
+      "linkId": "6.2",
+      "text": "Health care provider full name",
+      "type": "string"
+    },
+    {
+      "linkId": "6.3",
+      "text": "License/Certification #",
+      "type": "string"
+    },
+    {
+      "linkId": "6.4",
+      "text": "Supervising Physician Signature",
+      "type": "group"
+    },
+    {
+      "linkId": "6.4.1",
+      "text": "Not applicable",
+      "type": "boolean"
+    },
+    {
+      "linkId": "6.4.2",
+      "text": "Supervising signature acquired",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "6.4.1",
+          "operator": "=",
+          "answerBoolean": "false"
+        }
+      ]
+    },
+    {
+      "linkId": "6.4.3",
+      "text": "License #",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "6.4.1",
+          "operator": "=",
+          "answerBoolean": "false"
+        }
+      ]
+    },
+    {
+      "linkId": "7",
+      "text": "Contact Information - Emergency Contact (Optional): Patient’s Emergency Contact. (Note: Listing a person here does NOT grant them authority to be a legal representative. Only an advance directive or state law can grant that authority.)",
+      "type": "group"
+    },
+    {
+      "linkId": "7.1",
+      "text": "Full Name",
+      "type": "string"
+    },
+    {
+      "linkId": "7.2",
+      "text": "Address",
+      "type": "string"
+    },
+    {
+      "linkId": "7.3",
+      "text": "Contact Type",
+      "type": "group"
+    },
+    {
+      "linkId": "7.3.1",
+      "text": "Legal representative",
+      "type": "boolean"
+    },
+    {
+      "linkId": "7.3.2",
+      "text": "Other contact type",
+      "type": "boolean"
+    },
+    {
+      "linkId": "7.4",
+      "text": "Day Phone Number",
+      "type": "string"
+    },
+    {
+      "linkId": "7.5",
+      "text": "Night Phone Number",
+      "type": "string"
+    },
+    {
+      "linkId": "8",
+      "text": "Contact Information - Primary Provider (Optional): Patient’s Emergency Contact.",
+      "type": "group"
+    },
+    {
+      "linkId": "8.1",
+      "text": "Primary Provider Name",
+      "type": "string"
+    },
+    {
+      "linkId": "8.2",
+      "text": "Phone Number",
+      "type": "string"
+    },
+    {
+      "linkId": "9",
+      "text": "Contact Information - Hospice Care (Optional)",
+      "type": "group"
+    },
+    {
+      "linkId": "9.1",
+      "text": "Patient is enrolled in Hospice",
+      "type": "boolean"
+    },
+    {
+      "linkId": "9.2",
+      "text": "Name of Agency",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "9.1",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "9.3",
+      "text": "Agency Phone Number",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "9.1",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "10",
+      "text": "Form Completion Info - Review(Optional): Reviewed patient’s advance directive to confirm no conflict with POLST orders: (A POLST form does not replace an advance directive or living will)",
+      "type": "group"
+    },
+    {
+      "linkId": "10.1",
+      "text": "Yes",
+      "type": "boolean"
+    },
+    {
+      "linkId": "10.2",
+      "text": "Date Reviewed",
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "10.1",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "10.3",
+      "text": "Conflict exists, patient notified(if patient lacks capacity, noted in chart)",
+      "type": "boolean"
+    },
+    {
+      "linkId": "10.4",
+      "text": "Advance directive not available",
+      "type": "boolean"
+    },
+    {
+      "linkId": "10.5",
+      "text": "No Advance directive exists",
+      "type": "boolean"
+    },
+    {
+      "linkId": "11",
+      "text": "Form Completion Info - Participant Types(Optional)",
+      "type": "group"
+    },
+    {
+      "linkId": "11.1",
+      "text": "Patient with decision making capacity",
+      "type": "boolean"
+    },
+    {
+      "linkId": "11.2",
+      "text": "Legal surrogate/Health care agent",
+      "type": "boolean"
+    },
+    {
+      "linkId": "11.3",
+      "text": "Court appointed guardian",
+      "type": "boolean"
+    },
+    {
+      "linkId": "11.4",
+      "text": "Parent of minor",
+      "type": "boolean"
+    },
+    {
+      "linkId": "11.5",
+      "text": "Other",
+      "type": "boolean"
+    },
+    {
+      "linkId": "11.6",
+      "text": "List of others who participated",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "10.5",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "12",
+      "text": "Professional Assisting Health Care Provider w/ Form Completion (if applicable):",
+      "type": "group"
+    },
+    {
+      "linkId": "12.1",
+      "text": "Full Name",
+      "type": "string"
+    },
+    {
+      "linkId": "12.2",
+      "text": "Date Assisted",
+      "type": "date"
+    },
+    {
+      "linkId": "12.3",
+      "text": "Phone Number",
+      "type": "string"
+    },
+    {
+      "linkId": "12.4",
+      "text": "This individual is the patient’s:",
+      "type": "group"
+    },
+    {
+      "linkId": "12.4.1",
+      "text": "Social Worker",
+      "type": "boolean"
+    },
+    {
+      "linkId": "12.4.2",
+      "text": "Nurse",
+      "type": "boolean"
+    },
+    {
+      "linkId": "12.4.3",
+      "text": "Clergy",
+      "type": "boolean"
+    },
+    {
+      "linkId": "12.4.4",
+      "text": "Other",
+      "type": "boolean"
+    },
+    {
+      "linkId": "12.4.5",
+      "text": "Enter Type",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "12.4.4",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    }
+  ]
+}

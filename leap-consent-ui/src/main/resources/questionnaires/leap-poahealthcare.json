@@ -3,7 +3,7 @@
   "id": "leap-poahealthcare",
   "text": {
     "status": "generated",
-    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">LEAP Healthcare Power of Attorney Questionnaire\nGENERAL INFORMATION AND INSTRUCTIONS: Use this questionnaire if you want to select a person, called an agent, to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose and trust can make medical decisions for you. Be sure you review and understand the importance of the document that is created at the end of this process. It is a good idea to talk to your doctor and loved ones if you have questions about the type of health care you do or do not want.<pre></pre></div>"
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre>LEAP Healthcare Power of Attorney Questionnaire\nGENERAL INFORMATION AND INSTRUCTIONS: Use this questionnaire if you want to select a person, called an agent, to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose and trust can make medical decisions for you. Be sure you review and understand the importance of the document that is created at the end of this process. It is a good idea to talk to your doctor and loved ones if you have questions about the type of health care you do or do not want.</pre></div>"
   },
   "url": "http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/Questionnaire/leap-poahealthcare",
   "status": "active",
