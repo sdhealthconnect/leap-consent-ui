@@ -11,6 +11,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -55,6 +56,7 @@ public class AppBar extends Header {
 
 	private TextField search;
 	private Registration searchRegistration;
+	private Label userName;
 
 	public enum NaviMode {
 		MENU, CONTEXTUAL
@@ -135,6 +137,11 @@ public class AppBar extends Header {
 					UI.getCurrent().getSession().close();
 					UI.getCurrent().navigate("login");
 				});
+		if (u!=null && !u.getName().isEmpty() && !u.getLastName().isEmpty()) {
+			userName = new Label(u.getName() + " " + u.getLastName());
+			userName.getStyle().set("font-size", "14px");
+			userName.getStyle().set("color", "#dddddd");
+		}
 	}
 
 	private void initActionItems() {
@@ -145,7 +152,7 @@ public class AppBar extends Header {
 
 	private void initContainer() {
 		container = new FlexBoxLayout(menuIcon, contextIcon, this.title, search,
-				actionItems, avatar);
+				actionItems, userName, avatar);
 		container.addClassName(CLASS_NAME + "__container");
 		container.setAlignItems(FlexComponent.Alignment.CENTER);
 		container.setFlexGrow(1, search);
