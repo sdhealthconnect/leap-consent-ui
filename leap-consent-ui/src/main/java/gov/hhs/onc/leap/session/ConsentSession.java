@@ -9,9 +9,9 @@ import org.hl7.fhir.r4.model.Practitioner;
 public class ConsentSession {
     private String username;
     private String userId;
-    private String languagePreference; //Fhir
-    private String primaryState; //Fhir
-    private Patient fhirPatient; //Fhir
+    private String languagePreference;  // Manual entry default English
+    private String primaryState;        // Manual entry default "Arizona"
+    private Patient fhirPatient;        // Fhir entry
     private Organization fhirCustodian;
     private Practitioner primaryPhysician;
     private Consent currentConsentObject;
