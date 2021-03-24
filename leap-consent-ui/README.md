@@ -33,9 +33,10 @@ All the changes should be in a new "changeset" that are in the file: src/main/re
 ### Liquibase changeset
 Liquibase uses changesets to represent a single change to your database. Each changeset has an “id” and “author” attribute which, along with the directory and file name of the changelog file, uniquely identify it.
 Please remember that any change in the DB should be wrapped into a liquibase changeset.
+Liquibase maven plugin is only available on local profile to let us have more control over where it will run
 To check if there is new changes are available you can run: 
 
-```mvn liquibase:update```
+```mvn liquibase:update -Plocal```
 
 A changeset is immutable, so the idea is to not edit it since liquibase generates a md5sum for the whole changeset; if someone change or hack it the changeset is discarded and will not be applied.
 
@@ -46,13 +47,14 @@ Typically used when you want to revert changes in your database. There are three
 * rollbackDate
 
 Example:
-```mvn liquibase:rollback -Dliquibase.rollbackCount=2```
+```mvn liquibase:rollback -Dliquibase.rollbackCount=2 -Plocal```
 
 ### Liquibase metadata
 
 Liquibase generate two metadata tables, please ensure that tables DATABASECHANGELOG and DATABASECHANGELOGLOCK will never be manipulated manualli, this tables must be changed only through the library   
 
 ## Running the Project in Development Mode
+This command also run liquibase and will generate the relational database tables if they were not created before, please not that this do not require the profile 'local' enabled.
 
 `mvn spring-boot:run`
 
