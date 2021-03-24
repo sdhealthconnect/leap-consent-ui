@@ -9,9 +9,9 @@ import org.hl7.fhir.r4.model.Practitioner;
 public class ConsentSession {
     private String username;
     private String userId;
-    private String languagePreference;
-    private String primaryState;
-    private Patient fhirPatient;
+    private String languagePreference; //Fhir
+    private String primaryState; //Fhir
+    private Patient fhirPatient; //Fhir
     private Organization fhirCustodian;
     private Practitioner primaryPhysician;
     private Consent currentConsentObject;
