@@ -28,7 +28,10 @@ mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dkeystore.path=/home/user/l
 ## Databae schema changes:Liquibase
 This library is being executed directly from spring boot when the application start but it can be executed as a mvn command if necessary.
 
-All the changes should be in a new "changeset" that are in the file: src/main/resources/db/changelog/changelog.xml
+All the changes should be in a new `changeset` that are in the file: src/main/resources/db/changelog/changelog.xml
+
+### Database creation
+Use Mysql client and create an empty database called `leap_consent` 
 
 ### Liquibase changeset
 Liquibase uses changesets to represent a single change to your database. Each changeset has an “id” and “author” attribute which, along with the directory and file name of the changelog file, uniquely identify it.
@@ -51,10 +54,10 @@ Example:
 
 ### Liquibase metadata
 
-Liquibase generate two metadata tables, please ensure that tables DATABASECHANGELOG and DATABASECHANGELOGLOCK will never be manipulated manualli, this tables must be changed only through the library   
+Liquibase generate two metadata tables, please ensure that tables `DATABASECHANGELOG` and `DATABASECHANGELOGLOCK` will never be manipulated manually, this tables must be changed only through the library   
 
 ## Running the Project in Development Mode
-This command also run liquibase and will generate the relational database tables if they were not created before, please not that this do not require the profile 'local' enabled.
+This command also run liquibase and will generate the relational database tables if they were not created before, please not that this do not require the profile `local` enabled.
 
 `mvn spring-boot:run`
 
