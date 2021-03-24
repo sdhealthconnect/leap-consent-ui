@@ -1,8 +1,7 @@
 sls:
-  url: ${SLS_HOST_URL}
+  url: ${SLS_HOST_URL:http://34.94.253.50:9091}
 
 hapi-fhir:
-  url: ${HAPI_FHIR_URL:algo}
+  url: ${HAPI_FHIR_URL:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}
 
-hapi:
-  url: ${HAPI_FHIR_URL}
+

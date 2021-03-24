@@ -25,7 +25,39 @@ All this can be configured on this file or can be provided using application par
 mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dkeystore.path=/home/user/leap-consent-ui/leap-consent-ui/keystore.jks -Dkeystore.password=changeme -Dkeystore.certificate-alias=leap-certificate"
 ```
 
+## Databae schema changes:Liquibase
+This library is being executed directly from spring boot when the application start but it can be executed as a mvn command if necessary.
+
+All the changes should be in a new `changeset` that are in the file: src/main/resources/db/changelog/changelog.xml
+
+### Database creation
+Use Mysql client and create an empty database called `leap_consent` 
+
+### Liquibase changeset
+Liquibase uses changesets to represent a single change to your database. Each changeset has an “id” and “author” attribute which, along with the directory and file name of the changelog file, uniquely identify it.
+Please remember that any change in the DB should be wrapped into a liquibase changeset.
+Liquibase maven plugin is only available on local profile to let us have more control over where it will run
+To check if there is new changes are available you can run: 
+
+```mvn liquibase:update -Plocal```
+
+A changeset is immutable, so the idea is to not edit it since liquibase generates a md5sum for the whole changeset; if someone change or hack it the changeset is discarded and will not be applied.
+
+### Liquibase rollback
+Typically used when you want to revert changes in your database. There are three rollback modes:
+* rollbackCount
+* rollbackTag
+* rollbackDate
+
+Example:
+```mvn liquibase:rollback -Dliquibase.rollbackCount=2 -Plocal```
+
+### Liquibase metadata
+
+Liquibase generate two metadata tables, please ensure that tables `DATABASECHANGELOG` and `DATABASECHANGELOGLOCK` will never be manipulated manually, this tables must be changed only through the library   
+
 ## Running the Project in Development Mode
+This command also run liquibase and will generate the relational database tables if they were not created before, please not that this do not require the profile `local` enabled.
 
 `mvn spring-boot:run`
 

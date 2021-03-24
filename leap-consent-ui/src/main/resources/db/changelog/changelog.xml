@@ -9,7 +9,7 @@
     <!--
         Security tables.
     -->
-    <changeSet id="00000000000001" author="sgroh">
+    <changeSet id="00000000000001" author="sgroh" logicalFilePath="changelog.xml" labels="securitySchema">
         <createTable tableName="user">
             <column name="user_id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
@@ -28,6 +28,12 @@
             <column name="password" type="varchar(100)"/>
             <column name="photo" type="blob"/>
         </createTable>
+        <rollback>
+            <dropUniqueConstraint tableName="user" constraintName="ux_user_email"></dropUniqueConstraint>
+            <dropUniqueConstraint tableName="user" constraintName="ux_user_name"></dropUniqueConstraint>
+            <dropAllForeignKeyConstraints baseTableName="user_role"></dropAllForeignKeyConstraints>
+            <dropTable  tableName="user"/>
+        </rollback>
 
         <createTable tableName="role">
             <column name="role_id" type="bigint">
@@ -35,6 +41,10 @@
             </column>
             <column name="role" type="varchar(100)"/>
         </createTable>
+        <rollback>
+
+            <dropTable  tableName="role"/>
+        </rollback>
 
         <createTable tableName="user_role">
             <column name="user_id" type="bigint">
@@ -58,6 +68,10 @@
                                  constraintName="fk_user_id"
                                  referencedColumnNames="user_id"
                                  referencedTableName="user"/>
+
+        <rollback>
+            <dropTable  tableName="user_role"/>
+        </rollback>
 
         <loadData
                 file="db/data/user.csv"
