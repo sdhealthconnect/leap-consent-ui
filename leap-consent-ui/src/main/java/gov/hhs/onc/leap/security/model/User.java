@@ -56,8 +56,8 @@ public class User extends org.springframework.security.core.userdetails.User {
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
-    @Column(name = "fhir_user_id")
-    private String fhirUserId;
+    @Column(name = "fhir_patient_id")
+    private String fhirPatientId;
 
     /**
      * Default constructor needed by Lombok
