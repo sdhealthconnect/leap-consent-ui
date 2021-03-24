@@ -95,6 +95,32 @@
                 separator=";"
                 tableName="user_role">
         </loadData>
+    </changeSet>
 
+    <changeSet id="00000000000002" author="sgroh" logicalFilePath="changelog.xml" labels="linkConsentData">
+        <addColumn tableName="user">
+            <column name="fhir_patient_id" type="varchar(100)"/>
+        </addColumn>
+        <addUniqueConstraint
+                tableName="user"
+                columnNames="fhir_patient_id"
+                constraintName="ux_fhir_patient_id" />
+        <rollback>
+            <dropUniqueConstraint tableName="user" constraintName="ux_fhir_patient_id"></dropUniqueConstraint>
+            <dropColumn tableName="user">
+                <column name="fhir_patient_id"></column>
+            </dropColumn>
+        </rollback>
+        <loadUpdateData
+                file="db/data/link_consent_user.csv"
+                separator=";"
+                tableName="user"
+                primaryKey="user_id"
+                onlyUpdate="true">
+            <column name="user_id" type="numeric"/>
+            <column name="fhir_patient_id" type="string"/>
+            <column name="name" type="string"/>
+            <column name="last_name" type="string"/>
+        </loadUpdateData>
     </changeSet>
 </databaseChangeLog>
