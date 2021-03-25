@@ -136,6 +136,8 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
     private Dialog docDialog;
 
+    private QuestionnaireResponse questionnaireResponse;
+
     @Autowired
     private PDFSigningService pdfSigningService;
 
@@ -1045,5 +1047,24 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         witnessName.clear();
 
         questionPosition = 0;
+    }
+
+    private void createQuestionnaireResponse() {
+        BooleanType booleanTypeTrue = new BooleanType(true);
+        BooleanType booleanTypeFalse = new BooleanType(false);
+        BooleanType answerBoolean = new BooleanType();
+        questionnaireResponse = new QuestionnaireResponse();
+        questionnaireResponse.setId("leap-poamentalhealth-" + consentSession.getFhirPatient().getId());
+        Reference refpatient = new Reference();
+        refpatient.setReference("Patient/" + consentSession.getFhirPatient().getId());
+        questionnaireResponse.setAuthor(refpatient);
+        questionnaireResponse.setAuthored(new Date());
+        questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
+        questionnaireResponse.setSubject(refpatient);
+        questionnaireResponse.setQuestionnaire("Questionnaire/leap-poamentalhealth");
+        List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList = new ArrayList<>();
+
+
+
     }
 }

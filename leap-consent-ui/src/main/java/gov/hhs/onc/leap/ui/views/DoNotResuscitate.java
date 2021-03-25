@@ -697,6 +697,11 @@ public class DoNotResuscitate extends ViewFrame {
         
         dnrDirective.setProvision(provision);
 
+        Extension extension = new Extension();
+        extension.setUrl("http://sdhealthconnect.com/leap/adr/dnr");
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-dnr-"+consentSession.getFhirPatient().getId()));
+        dnrDirective.getExtension().add(extension);
+
 
         fhirConsentClient.createConsent(dnrDirective);
     }
