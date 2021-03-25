@@ -25,6 +25,7 @@ import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -112,10 +113,15 @@ public class DoNotResuscitate extends ViewFrame {
 
     private ConsentUser consentUser;
 
+    private QuestionnaireResponse questionnaireResponse;
+    private String questionnaireID;
+
     @Autowired
     private FHIRConsent fhirConsentClient;
     @Autowired
     private PDFSigningService pdfSigningService;
+    @Autowired
+    private FHIRQuestionnaireResponse fhirQuestionnaireResponse;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -563,6 +569,7 @@ public class DoNotResuscitate extends ViewFrame {
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
+            createQuestionnaireResponse();
             createFHIRConsent();
             successNotification();
             //todo test for fhir consent create success
@@ -690,6 +697,7 @@ public class DoNotResuscitate extends ViewFrame {
         
         dnrDirective.setProvision(provision);
 
+
         fhirConsentClient.createConsent(dnrDirective);
     }
 
@@ -702,5 +710,95 @@ public class DoNotResuscitate extends ViewFrame {
         notification.setPosition(Notification.Position.MIDDLE);
 
         notification.open();
+    }
+
+    private void createQuestionnaireResponse() {
+        BooleanType booleanTypeTrue = new BooleanType(true);
+        BooleanType booleanTypeFalse = new BooleanType(false);
+        BooleanType answerBoolean = new BooleanType();
+        questionnaireResponse = new QuestionnaireResponse();
+        questionnaireResponse.setId("leap-dnr-"+consentSession.getFhirPatient().getId());
+        Reference refpatient = new Reference();
+        refpatient.setReference("Patient/"+consentSession.getFhirPatient().getId());
+        questionnaireResponse.setAuthor(refpatient);
+        questionnaireResponse.setAuthored(new Date());
+        questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
+        questionnaireResponse.setSubject(refpatient);
+        questionnaireResponse.setQuestionnaire("Questionnaire/leap-dnr");
+        List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList = new ArrayList<>();
+
+        //patient signature represents response of true
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item1_1.setLinkId("1.1");
+        if (base64PatientSignature.length > 0) { answerBoolean = booleanTypeTrue; } else { answerBoolean = booleanTypeFalse; }
+        item1_1.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(answerBoolean));
+        item1_1.setDefinition("In the event of cardiac or respiratory arrest, I refuse any resuscitation measures including cardiac compression, endotracheal intubation and other advanced airway management, artificial ventilation, defibrillation, administration of advanced cardiac life support drugs and related emergency medical procedures. ");
+        responseList.add(item1_1);
+
+        //name of power of attorney if patient unable to sign
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item2_1.setLinkId("2.1");
+        StringType poaName = new StringType(healthcarePowerOfAttorneyName.getValue());
+        item2_1.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(poaName));
+        item2_1.setDefinition("Healthcare Power of Attorney or Agent Name");
+        responseList.add(item2_1);
+
+        //signature of power of attorney acquired
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item2_2.setLinkId("2.2");
+        if (base64HealthcarePOASignature != null && base64HealthcarePOASignature.length > 0) {answerBoolean = booleanTypeTrue;} else {answerBoolean = booleanTypeFalse;}
+        item2_2.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(answerBoolean));
+        item2_2.setDefinition("Healthcare Power of Attorney or Agent Signature Acquired");
+        responseList.add(item2_2);
+
+        //name of physician
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item3_1.setLinkId("3.1");
+        StringType physicianName = new StringType(physicianNameField.getValue());
+        item3_1.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(physicianName));
+        item3_1.setDefinition("Physician Name");
+        responseList.add(item3_1);
+
+        //Physician Phone Number
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item3_2.setLinkId("3.2");
+        StringType phoneNumber = new StringType(physicianPhoneField.getValue());
+        item3_2.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(phoneNumber));
+        item3_2.setDefinition("Phone Number");
+        responseList.add(item3_2);
+
+        //Hospice Name
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item3_3.setLinkId("3.3");
+        StringType hospiceName = new StringType(hospiceField.getValue());
+        item3_3.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(hospiceName));
+        item3_3.setDefinition("Hospice program, if applicable(name)");
+        responseList.add(item3_3);
+
+        //attestation based on Healthcare Provider signature
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item4_1.setLinkId("4.1");
+        if ( base64AttestationSignature != null &&  base64AttestationSignature.length > 0) {answerBoolean = booleanTypeTrue;} else {answerBoolean = booleanTypeFalse;}
+        item4_1.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(answerBoolean));
+        item4_1.setDefinition("I have explained this form and its consequences to the signer and obtained assurance that the signer understands that death may result from any refused care listed above.");
+        responseList.add(item4_1);
+
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item4_2.setLinkId("4.2");
+        item4_2.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(answerBoolean));
+        item4_2.setDefinition("Signature of Physician or Healthcare provider acquired");
+        responseList.add(item4_2);
+
+        //signature of witness or notary
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item5_1.setLinkId("5.1");
+        if (base64WitnessSignature != null && base64WitnessSignature.length > 0) {answerBoolean = booleanTypeTrue;} else {answerBoolean = booleanTypeFalse;}
+        item5_1.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(answerBoolean));
+        item5_1.setDefinition("I was present when this form was signed (or marked). The patient then appeared to be of sound mind and free from duress.");
+        responseList.add(item5_1);
+
+
+        questionnaireResponse.setItem(responseList);
+        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
     }
 }

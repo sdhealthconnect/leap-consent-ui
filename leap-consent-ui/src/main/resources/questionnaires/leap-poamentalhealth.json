@@ -73,7 +73,7 @@
     {
       "linkId": "1.2.3",
       "text": "Home Phone",
-      "type": "String"
+      "type": "string"
     },
     {
       "linkId": "1.2.4",

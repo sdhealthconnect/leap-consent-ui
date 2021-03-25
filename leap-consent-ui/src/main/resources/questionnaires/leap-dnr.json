@@ -79,6 +79,16 @@
       "linkId": "4.2",
       "text": "Signature of Physician or Healthcare provider acquired",
       "type": "boolean"
+    },
+    {
+      "linkId": "5",
+      "text": "SIGNATURE OF WITNESS OR NOTARY (NOT BOTH)",
+      "type": "group"
+    },
+    {
+      "linkId": "5.1",
+      "text": "I was present when this form was signed (or marked). The patient then appeared to be of sound mind and free from duress.",
+      "type": "boolean"
     }
   ]
 }
