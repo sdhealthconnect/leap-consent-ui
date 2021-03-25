@@ -281,4 +281,15 @@ public class HapiFhirServer {
                     .execute();
             return bundle;
         }
+
+        public Bundle getQuestionnaireResponse(String questionnaireId, String patientId) {
+            Bundle bundle = hapiClient
+                    .search()
+                    .forResource(QuestionnaireResponse.class)
+                    .where(QuestionnaireResponse.PATIENT.hasId(patientId))
+                    .and(QuestionnaireResponse.QUESTIONNAIRE.hasId(questionnaireId))
+                    .returnBundle(Bundle.class)
+                    .execute();
+            return bundle;
+        }
 }

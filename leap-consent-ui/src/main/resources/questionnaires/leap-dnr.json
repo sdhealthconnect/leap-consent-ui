@@ -1,0 +1,94 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "leap-dnr",
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"> <pre>LEAP DNR Questionnaire\n1.  GENERAL INFORMATION AND INSTRUCTIONS: A Prehospital Medical Care Directive is a document signed\n,by you and your doctor that informs emergency medical technicians (EMTs) or hospital emergency \npersonnel not to resuscitate you. Sometimes this is called a DNR – Do Not Resuscitate. If you \nhave this form, EMTs and other emergency personnel will not use equipment, drugs, or devices to \nrestart your heart or breathing, but they will not withhold medical interventions that are necessary \nto provide comfort care or to alleviate pain.\n1.1 In the event of cardiac or respiratory arrest, I refuse any resuscitation measures including \ncardiac compression, endotracheal intubation and other advanced airway management, artificial \nventilation, defibrillation, administration of advanced cardiac life support drugs and related \nemergency medical procedures.\n2.  If I am unable to communicate my wishes, and I have designated a Health Care Power of Attorney, my \nelected Health Care agent shall sign\n2.1 Name of Healthcare Power of Attorney or Agent\n2.2 Healthcare Power of Attorney or Agent signature acquired\n3.  Information about my Doctor and Hospice\n3.1 Physicians Name\n3.2 Phone Number\n3.3 Hospice program, if applicable(name)\n4.  SIGNATURE OF DOCTOR OR OTHER HEALTH CARE PROVIDER\n4.1 I have explained this form and its consequences to the signer and obtained assurance that the signer understands that death may result from any refused care listed above.\n4.2 Signature of Physician or Healthcare provider acquired\n</pre></div>"
+  },
+  "url": "http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/Questionnaire/leap-dnr",
+  "status": "active",
+  "experimental": "true",
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2021",
+  "code": [
+    {
+      "system": "http://sdhealthconnect.com/leap/adr/dnr",
+      "code": "2021-03-01",
+      "display": "DNR Questionnaire Version 1"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "1",
+      "text": "GENERAL INFORMATION AND INSTRUCTIONS: A Prehospital Medical Care Directive is a document signed by you and your doctor that informs emergency medical technicians (EMTs) or hospital emergency personnel not to resuscitate you. Sometimes this is called a DNR – Do Not Resuscitate. If you have this form, EMTs and other emergency personnel will not use equipment, drugs, or devices to restart your heart or breathing, but they will not withhold medical interventions that are necessary to provide comfort care or to alleviate pain.",
+      "type": "group"
+    },
+    {
+      "linkId": "1.1",
+      "text": "In the event of cardiac or respiratory arrest, I refuse any resuscitation measures including cardiac compression, endotracheal intubation and other advanced airway management, artificial ventilation, defibrillation, administration of advanced cardiac life support drugs and related emergency medical procedures. ",
+      "type": "boolean"
+    },
+    {
+      "linkId": "2",
+      "text": "If I am unable to communicate my wishes, and I have designated a Health Care Power of Attorney, my elected Health Care agent shall sign",
+      "type": "group"
+    },
+    {
+      "linkId": "2.1",
+      "text": "Name of Healthcare Power of Attorney or Agent",
+      "type": "string"
+    },
+    {
+      "linkId": "2.2",
+      "text": "Healthcare Power of Attorney or Agent Signature Acquired",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3",
+      "text": "Information about my Doctor and Hospice",
+      "type": "group"
+    },
+    {
+      "linkId": "3.1",
+      "text": "Physician Name",
+      "type": "string"
+    },
+    {
+      "linkId": "3.2",
+      "text": "Phone Number",
+      "type": "string"
+    },
+    {
+      "linkId": "3.3",
+      "text": "Hospic program, if applicable(name)",
+      "type": "string"
+    },
+    {
+      "linkId": "4",
+      "text": "SIGNATURE OF DOCTOR OR OTHER HEALTH CARE PROVIDER",
+      "type": "group"
+    },
+    {
+      "linkId": "4.1",
+      "text": "I have explained this form and its consequences to the signer and obtained assurance that the signer understands that death may result from any refused care listed above.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "4.2",
+      "text": "Signature of Physician or Healthcare provider acquired",
+      "type": "boolean"
+    },
+    {
+      "linkId": "5",
+      "text": "SIGNATURE OF WITNESS OR NOTARY (NOT BOTH)",
+      "type": "group"
+    },
+    {
+      "linkId": "5.1",
+      "text": "I was present when this form was signed (or marked). The patient then appeared to be of sound mind and free from duress.",
+      "type": "boolean"
+    }
+  ]
+}
