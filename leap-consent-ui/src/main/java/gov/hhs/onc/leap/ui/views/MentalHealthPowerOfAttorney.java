@@ -23,6 +23,7 @@ import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.adr.model.*;
 import gov.hhs.onc.leap.backend.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -138,11 +139,16 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
     private QuestionnaireResponse questionnaireResponse;
 
+    private PowerOfAttorneyMentalHealth poa;
+
     @Autowired
     private PDFSigningService pdfSigningService;
 
     @Autowired
     private FHIRConsent fhirConsentClient;
+
+    @Autowired
+    private FHIRQuestionnaireResponse fhirQuestionnaireResponse;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -848,6 +854,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
+            createQuestionnaireResponse();
             createFHIRConsent();
             successNotification();
             //todo test for fhir consent create success
@@ -874,7 +881,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         docDialog.setDraggable(true);
     }
     private StreamResource setFieldsCreatePDF() {
-        PowerOfAttorneyMentalHealth poa = new PowerOfAttorneyMentalHealth();
+        poa = new PowerOfAttorneyMentalHealth();
         //Set principle
         Principle principle = new Principle();
         principle.setAddress1(patientAddress1Field.getValue());
@@ -1012,6 +1019,11 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
         poaDirective.setProvision(provision);
 
+        Extension extension = new Extension();
+        extension.setUrl("http://sdhealthconnect.com/leap/adr/poamentalhealth");
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-poamentalhealth-"+consentSession.getFhirPatient().getId()));
+        poaDirective.getExtension().add(extension);
+
         fhirConsentClient.createConsent(poaDirective);
     }
 
@@ -1064,7 +1076,101 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         questionnaireResponse.setQuestionnaire("Questionnaire/leap-poamentalhealth");
         List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList = new ArrayList<>();
 
+        //poa name
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_1 = createItemStringType("1.1.1", "POA Name", poa.getAgent().getName());
+        responseList.add(item1_1_1);
+        //poa address
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_2 = createItemStringType("1.1.2", "POA Address", poa.getAgent().getAddress1()+" "+poa.getAgent().getAddress2());
+        responseList.add(item1_1_2);
+        //poa home phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_3 = createItemStringType("1.1.3", "POA Home Phone", poa.getAgent().getHomePhone());
+        responseList.add(item1_1_3);
+        //poa work phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_4 = createItemStringType("1.1.4", "POA Work Phone", poa.getAgent().getWorkPhone());
+        responseList.add(item1_1_4);
+        //poa cell phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_5 = createItemStringType("1.1.5", "POA Cell Phone", poa.getAgent().getCellPhone());
+        responseList.add(item1_1_5);
+
+        //alternate name
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_1 = createItemStringType("1.2.1", "Alternate Name", poa.getAlternate().getName());
+        responseList.add(item1_2_1);
+        //alternate address
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_2 = createItemStringType("1.2.2", "Alternate Address", poa.getAlternate().getAddress1()+" "+poa.getAlternate().getAddress2());
+        responseList.add(item1_2_2);
+        //alternate home phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_3 = createItemStringType("1.2.3", "Alternate Home Phone", poa.getAlternate().getHomePhone());
+        responseList.add(item1_2_3);
+        //alternate work phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_4 = createItemStringType("1.2.4", "Alternate Work Phone", poa.getAlternate().getWorkPhone());
+        responseList.add(item1_2_4);
+        //alternate cell phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_5 = createItemStringType("1.2.5", "Alternate Cell Phone", poa.getAlternate().getCellPhone());
+        responseList.add(item1_2_5);
+
+        //Mental Health Authorizations
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemBooleanType("2.1", "Authorized to release records", poa.isAuthorizeReleaseOfRecords());
+        responseList.add(item2_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", "Authorized for administration of medications", poa.isAuthorizeMedicationAdminstration());
+        responseList.add(item2_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_3 = createItemBooleanType("2.3", "Authorized to commit if necessary", poa.isAuthorizeCommitIfNecessary());
+        responseList.add(item2_3);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_4 = createItemBooleanType("2.4", "Other Authorizations", poa.isAuthorizeOtherMentalHealthActions());
+        responseList.add(item2_4);
+        if (poa.isAuthorizeOtherMentalHealthActions()) {
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item2_4_1 = createItemStringType("2.4.1", "Other Authorizations Listing", poa.getMentalHealthActionsList1()+" "+poa.getMentalHealthActionsList2()+" "+poa.getMentalHealthActionsList3());
+            responseList.add(item2_4_1);
+        }
+        //NOT AUTHORIZED
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3 = createItemStringType("3", "Mental health care treatments that I expressly DO NOT AUTHORIZE", poa.getDoNotAuthorizeActionList1()+" "+poa.getDoNotAuthorizeActionList2());
+        responseList.add(item3);
+
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4 = createItemBooleanType("4", "HIPAA Waiver of confidentiality for my agent", poa.getHipaaWaiver().isUseDisclosure());
+        responseList.add(item4);
+
+        boolean patientSignature = false;
+        if (poa.getPrincipleSignature().getBase64EncodeSignature() != null && poa.getPrincipleSignature().getBase64EncodeSignature().length > 0) patientSignature = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5 = createItemBooleanType("5", "MY SIGNATURE VERIFICATION FOR THE MENTAL HEALTH POWER OF ATTORNEY", patientSignature);
+        responseList.add(item5);
 
 
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_1 = createItemStringType("6.1", "Witness or Notary Name", poa.getPrincipleAlternateSignature().getNameOfWitnessOrNotary());
+        responseList.add(item6_1);
+
+        boolean patientUnableToSign = false;
+        if (poa.getPrincipleAlternateSignature().getBase64EncodedSignature() != null && poa.getPrincipleAlternateSignature().getBase64EncodedSignature().length > 0) patientUnableToSign = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_2 = createItemBooleanType("6.2", "If you are unable to physically sign this document, your witness/notary may sign and initial for you", patientUnableToSign);
+        responseList.add(item6_2);
+
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_1 = createItemStringType("7.1", "Witness Name", poa.getWitnessSignature().getWitnessName());
+        responseList.add(item7_1);
+
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_2 = createItemStringType("7.2", "Witness Address", poa.getWitnessSignature().getWitnessAddress());
+        responseList.add(item7_2);
+
+        boolean witnessSignature = false;
+        if (poa.getWitnessSignature().getBase64EncodedSignature() != null && poa.getWitnessSignature().getBase64EncodedSignature().length > 0) witnessSignature = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_3 = createItemBooleanType("7.3", "Witness signature acquired", witnessSignature);
+        responseList.add(item7_2);
+
+        questionnaireResponse.setItem(responseList);
+        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemBooleanType(String linkId, String definition, boolean bool) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new BooleanType(bool)));
+        item.setDefinition(definition);
+        return item;
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemStringType(String linkId, String definition, String string) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new StringType(string)));
+        item.setDefinition(definition);
+        return item;
     }
 }

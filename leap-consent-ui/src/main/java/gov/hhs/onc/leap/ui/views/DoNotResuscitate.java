@@ -114,7 +114,7 @@ public class DoNotResuscitate extends ViewFrame {
     private ConsentUser consentUser;
 
     private QuestionnaireResponse questionnaireResponse;
-    private String questionnaireID;
+
 
     @Autowired
     private FHIRConsent fhirConsentClient;
@@ -733,77 +733,66 @@ public class DoNotResuscitate extends ViewFrame {
         List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList = new ArrayList<>();
 
         //patient signature represents response of true
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
-        item1_1.setLinkId("1.1");
-        if (base64PatientSignature.length > 0) { answerBoolean = booleanTypeTrue; } else { answerBoolean = booleanTypeFalse; }
-        item1_1.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(answerBoolean));
-        item1_1.setDefinition("In the event of cardiac or respiratory arrest, I refuse any resuscitation measures including cardiac compression, endotracheal intubation and other advanced airway management, artificial ventilation, defibrillation, administration of advanced cardiac life support drugs and related emergency medical procedures. ");
+        boolean patientSignatureBool = false;
+        if (base64PatientSignature != null && base64PatientSignature.length > 0) patientSignatureBool = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", "In the event of cardiac or respiratory arrest, I refuse any resuscitation measures including cardiac compression, endotracheal intubation and other advanced airway management, artificial ventilation, defibrillation, administration of advanced cardiac life support drugs and related emergency medical procedures. ", patientSignatureBool);
         responseList.add(item1_1);
 
         //name of power of attorney if patient unable to sign
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
-        item2_1.setLinkId("2.1");
-        StringType poaName = new StringType(healthcarePowerOfAttorneyName.getValue());
-        item2_1.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(poaName));
-        item2_1.setDefinition("Healthcare Power of Attorney or Agent Name");
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemStringType("2.1", "Healthcare Power of Attorney or Agent Name", healthcarePowerOfAttorneyName.getValue());
         responseList.add(item2_1);
 
         //signature of power of attorney acquired
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
-        item2_2.setLinkId("2.2");
-        if (base64HealthcarePOASignature != null && base64HealthcarePOASignature.length > 0) {answerBoolean = booleanTypeTrue;} else {answerBoolean = booleanTypeFalse;}
-        item2_2.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(answerBoolean));
-        item2_2.setDefinition("Healthcare Power of Attorney or Agent Signature Acquired");
+        boolean poaSignature = false;
+        if (base64HealthcarePOASignature != null && base64HealthcarePOASignature.length > 0) poaSignature = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", "Healthcare Power of Attorney or Agent Signature Acquired", poaSignature);
         responseList.add(item2_2);
 
         //name of physician
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
-        item3_1.setLinkId("3.1");
-        StringType physicianName = new StringType(physicianNameField.getValue());
-        item3_1.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(physicianName));
-        item3_1.setDefinition("Physician Name");
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1 = createItemStringType("3.1", "Physician Name", physicianNameField.getValue());
         responseList.add(item3_1);
 
         //Physician Phone Number
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
-        item3_2.setLinkId("3.2");
-        StringType phoneNumber = new StringType(physicianPhoneField.getValue());
-        item3_2.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(phoneNumber));
-        item3_2.setDefinition("Phone Number");
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2 = createItemStringType("3.2", "Phone Number", physicianPhoneField.getValue());
         responseList.add(item3_2);
 
         //Hospice Name
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
-        item3_3.setLinkId("3.3");
-        StringType hospiceName = new StringType(hospiceField.getValue());
-        item3_3.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(hospiceName));
-        item3_3.setDefinition("Hospice program, if applicable(name)");
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3 = createItemStringType("3.3", "Hospice program, if applicable(name)", hospiceField.getValue());
         responseList.add(item3_3);
 
         //attestation based on Healthcare Provider signature
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
-        item4_1.setLinkId("4.1");
-        if ( base64AttestationSignature != null &&  base64AttestationSignature.length > 0) {answerBoolean = booleanTypeTrue;} else {answerBoolean = booleanTypeFalse;}
-        item4_1.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(answerBoolean));
-        item4_1.setDefinition("I have explained this form and its consequences to the signer and obtained assurance that the signer understands that death may result from any refused care listed above.");
+        boolean attestation = false;
+        if ( base64AttestationSignature != null &&  base64AttestationSignature.length > 0) attestation = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = createItemBooleanType("4.1", "I have explained this form and its consequences to the signer and obtained assurance that the signer understands that death may result from any refused care listed above.", attestation);
         responseList.add(item4_1);
 
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
-        item4_2.setLinkId("4.2");
-        item4_2.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(answerBoolean));
-        item4_2.setDefinition("Signature of Physician or Healthcare provider acquired");
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", "Signature of Physician or Healthcare provider acquired", attestation);
         responseList.add(item4_2);
 
         //signature of witness or notary
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1 = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
-        item5_1.setLinkId("5.1");
-        if (base64WitnessSignature != null && base64WitnessSignature.length > 0) {answerBoolean = booleanTypeTrue;} else {answerBoolean = booleanTypeFalse;}
-        item5_1.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(answerBoolean));
-        item5_1.setDefinition("I was present when this form was signed (or marked). The patient then appeared to be of sound mind and free from duress.");
+        boolean witness = false;
+        if (base64WitnessSignature != null && base64WitnessSignature.length > 0) witness = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1 = createItemBooleanType("5.1", "I was present when this form was signed (or marked). The patient then appeared to be of sound mind and free from duress.", witness);
         responseList.add(item5_1);
 
 
         questionnaireResponse.setItem(responseList);
         fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemBooleanType(String linkId, String definition, boolean bool) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new BooleanType(bool)));
+        item.setDefinition(definition);
+        return item;
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemStringType(String linkId, String definition, String string) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new StringType(string)));
+        item.setDefinition(definition);
+        return item;
     }
 }
