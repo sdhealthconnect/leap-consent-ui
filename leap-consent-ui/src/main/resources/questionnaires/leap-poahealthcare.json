@@ -336,7 +336,7 @@
       "type": "string"
     },
     {
-      "linkId": "8.1",
+      "linkId": "8.2",
       "text": "Witness or Notary signature acquired",
       "type": "boolean"
     },

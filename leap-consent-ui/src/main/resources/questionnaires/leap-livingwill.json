@@ -59,7 +59,7 @@
           "type": "boolean"
         },
         {
-          "linkId": "2.3",
+          "linkId": "1.3.3",
           "text": "To be taken to a hospital if at all avoidable.",
           "type": "boolean"
         }
