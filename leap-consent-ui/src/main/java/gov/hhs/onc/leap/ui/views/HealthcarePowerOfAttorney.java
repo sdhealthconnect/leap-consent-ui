@@ -1490,14 +1490,14 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         BooleanType booleanTypeFalse = new BooleanType(false);
         BooleanType answerBoolean = new BooleanType();
         questionnaireResponse = new QuestionnaireResponse();
-        questionnaireResponse.setId("leap-poamentalhealth-" + consentSession.getFhirPatient().getId());
+        questionnaireResponse.setId("leap-poahealthcare-" + consentSession.getFhirPatient().getId());
         Reference refpatient = new Reference();
         refpatient.setReference("Patient/" + consentSession.getFhirPatient().getId());
         questionnaireResponse.setAuthor(refpatient);
         questionnaireResponse.setAuthored(new Date());
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         questionnaireResponse.setSubject(refpatient);
-        questionnaireResponse.setQuestionnaire("Questionnaire/leap-poamentalhealth");
+        questionnaireResponse.setQuestionnaire("Questionnaire/leap-poahealthcare");
         List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList = new ArrayList<>();
 
         //poa name
