@@ -22,6 +22,7 @@ import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.adr.model.*;
 import gov.hhs.onc.leap.backend.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -154,11 +155,18 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
     private Dialog docDialog;
 
+    private QuestionnaireResponse questionnaireResponse;
+
+    private PowerOfAttorneyHealthCare poa;
+
     @Autowired
     private PDFSigningService pdfSigningService;
 
     @Autowired
     private FHIRConsent fhirConsentClient;
+
+    @Autowired
+    private FHIRQuestionnaireResponse fhirQuestionnaireResponse;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -1163,6 +1171,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
+            createQuestionnaireResponse();
             createFHIRConsent();
             successNotification();
             //todo test for fhir consent create success
@@ -1192,7 +1201,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
 
     private StreamResource setFieldsCreatePDF() {
-        PowerOfAttorneyHealthCare poa = new PowerOfAttorneyHealthCare();
+        poa = new PowerOfAttorneyHealthCare();
         //Set principle
         Principle principle = new Principle();
         principle.setAddress1(patientAddress1Field.getValue());
@@ -1425,6 +1434,11 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
         poaDirective.setProvision(provision);
 
+        Extension extension = new Extension();
+        extension.setUrl("http://sdhealthconnect.com/leap/adr/poahealthcare");
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-poahealthcare-"+consentSession.getFhirPatient().getId()));
+        poaDirective.getExtension().add(extension);
+
         fhirConsentClient.createConsent(poaDirective);
     }
 
@@ -1471,4 +1485,190 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         questionPosition = 0;
     }
 
+    private void createQuestionnaireResponse() {
+        BooleanType booleanTypeTrue = new BooleanType(true);
+        BooleanType booleanTypeFalse = new BooleanType(false);
+        BooleanType answerBoolean = new BooleanType();
+        questionnaireResponse = new QuestionnaireResponse();
+        questionnaireResponse.setId("leap-poamentalhealth-" + consentSession.getFhirPatient().getId());
+        Reference refpatient = new Reference();
+        refpatient.setReference("Patient/" + consentSession.getFhirPatient().getId());
+        questionnaireResponse.setAuthor(refpatient);
+        questionnaireResponse.setAuthored(new Date());
+        questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
+        questionnaireResponse.setSubject(refpatient);
+        questionnaireResponse.setQuestionnaire("Questionnaire/leap-poamentalhealth");
+        List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList = new ArrayList<>();
+
+        //poa name
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_1 = createItemStringType("1.1.1", "POA Name", poa.getAgent().getName());
+        responseList.add(item1_1_1);
+        //poa address
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_2 = createItemStringType("1.1.2", "POA Address", poa.getAgent().getAddress1() + " " + poa.getAgent().getAddress2());
+        responseList.add(item1_1_2);
+        //poa home phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_3 = createItemStringType("1.1.3", "POA Home Phone", poa.getAgent().getHomePhone());
+        responseList.add(item1_1_3);
+        //poa work phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_4 = createItemStringType("1.1.4", "POA Work Phone", poa.getAgent().getWorkPhone());
+        responseList.add(item1_1_4);
+        //poa cell phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_5 = createItemStringType("1.1.5", "POA Cell Phone", poa.getAgent().getCellPhone());
+        responseList.add(item1_1_5);
+
+        //alternate name
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_1 = createItemStringType("1.2.1", "Alternate Name", poa.getAlternate().getName());
+        responseList.add(item1_2_1);
+        //alternate address
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_2 = createItemStringType("1.2.2", "Alternate Address", poa.getAlternate().getAddress1() + " " + poa.getAlternate().getAddress2());
+        responseList.add(item1_2_2);
+        //alternate home phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_3 = createItemStringType("1.2.3", "Alternate Home Phone", poa.getAlternate().getHomePhone());
+        responseList.add(item1_2_3);
+        //alternate work phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_4 = createItemStringType("1.2.4", "Alternate Work Phone", poa.getAlternate().getWorkPhone());
+        responseList.add(item1_2_4);
+        //alternate cell phone
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_5 = createItemStringType("1.2.5", "Alternate Cell Phone", poa.getAlternate().getCellPhone());
+        responseList.add(item1_2_5);
+
+        //ADD ACTIONABLE QUESTIONS
+        // Authorize poa to make decisions
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3 = createItemBooleanType("1.3", "I AUTHORIZE my agent to make health care decisions for me when I cannot make or communicate my own health care decisions. I want my agent to make all such decisions for me except any decisions that I have expressly stated in this form that I do not authorize him/her to make. My agent should explain to me any choices he or she made if I am able to understand. I further authorize my agent to have access to my personal protected health care information and medical records. This appointment is effective unless it is revoked by me or by a court order.", true);//this form when completed makes this statement true
+        responseList.add(item1_3);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_4 = createItemStringType("1.4", "Health care decisions that I expressly DO NOT AUTHORIZE if I am unable to make decisions for myself: (Explain or write in \"None\")", poa.getDoNotAuthorize1()+" "+poa.getDoNotAuthorize2()+" "+poa.getDoNotAuthorize3());
+        responseList.add(item1_4);
+
+        //Autospy
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemBooleanType("2.1", "Upon my death, I DO NOT consent to a voluntary autopsy.", poa.isDenyAutopsy());
+        responseList.add(item2_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", "Upon my death, I DO consent to a voluntary autospy.", poa.isPermitAutopsy());
+        responseList.add(item2_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_3 = createItemBooleanType("2.3", "My agent will give or refuse consent for an autospy", poa.isAgentDecidesAutopsy());
+        responseList.add(item2_3);
+
+        //Burial
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1 = createItemBooleanType("3.1", "I DO NOT WANT to make an organ or tissue donation, and I DO NOT want this donation authorized on my behalf by my agent or my family.", poa.isDenyOrganTissueDonation());
+        responseList.add(item3_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2 = createItemBooleanType("3.2", "I have already signed a written agreement or donor card regarding donation with the following individual or institution.", poa.isHaveExistingOrganTissueCardOrAgreement());
+        responseList.add(item3_2);
+        if (poa.isHaveExistingOrganTissueCardOrAgreement()) {
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2_1 = createItemStringType("3.2.1", "Institution Name", poa.getOrganTissueCardOrAgreementInstitution());
+            responseList.add(item3_2_1);
+        }
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3 = createItemBooleanType("3.3", "I DO WANT to make an organ or tissue donation when I die. Here are my directions", poa.isPermitOrganTissueDonation());
+        responseList.add(item3_3);
+        if (poa.isPermitOrganTissueDonation()) {
+            //what parts
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_1_1 = createItemBooleanType("3.3.1.1", "Whole body", poa.isWholeBodyDonation());
+            responseList.add(item3_3_1_1);
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_1_2 = createItemBooleanType("3.3.1.2", "Any needed parts or organs", poa.isAnyPartOrOrganNeeded());
+            responseList.add(item3_3_1_2);
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_1_3 = createItemBooleanType("3.3.1.3", "Specific parts or organs", poa.isSpecificPartsOrOrgans());
+            responseList.add(item3_3_1_3);
+            if (poa.isSpecificPartsOrOrgans()) {
+                QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_1_4 = createItemStringType("3.3.1.4", "Specific part or organs only", poa.getSpecificPartsOrOrgansList());
+                responseList.add(item3_3_1_4);
+            }
+            //for what purpose
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_2_1 = createItemBooleanType("3.3.2.1", "Any legally authorized purpose", poa.isAnyLegalPurpose());
+            responseList.add(item3_3_2_1);
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_2_2 = createItemBooleanType("3.3.2.2", "For Transplant or Therapeutic treatment purposes", poa.isTransplantOrTherapeutic());
+            responseList.add(item3_3_2_2);
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_2_3 = createItemBooleanType("3.3.2.3", "Research Only", poa.isResearchOnly());
+            responseList.add(item3_3_2_3);
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_2_4 = createItemBooleanType("3.3.2.4", "Other", poa.isOtherPurposes());
+            responseList.add(item3_3_2_4);
+            if (poa.isOtherPurposes()) {
+                QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_2_5 = createItemStringType("3.3.2.5", "Other purposes", poa.getOtherPurposesList());
+                responseList.add(item3_3_2_5);
+            }
+            //destinations of body, organs, or parts
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_3_1 = createItemBooleanType("3.3.3.1", "My List(destinations)", poa.isPrincipleDefined());
+            responseList.add(item3_3_3_1);
+            if (poa.isPrincipleDefined()) {
+                QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_3_2 = createItemStringType("3.3.3.2", "List of destinations", poa.getPrincipleDefinedList());
+                responseList.add(item3_3_3_2);
+            }
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3_3_3 = createItemBooleanType("3.3.3.3", "Any my agent chooses", poa.isAgentDecidedOrganTissueDestination());
+            responseList.add(item3_3_3_3);
+        }
+        //Burial
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = createItemBooleanType("4.1", "Upon my death, I direct my body to be buried.(instead of cremated)", poa.isBodyToBeBuried());
+        responseList.add(item4_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", "Upon my death, I direct my body to be buried in:", poa.isBodyToBeBuriedIn());
+        responseList.add(item4_2);
+        if (poa.isBodyToBeBuriedIn()) {
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2_1 = createItemStringType("4.2.1", "I direct my body to be buried in following:", poa.getBodyToBeBuriedInInstructions());
+            responseList.add(item4_2_1);
+        }
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_3 = createItemBooleanType("4.3", "Upon my death, I direct my body to be cremated.", poa.isBodyToBeCremated());
+        responseList.add(item4_3);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_4 = createItemBooleanType("4.4", "Upon my death, I direct my body to be created with my ashes to be,", poa.isBodyToBeCrematedAshesDisposition());
+        responseList.add(item4_4);
+        if (poa.isBodyToBeCrematedAshesDisposition()) {
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item4_4_1 = createItemStringType("4.4.1", "Upon my death, I direct my body to be created with my ashes to be,", poa.getBodyToBeCrematedAshesDispositionInstructions());
+            responseList.add(item4_4_1);
+        }
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_5 = createItemBooleanType("4.5", "My agent will make all funeral and burial decisions.", poa.isAgentDecidesBurial());
+        responseList.add(item4_5);
+
+        //Physician Affidavit(Optional)
+        boolean physiciansAffidavitSignature = false;
+        if (poa.getPhysiciansAffidavit().getBase64EncodedSignature() != null && poa.getPhysiciansAffidavit().getBase64EncodedSignature().length > 0) physiciansAffidavitSignature = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1 = createItemStringType("5.1", "Physicians Name", poa.getPhysiciansAffidavit().getPhysiciansName());
+        responseList.add(item5_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_2 = createItemBooleanType("5.2", "Physicians signature acquired", physiciansAffidavitSignature);
+        responseList.add(item5_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_3 = createItemStringType("5.3", "String Date", poa.getPhysiciansAffidavit().getSignatureDate());
+        responseList.add(item5_3);
+
+        //hipaa
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_1 = createItemBooleanType("6.1", "HIPAA Waiver of confidentiality for my agent", poa.getHipaaWaiver().isUseDisclosure());
+        responseList.add(item6_1);
+
+        //signature requirements
+        boolean patientSignature = false;
+        if (poa.getPrincipleSignature().getBase64EncodeSignature() != null && poa.getPrincipleSignature().getBase64EncodeSignature().length > 0) patientSignature = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7 = createItemBooleanType("7", "MY SIGNATURE VERIFICATION FOR THE HEALTH CARE POWER OF ATTORNEY", patientSignature);
+        responseList.add(item7);
+
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item8_1 = createItemStringType("8.1", "Witness or Notary Name", poa.getPrincipleAlternateSignature().getNameOfWitnessOrNotary());
+        responseList.add(item8_1);
+
+        boolean patientUnableToSign = false;
+        if (poa.getPrincipleAlternateSignature().getBase64EncodedSignature() != null && poa.getPrincipleAlternateSignature().getBase64EncodedSignature().length > 0) patientUnableToSign = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item8_2 = createItemBooleanType("8.2", "If you are unable to physically sign this document, your witness/notary may sign and initial for you", patientUnableToSign);
+        responseList.add(item8_2);
+
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item9_1 = createItemStringType("9.1", "Witness Name", poa.getWitnessSignature().getWitnessName());
+        responseList.add(item9_1);
+
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item9_2 = createItemStringType("9.2", "Witness Address", poa.getWitnessSignature().getWitnessAddress());
+        responseList.add(item9_2);
+
+        boolean witnessSignature = false;
+        if (poa.getWitnessSignature().getBase64EncodedSignature() != null && poa.getWitnessSignature().getBase64EncodedSignature().length > 0) witnessSignature = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item9_3 = createItemBooleanType("9.3", "Witness signature acquired", witnessSignature);
+        responseList.add(item9_2);
+
+        questionnaireResponse.setItem(responseList);
+        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemBooleanType(String linkId, String definition, boolean bool) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new BooleanType(bool)));
+        item.setDefinition(definition);
+        return item;
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemStringType(String linkId, String definition, String string) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new StringType(string)));
+        item.setDefinition(definition);
+        return item;
+    }
 }

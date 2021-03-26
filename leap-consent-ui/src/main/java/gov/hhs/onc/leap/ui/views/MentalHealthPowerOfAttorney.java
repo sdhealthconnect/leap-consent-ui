@@ -1151,7 +1151,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         boolean witnessSignature = false;
         if (poa.getWitnessSignature().getBase64EncodedSignature() != null && poa.getWitnessSignature().getBase64EncodedSignature().length > 0) witnessSignature = true;
         QuestionnaireResponse.QuestionnaireResponseItemComponent item7_3 = createItemBooleanType("7.3", "Witness signature acquired", witnessSignature);
-        responseList.add(item7_2);
+        responseList.add(item7_3);
 
         questionnaireResponse.setItem(responseList);
         fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
