@@ -139,6 +139,8 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
     private QuestionnaireResponse questionnaireResponse;
 
+    private List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList;
+
     private PowerOfAttorneyMentalHealth poa;
 
     @Autowired
@@ -1019,12 +1021,17 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
         poaDirective.setProvision(provision);
 
-        Extension extension = new Extension();
-        extension.setUrl("http://sdhealthconnect.com/leap/adr/poamentalhealth");
-        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-poamentalhealth-"+consentSession.getFhirPatient().getId()));
+        Extension extension = createPowerOfAttorneyMentalHealthQuestionnaireResponse();
         poaDirective.getExtension().add(extension);
 
         fhirConsentClient.createConsent(poaDirective);
+    }
+
+    private Extension createPowerOfAttorneyMentalHealthQuestionnaireResponse() {
+        Extension extension = new Extension();
+        extension.setUrl("http://sdhealthconnect.com/leap/adr/poamentalhealth");
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-poamentalhealth-"+consentSession.getFhirPatient().getId()));
+        return extension;
     }
 
     private void resetFormAndNavigation() {
@@ -1074,8 +1081,20 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         questionnaireResponse.setSubject(refpatient);
         questionnaireResponse.setQuestionnaire("Questionnaire/leap-poamentalhealth");
-        List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList = new ArrayList<>();
+        responseList = new ArrayList<>();
 
+        powerOfAttorneyResponse();
+        alternatePowerOfAttorneyResponse();
+        powerOfAttorneyAuthorizationResponse();
+        hipaaResponse();
+        signatureRequirementsResponse();
+
+        questionnaireResponse.setItem(responseList);
+        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+
+    }
+
+    private void powerOfAttorneyResponse() {
         //poa name
         QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_1 = createItemStringType("1.1.1", "POA Name", poa.getAgent().getName());
         responseList.add(item1_1_1);
@@ -1091,7 +1110,9 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         //poa cell phone
         QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1_5 = createItemStringType("1.1.5", "POA Cell Phone", poa.getAgent().getCellPhone());
         responseList.add(item1_1_5);
+    }
 
+    private void alternatePowerOfAttorneyResponse() {
         //alternate name
         QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_1 = createItemStringType("1.2.1", "Alternate Name", poa.getAlternate().getName());
         responseList.add(item1_2_1);
@@ -1107,7 +1128,9 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         //alternate cell phone
         QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2_5 = createItemStringType("1.2.5", "Alternate Cell Phone", poa.getAlternate().getCellPhone());
         responseList.add(item1_2_5);
+    }
 
+    private void powerOfAttorneyAuthorizationResponse() {
         //Mental Health Authorizations
         QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemBooleanType("2.1", "Authorized to release records", poa.isAuthorizeReleaseOfRecords());
         responseList.add(item2_1);
@@ -1124,10 +1147,14 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         //NOT AUTHORIZED
         QuestionnaireResponse.QuestionnaireResponseItemComponent item3 = createItemStringType("3", "Mental health care treatments that I expressly DO NOT AUTHORIZE", poa.getDoNotAuthorizeActionList1()+" "+poa.getDoNotAuthorizeActionList2());
         responseList.add(item3);
+    }
 
+    private void hipaaResponse() {
         QuestionnaireResponse.QuestionnaireResponseItemComponent item4 = createItemBooleanType("4", "HIPAA Waiver of confidentiality for my agent", poa.getHipaaWaiver().isUseDisclosure());
         responseList.add(item4);
+    }
 
+    private void signatureRequirementsResponse() {
         boolean patientSignature = false;
         if (poa.getPrincipleSignature().getBase64EncodeSignature() != null && poa.getPrincipleSignature().getBase64EncodeSignature().length > 0) patientSignature = true;
         QuestionnaireResponse.QuestionnaireResponseItemComponent item5 = createItemBooleanType("5", "MY SIGNATURE VERIFICATION FOR THE MENTAL HEALTH POWER OF ATTORNEY", patientSignature);
@@ -1152,10 +1179,6 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         if (poa.getWitnessSignature().getBase64EncodedSignature() != null && poa.getWitnessSignature().getBase64EncodedSignature().length > 0) witnessSignature = true;
         QuestionnaireResponse.QuestionnaireResponseItemComponent item7_3 = createItemBooleanType("7.3", "Witness signature acquired", witnessSignature);
         responseList.add(item7_3);
-
-        questionnaireResponse.setItem(responseList);
-        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
-
     }
 
     private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemBooleanType(String linkId, String definition, boolean bool) {
