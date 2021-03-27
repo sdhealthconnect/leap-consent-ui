@@ -5,7 +5,6 @@ import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -54,91 +53,8 @@ public class TestData {
         CONSENT_LOG_MAP.put(x , new ConsentLog("No Consent", LocalDate.now(), "Kaiser Permanente", "HealthCurrent"));
     }
 
-    public static String getUserId() {
-        return "D123408";
-    }
-
-    public static String getPrimaryState() {
-        return "Arizona";
-    }
-
     public static String getLanguagePreference() {
         return "English";
-    }
-
-    public static String getUserName() {
-        return "duane.decouteau@gmail.com";
-    }
-
-
-    public static Patient getPatient() {
-        Patient patient = new Patient();
-        patient.setId("privacy-consent-scenario-H-UI");
-        List<Identifier> ids = new ArrayList<>();
-        Identifier id1 = new Identifier();
-        CodeableConcept concept = new CodeableConcept();
-        Coding coding = new Coding();
-        coding.setCode("SS");
-        coding.setSystem("http://terminology.hl7.org/CodeSystem/v2-0203");
-        concept.addCoding(coding);
-        id1.setType(concept);
-
-
-        id1.setSystem("urn:oid:2.2");
-        id1.setValue("D123408");
-
-        Identifier id2 = new Identifier();
-        id2.setSystem("http://sdhealthconnect.github.io/leap/samples/ids");
-        id2.setValue("privacy-consent-scenario-H-UI");
-        ids.add(id1);
-        ids.add(id2);
-        patient.setIdentifier(ids);
-
-        patient.setActive(true);
-
-        HumanName name = new HumanName();
-        name.setUse(HumanName.NameUse.OFFICIAL);
-        name.setFamily("DeCouteau");
-        List<StringType> givenList = new ArrayList<>();
-        StringType sType = new StringType();
-        sType.setValueAsString("Duane");
-        givenList.add(sType);
-        name.setGiven(givenList);
-        patient.getName().add(name);
-
-        List<Address> addressList = new ArrayList<>();
-        Address address = new Address();
-        address.setCity("Tumacacori");
-        address.setState("Arizona");
-        address.setPostalCode("85640");
-        List<StringType> streetList = new ArrayList<>();
-        StringType line1 = new StringType();
-        line1.setValueAsString("P.O. Box 359");
-        streetList.add(line1);
-        address.setLine(streetList);
-        addressList.add(address);
-        patient.setAddress(addressList);
-
-        List<ContactPoint> contactList = new ArrayList<>();
-        ContactPoint contact = new ContactPoint();
-        contact.setUse(ContactPoint.ContactPointUse.WORK);
-        contact.setValue("406-410-0894");
-        contact.setSystem(ContactPoint.ContactPointSystem.PHONE);
-        contactList.add(contact);
-        patient.setTelecom(contactList);
-
-        Date bdate = new Date();
-        try {
-            bdate = new SimpleDateFormat("dd/MM/yyyy").parse("15/11/1959");
-        }
-        catch (Exception ex) {
-            //blah blah
-        }
-        patient.setBirthDate(bdate);
-
-        patient.setLanguage("English");
-
-        return patient;
     }
 
     public static Organization getPrimaryOrganization() {
@@ -198,57 +114,19 @@ public class TestData {
     public static ConsentSession getConsentSession() {
         ConsentSession sessionInfo = new ConsentSession(fhirBase);
         sessionInfo.setFhirCustodian(getPrimaryOrganization());
-        sessionInfo.setFhirPatient(getPatient());
+        // sessionInfo.setFhirPatient(getPatient()); Set in Fhir Decorator
         sessionInfo.setLanguagePreference(getLanguagePreference());
-        sessionInfo.setUserId(getUserId());
-        sessionInfo.setUsername(getUserName());
-        sessionInfo.setPrimaryState("Arizona");
+        //sessionInfo.setUserId(getUserId()); Set in DB Decorator
+        //sessionInfo.setUsername(getUserName()); Set in DB Decorator
+        //sessionInfo.setPrimaryState("Arizona"); Set in DB Decorator
         sessionInfo.setPrimaryPhysician(getPrimaryPractioner());
-        sessionInfo.setConsentUser(getConsentUser());
+        //sessionInfo.setConsentUser(getConsentUser()); Set in DB Decorator
         return sessionInfo;
     }
 
     @Value("${hapi-fhir.url:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}")
     public void setFhirBase(String fhirBase) {
         TestData.fhirBase = fhirBase;
-    }
-
-    private static ConsentUser getConsentUser() {
-        ConsentUser cUser = new ConsentUser();
-        cUser.setCity("Tumacacori");
-        Date bdate = null;
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            bdate = sdf.parse("15/11/1959");
-        }
-        catch (Exception ex) {
-            //blah blah
-        }
-        cUser.setDateOfBirth(bdate);
-        cUser.setEmailAddress("duane.decouteau@gmail.com");
-        cUser.setStreetAddress1("1670 W Frontage Rd");
-        cUser.setStreetAddress2("");
-        cUser.setEmergencyContact("Lori Hall");
-        cUser.setGetEmergencyContactPhone("425-555-5555");
-        cUser.setRelationship("Partner");
-        cUser.setEthnicity("White");
-        cUser.setEyeColor("BLU");
-        cUser.setHairColor("BRN");
-        cUser.setState("Arizona");
-        cUser.setZipCode("85640");
-        cUser.setFirstName("Duane");
-        cUser.setLastName("DeCouteau");
-        cUser.setMiddleName("Andrew");
-        cUser.setMaritalStatus("Single");
-        cUser.setGender("M");
-        cUser.setHeight("6-3");
-        cUser.setWeight("195");
-        cUser.setPrimaryPhysician("Dr. Bob Smith");
-        cUser.setPrimaryPhysicianPhoneNumber("520-555-5555");
-        cUser.setPhone("406-555-5555");
-        cUser.setMobile("406-555-5555");
-
-        return cUser;
     }
 
 

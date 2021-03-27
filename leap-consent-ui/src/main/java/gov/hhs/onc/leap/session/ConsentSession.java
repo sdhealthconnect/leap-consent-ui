@@ -1,6 +1,6 @@
 package gov.hhs.onc.leap.session;
 
-import gov.hhs.onc.leap.backend.ConsentUser;
+import gov.hhs.onc.leap.backend.model.ConsentUser;
 import org.hl7.fhir.r4.model.Consent;
 import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.Patient;

@@ -22,6 +22,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import gov.hhs.onc.leap.security.model.User;
+import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.components.navigation.tab.NaviTab;
@@ -115,7 +116,8 @@ public class AppBar extends Header {
 	}
 
 	private void initAvatar() {
-		User u = (User) VaadinSession.getCurrent().getAttribute("authUser");
+		ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
+		User u = consentSession.getConsentUser().getUser();
 		Blob b = u.getPhoto();
 		avatar = new Image();
 		try {

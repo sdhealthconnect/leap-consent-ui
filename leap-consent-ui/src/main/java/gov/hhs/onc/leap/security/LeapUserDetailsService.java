@@ -61,6 +61,7 @@ public class LeapUserDetailsService implements UserDetailsService {
         nUser.setLastName(user.getLastName());
         nUser.setPhoto(user.getPhoto());
         nUser.setRoles(user.getRoles());
+        nUser.setFhirPatientId(user.getFhirPatientId());
         return nUser;
     }
 
