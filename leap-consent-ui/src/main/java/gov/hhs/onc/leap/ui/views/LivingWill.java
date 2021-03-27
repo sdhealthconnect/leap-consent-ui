@@ -131,6 +131,7 @@ public class LivingWill extends ViewFrame {
     private Dialog docDialog;
 
     private QuestionnaireResponse questionnaireResponse;
+    private List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList;
 
     private gov.hhs.onc.leap.adr.model.LivingWill livingWill;
 
@@ -893,8 +894,19 @@ public class LivingWill extends ViewFrame {
 
         poaDirective.setProvision(provision);
 
+        Extension extension = createLivingWillQuestionnaireResponse();
+        poaDirective.getExtension().add(extension);
+
         fhirConsentClient.createConsent(poaDirective);
     }
+
+    private Extension createLivingWillQuestionnaireResponse() {
+        Extension extension = new Extension();
+        extension.setUrl("http://sdhealthconnect.com/leap/adr/livingwill");
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-livingwill-"+consentSession.getFhirPatient().getId()));
+        return extension;
+    }
+
     private void resetFormAndNavigation() {
         patientInitials.clear();
         comfortCareOnlyButNo.clear();
@@ -926,8 +938,17 @@ public class LivingWill extends ViewFrame {
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         questionnaireResponse.setSubject(refpatient);
         questionnaireResponse.setQuestionnaire("Questionnaire/leap-livingwill");
-        List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList = new ArrayList<>();
+        responseList = new ArrayList<>();
 
+        lifeSustainingDecisionsResponse();
+        additionalInstructionsResponse();
+        signatureRequirementsResponse();
+
+        questionnaireResponse.setItem(responseList);
+        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+    }
+
+    private void lifeSustainingDecisionsResponse() {
         //general statements and selections
         if (!livingWill.isProlongLifeToGreatestExtentPossible()) {
             QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", "If I have a terminal condition I do not want my life to be prolonged, and I do not " +
@@ -961,6 +982,9 @@ public class LivingWill extends ViewFrame {
                     "here, all others should be unselected).", livingWill.isProlongLifeToGreatestExtentPossible());
             responseList.add(item1_6);
         }
+    }
+
+    private void additionalInstructionsResponse() {
         //attachements additional instructions
         QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemBooleanType("2.1", "I HAVE NOT attached additional special instructions about End of Life Care I want.",
                 livingWill.isNoAdditionalInstructions());
@@ -968,7 +992,9 @@ public class LivingWill extends ViewFrame {
         QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", "I HAVE attached additional special provisions or limitations about End of Life Care I want.",
                 livingWill.isAdditionalInstructions());
         responseList.add(item2_2);
+    }
 
+    private void signatureRequirementsResponse() {
         //signature requirements
         boolean patientSignatureBool = false;
         if (livingWill.getPrincipleSignature().getBase64EncodeSignature() != null && livingWill.getPrincipleSignature().getBase64EncodeSignature().length > 0) patientSignatureBool = true;
@@ -985,9 +1011,6 @@ public class LivingWill extends ViewFrame {
         QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3 = createItemBooleanType("3.3", "Witness Signature Acquired.",
                 witnessSignatureBool);
         responseList.add(item3_3);
-
-        questionnaireResponse.setItem(responseList);
-        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
     }
 
     private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemBooleanType(String linkId, String definition, boolean bool) {
