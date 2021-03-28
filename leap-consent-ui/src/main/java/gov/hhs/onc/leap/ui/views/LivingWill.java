@@ -155,6 +155,7 @@ public class LivingWill extends ViewFrame {
         setId("livingwillview");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
+        this.responseList = new ArrayList<>();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
     }
@@ -938,7 +939,6 @@ public class LivingWill extends ViewFrame {
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         questionnaireResponse.setSubject(refpatient);
         questionnaireResponse.setQuestionnaire("Questionnaire/leap-livingwill");
-        responseList = new ArrayList<>();
 
         lifeSustainingDecisionsResponse();
         additionalInstructionsResponse();

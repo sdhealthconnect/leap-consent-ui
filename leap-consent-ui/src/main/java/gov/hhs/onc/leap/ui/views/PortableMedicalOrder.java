@@ -210,6 +210,7 @@ public class PortableMedicalOrder extends ViewFrame {
         setId("portablemedicalorderview");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
+        this.responseList = new ArrayList<>();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
     }
@@ -1615,7 +1616,7 @@ public class PortableMedicalOrder extends ViewFrame {
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         questionnaireResponse.setSubject(refpatient);
         questionnaireResponse.setQuestionnaire("Questionnaire/leap-polst");
-        responseList = new ArrayList<>();
+
 
         doNotResuscitateResponse();
         treatmentsResponse();

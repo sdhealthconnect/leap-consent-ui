@@ -140,6 +140,7 @@ public class DoNotResuscitate extends ViewFrame {
         setId("dnrview");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
+        this.responseList = new ArrayList<>();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
     }
@@ -736,7 +737,7 @@ public class DoNotResuscitate extends ViewFrame {
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         questionnaireResponse.setSubject(refpatient);
         questionnaireResponse.setQuestionnaire("Questionnaire/leap-dnr");
-        responseList = new ArrayList<>();
+
 
         doNotResuscitateResponse();
         powerOfAttorneySignatureResponse();
