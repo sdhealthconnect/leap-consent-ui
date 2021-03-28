@@ -115,6 +115,7 @@ public class DoNotResuscitate extends ViewFrame {
 
     private QuestionnaireResponse questionnaireResponse;
 
+    private List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList;
 
     @Autowired
     private FHIRConsent fhirConsentClient;
@@ -139,6 +140,7 @@ public class DoNotResuscitate extends ViewFrame {
         setId("dnrview");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
+        this.responseList = new ArrayList<>();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
     }
@@ -697,13 +699,18 @@ public class DoNotResuscitate extends ViewFrame {
         
         dnrDirective.setProvision(provision);
 
-        Extension extension = new Extension();
-        extension.setUrl("http://sdhealthconnect.com/leap/adr/dnr");
-        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-dnr-"+consentSession.getFhirPatient().getId()));
+        Extension extension = createDoNotResuscitateQuestionnaireResponse();
         dnrDirective.getExtension().add(extension);
 
 
         fhirConsentClient.createConsent(dnrDirective);
+    }
+
+    private Extension createDoNotResuscitateQuestionnaireResponse() {
+        Extension extension = new Extension();
+        extension.setUrl("http://sdhealthconnect.com/leap/adr/dnr");
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-dnr-"+consentSession.getFhirPatient().getId()));
+        return extension;
     }
 
     private void successNotification() {
@@ -730,14 +737,28 @@ public class DoNotResuscitate extends ViewFrame {
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         questionnaireResponse.setSubject(refpatient);
         questionnaireResponse.setQuestionnaire("Questionnaire/leap-dnr");
-        List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList = new ArrayList<>();
 
+
+        doNotResuscitateResponse();
+        powerOfAttorneySignatureResponse();
+        physicianInfoResponse();
+        hospiceResponse();
+        healthcareProviderAttestationAndSignatureResponse();
+        witnessSignatureResponse();
+
+        questionnaireResponse.setItem(responseList);
+        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+    }
+
+    private void doNotResuscitateResponse() {
         //patient signature represents response of true
         boolean patientSignatureBool = false;
         if (base64PatientSignature != null && base64PatientSignature.length > 0) patientSignatureBool = true;
         QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", "In the event of cardiac or respiratory arrest, I refuse any resuscitation measures including cardiac compression, endotracheal intubation and other advanced airway management, artificial ventilation, defibrillation, administration of advanced cardiac life support drugs and related emergency medical procedures. ", patientSignatureBool);
         responseList.add(item1_1);
+    }
 
+    private void powerOfAttorneySignatureResponse() {
         //name of power of attorney if patient unable to sign
         QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemStringType("2.1", "Healthcare Power of Attorney or Agent Name", healthcarePowerOfAttorneyName.getValue());
         responseList.add(item2_1);
@@ -747,7 +768,9 @@ public class DoNotResuscitate extends ViewFrame {
         if (base64HealthcarePOASignature != null && base64HealthcarePOASignature.length > 0) poaSignature = true;
         QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", "Healthcare Power of Attorney or Agent Signature Acquired", poaSignature);
         responseList.add(item2_2);
+    }
 
+    private void physicianInfoResponse() {
         //name of physician
         QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1 = createItemStringType("3.1", "Physician Name", physicianNameField.getValue());
         responseList.add(item3_1);
@@ -755,11 +778,15 @@ public class DoNotResuscitate extends ViewFrame {
         //Physician Phone Number
         QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2 = createItemStringType("3.2", "Phone Number", physicianPhoneField.getValue());
         responseList.add(item3_2);
+    }
 
+    private void hospiceResponse() {
         //Hospice Name
         QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3 = createItemStringType("3.3", "Hospice program, if applicable(name)", hospiceField.getValue());
         responseList.add(item3_3);
+    }
 
+    private void healthcareProviderAttestationAndSignatureResponse() {
         //attestation based on Healthcare Provider signature
         boolean attestation = false;
         if ( base64AttestationSignature != null &&  base64AttestationSignature.length > 0) attestation = true;
@@ -768,16 +795,14 @@ public class DoNotResuscitate extends ViewFrame {
 
         QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", "Signature of Physician or Healthcare provider acquired", attestation);
         responseList.add(item4_2);
+    }
 
+    private void witnessSignatureResponse() {
         //signature of witness or notary
         boolean witness = false;
         if (base64WitnessSignature != null && base64WitnessSignature.length > 0) witness = true;
         QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1 = createItemBooleanType("5.1", "I was present when this form was signed (or marked). The patient then appeared to be of sound mind and free from duress.", witness);
         responseList.add(item5_1);
-
-
-        questionnaireResponse.setItem(responseList);
-        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
     }
 
     private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemBooleanType(String linkId, String definition, boolean bool) {

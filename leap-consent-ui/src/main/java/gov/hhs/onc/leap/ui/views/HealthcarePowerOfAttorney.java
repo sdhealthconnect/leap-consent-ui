@@ -180,6 +180,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         setId("healthcarepowerofattorney");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
+        this.responseList = new ArrayList<>();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
     }
@@ -1501,7 +1502,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         questionnaireResponse.setSubject(refpatient);
         questionnaireResponse.setQuestionnaire("Questionnaire/leap-poahealthcare");
-        responseList = new ArrayList<>();
+
 
         powerOfAttorneyResponse();
         alternatePowerOfAttorneyResponse();
