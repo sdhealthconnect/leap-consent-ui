@@ -1,13 +1,14 @@
 package gov.hhs.onc.leap.backend.fhir;
 
 import gov.hhs.onc.leap.backend.ConsentDecorator;
-import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRPatient;
+import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import org.hl7.fhir.r4.model.Address;
 import org.hl7.fhir.r4.model.ContactPoint;
 import org.hl7.fhir.r4.model.HumanName;
 import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.codesystems.ContactPointSystem;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,11 +60,11 @@ public class FhirConsentDecorator implements ConsentDecorator {
             List<ContactPoint> contactPoints = fhirPatient.getTelecom();
             for (ContactPoint contactPoint: contactPoints) {
                 // phone
-                if (contactPoint.getSystem().getSystem().equals("phone")){
+                if (ContactPoint.ContactPointSystem.PHONE.equals(contactPoint.getSystem())){
                     consentUser.setPhone(contactPoint.getValue());
                 }
                 // mobile
-                if (contactPoint.getSystem().getSystem().equals("sms")){
+                if (ContactPoint.ContactPointSystem.SMS.equals(contactPoint.getSystem())){
                     consentUser.setMobile(contactPoint.getValue());
                 }
             }
