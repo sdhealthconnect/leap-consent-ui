@@ -292,4 +292,14 @@ public class HapiFhirServer {
                     .execute();
             return bundle;
         }
+
+        public Bundle getPatientBundle(String id) {
+            Bundle bundle = hapiClient
+                    .search()
+                    .forResource(Patient.class)
+                    .where(Resource.RES_ID.exactly().code(id))
+                    .returnBundle(Bundle.class)
+                    .execute();
+            return bundle;
+    }
 }

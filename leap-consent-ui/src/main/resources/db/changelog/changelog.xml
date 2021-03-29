@@ -123,4 +123,57 @@
             <column name="last_name" type="string"/>
         </loadUpdateData>
     </changeSet>
+    <changeSet id="00000000000003" author="sgroh" logicalFilePath="changelog.xml" labels="consentUser">
+        <createTable tableName="consentuser">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="varchar(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="middle_name" type="varchar(150)"/>
+            <column name="last_name" type="varchar(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="marital_status" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="eye_color" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hair_color" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="weight" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="gender" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ethnicity" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fhir_patient_id" type="varchar(100)">
+                <constraints unique="true" nullable="false" uniqueConstraintName="ux_consent_fhir_patient_id"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="fhir_patient_id"
+                                 baseTableName="consentuser"
+                                 constraintName="fk_fhir_patient_idd"
+                                 referencedColumnNames="fhir_patient_id"
+                                 referencedTableName="user"/>
+        <loadData
+                file="db/data/consentuser.csv"
+                separator=";"
+                tableName="consentuser">
+        </loadData>
+        <rollback>
+            <dropAllForeignKeyConstraints baseTableName="consentuser"></dropAllForeignKeyConstraints>
+            <dropUniqueConstraint tableName="consentuser" constraintName="ux_consent_fhir_patient_id"></dropUniqueConstraint>
+            <dropTable  tableName="consentuser"/>
+        </rollback>
+    </changeSet>
 </databaseChangeLog>

@@ -5,7 +5,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
@@ -22,9 +21,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
+import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.adr.model.POLSTPortableMedicalOrder;
 import gov.hhs.onc.leap.adr.model.PowerOfAttorneyHealthCare;
-import gov.hhs.onc.leap.backend.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
 import gov.hhs.onc.leap.session.ConsentSession;
@@ -1322,7 +1321,7 @@ public class PortableMedicalOrder extends ViewFrame {
                 break;
             case 13:
                 returnButton.setEnabled(true);
-                forwardButton.setEnabled(true);
+                forwardButton.setEnabled(false);
                 patientGeneralInfoLayout.setVisible(false);
                 cardiopulmonaryResuscitationOrdersLayout.setVisible(false);
                 initialTreatmentOrders.setVisible(false);

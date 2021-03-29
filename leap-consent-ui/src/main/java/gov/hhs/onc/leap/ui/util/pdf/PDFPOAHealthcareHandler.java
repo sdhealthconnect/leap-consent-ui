@@ -4,7 +4,7 @@ import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.adr.model.PowerOfAttorneyHealthCare;
-import gov.hhs.onc.leap.backend.ConsentUser;
+import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import org.apache.commons.io.IOUtils;
