@@ -1,0 +1,364 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "leap-poahealthcare",
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre>LEAP Healthcare Power of Attorney Questionnaire\nGENERAL INFORMATION AND INSTRUCTIONS: Use this questionnaire if you want to select a person, called an agent, to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose and trust can make medical decisions for you. Be sure you review and understand the importance of the document that is created at the end of this process. It is a good idea to talk to your doctor and loved ones if you have questions about the type of health care you do or do not want.</pre></div>"
+  },
+  "url": "http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/Questionnaire/leap-poahealthcare",
+  "status": "active",
+  "experimental": "true",
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2021",
+  "code": [
+    {
+      "system": "http://sdhealthconnect.com/leap/adr/poahealthcare",
+      "code": "2021-03-01",
+      "display": "Power of Attorney Healthcare Questionnaire Version 1"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "1",
+      "text": "GENERAL INFORMATION AND INSTRUCTIONS: Use this questionnaire if you want to select a person, called an agent, to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose and trust can make medical decisions for you. Be sure you review and understand the importance of the document that is created at the end of this process. It is a good idea to talk to your doctor and loved ones if you have questions about the type of health care you do or do not want.",
+      "type": "group"
+    },
+    {
+      "linkId": "1.1",
+      "text": "Selection of my Healthcare Power of Attorney and Alternate: I choose the following person to act as my agent to make health care decisions for me.",
+      "type": "group"
+    },
+    {
+      "linkId": "1.1.1",
+      "text": "Name",
+      "type": "string"
+    },
+    {
+      "linkId": "1.1.2",
+      "text": "Address",
+      "type": "string"
+    },
+    {
+      "linkId": "1.1.3",
+      "text": "Home Phone",
+      "type": "string"
+    },
+    {
+      "linkId": "1.1.4",
+      "text": "Work Phone",
+      "type": "string"
+    },
+    {
+      "linkId": "1.1.5",
+      "text": "Cell Phone",
+      "type": "string"
+    },
+    {
+      "linkId": "1.2",
+      "text": "Selection of my Healthcare Power of Attorney and Alternate: I choose the following person to act as an alternate to make health care decisions for me if my first agent is unavailable, unwilling, or unable to make decisions for me.",
+      "type": "group"
+    },
+    {
+      "linkId": "1.2.1",
+      "text": "Name",
+      "type": "string"
+    },
+    {
+      "linkId": "1.2.2",
+      "text": "Address",
+      "type": "string"
+    },
+    {
+      "linkId": "1.2.3",
+      "text": "Home Phone",
+      "type": "string"
+    },
+    {
+      "linkId": "1.2.4",
+      "text": "Work Phone",
+      "type": "string"
+    },
+    {
+      "linkId": "1.2.5",
+      "text": "Cell Phone",
+      "type": "string"
+    },
+    {
+      "linkId": "1.3",
+      "text": "I AUTHORIZE my agent to make health care decisions for me when I cannot make or communicate my own health care decisions. I want my agent to make all such decisions for me except any decisions that I have expressly stated in this form that I do not authorize him/her to make. My agent should explain to me any choices he or she made if I am able to understand. I further authorize my agent to have access to my personal protected health care information and medical records. This appointment is effective unless it is revoked by me or by a court order.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "1.4",
+      "text": "Health care decisions that I expressly DO NOT AUTHORIZE if I am unable to make decisions for myself: (Explain or write in \"None\")",
+      "type": "string"
+    },
+    {
+      "linkId": "2",
+      "text": "My specific wishes regarding autopsy",
+      "type": "group"
+    },
+    {
+      "linkId": "2.1",
+      "text": "Upon my death, I DO NOT consent to a voluntary autopsy.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "2.2",
+      "text": "Upon my death, I DO consent to a voluntary autospy.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "2.3",
+      "text": "My agent will give or refuse consent for an autospy",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3",
+      "text": "My specific wishes regarding organ donation",
+      "type": "group"
+    },
+    {
+      "linkId": "3.1",
+      "text": "I DO NOT WANT to make an organ or tissue donation, and I DO NOT want this donation authorized on my behalf by my agent or my family.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.2",
+      "text": "I have already signed a written agreement or donor card regarding donation with the following individual or institution.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.2.1",
+      "text":"Institution Name",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "3.2",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkIn": "3.3",
+      "text": "I DO WANT to make an organ or tissue donation when I die. Here are my directions",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.3.1",
+      "text": "What organs/tissue I choose to donate.",
+      "type": "group"
+    },
+    {
+      "linkId": "3.3.1.1",
+      "text": "Whole body",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.3.1.2",
+      "text": "Any needed parts or organs",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.3.1.3",
+      "text": "Specific parts or organs",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.3.1.4",
+      "text": "Specific part or organs only",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "3.3.1.3",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "3.3.2",
+      "text": "I am donating organ/tissue for",
+      "type": "group"
+    },
+    {
+      "linkId": "3.3.2.1",
+      "text": "Any legally authorized purpose",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.3.2.2",
+      "text": "Transplant or therapeutic purposes only",
+      "type": "boolean"
+    },
+    {
+     "linkId": "3.3.2.3",
+      "text": "Research only",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.3.2.4",
+      "text": "Other",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.3.2.5",
+      "text": "Other purposes",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "3.3.2.4",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "3.3.3",
+      "text": "The organization or person I want my organs/tissue to go to are",
+      "type": "group"
+    },
+    {
+      "linkId": "3.3.3.1",
+      "text": "My list",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.3.3.2",
+      "text": "List organizations",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "3.3.3.1",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "3.3.3.3",
+      "text": "Any that my agent chooses",
+      "type": "boolean"
+    },
+    {
+      "linkId": "4",
+      "text": "My specific wishes regarding funeral and burial disposition",
+      "type": "group"
+    },
+    {
+      "linkId": "4.1",
+      "text": "Upon my death, I direct my body to be buried.(instead of cremated)",
+      "type": "boolean"
+    },
+    {
+      "linkId": "4.2",
+      "text": "Upon my death, I direct my body to be buried in:",
+      "type": "boolean"
+    },
+    {
+      "linkId": "4.2.1",
+      "text": "I direct my body to be buried in following:",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "4.2",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "4.3",
+      "text": "Upon my death, I direct my body to be cremated.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "4.4",
+      "text": "Upon my death, I direct my body to be created with my ashes to be,",
+      "type": "boolean"
+    },
+    {
+      "linkId": "4.4.1",
+      "text": "I direct the following to be done with my ashes:",
+      "type": "string"
+    },
+    {
+      "linkId": "4.5",
+      "text": "My agent will make all funeral and burial decisions.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "5",
+      "text": "Physician Affidavit(Optional)\nYou may wish to ask questions of your physician regarding a particular treatment or about the options in the form. If you do speak with your physician it is a good idea to ask your physician to complete this affidavit and keep a copy for his/her file.",
+      "type": "group"
+    },
+    {
+      "linkId": "5.1",
+      "text": "Physicians name",
+      "type": "string"
+    },
+    {
+      "linkId": "5.2",
+      "text": "Physicians signature acquired",
+      "type": "boolean"
+    },
+    {
+      "linkId": "5.3",
+      "text": "Signature date",
+      "type": "date"
+    },
+    {
+      "linkId": "6",
+      "text": "HIPAA WAIVER OF CONFIDENTIALITY FOR MY AGENT",
+      "type": "group"
+    },
+    {
+      "linkId": "6.1",
+      "text": "I intend for my agent to be treated as I would be with respect to my rights regarding the use and disclosure of my individually identifiable health information or other medical records. This release authority applies to any information governed by the Health Insurance Portability and Accountability Act of 1996 (aka HIPAA), 42 USC 1320d and 45 CFR 160-164.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "7",
+      "text": "MY SIGNATURE VERIFICATION FOR THE HEALTH CARE POWER OF ATTORNEY",
+      "type": "boolean"
+    },
+    {
+      "linkId": "8",
+      "text": "If you are unable to physically sign this document, your witness/notary may sign and initial for you. If applicable have your witness/notary sign below.\n\nWitness/Notary Verification: The principal of this document directly indicated to me that this Health Care Power of Attorney expresses their wishes and that they intend to adopt it at this time.",
+      "type": "group"
+    },
+    {
+      "linkId": "8.1",
+      "text": "Witness or Notary name",
+      "type": "string"
+    },
+    {
+      "linkId": "8.2",
+      "text": "Witness or Notary signature acquired",
+      "type": "boolean"
+    },
+    {
+      "linkId": "9",
+      "text": "SIGNATURE OF WITNESS\n\nI was present when this form was signed (or marked). The principal appeared to be of sound mind and was not forced to sign this form. I affirm that I meet the requirements to be a witness as indicated on page one of the health care power of attorney form.",
+      "type": "group"
+    },
+    {
+      "linkId": "9.1",
+      "text": "Witness name",
+      "type": "string"
+    },
+    {
+      "linkId": "9.2",
+      "text": "Witness address",
+      "type": "string"
+    },
+    {
+      "linkId": "9.3",
+      "text": "Witness signaure acquired",
+      "type": "boolean"
+    }
+  ]
+}

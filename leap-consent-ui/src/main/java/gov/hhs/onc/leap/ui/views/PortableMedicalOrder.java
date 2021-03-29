@@ -22,7 +22,10 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
+import gov.hhs.onc.leap.adr.model.POLSTPortableMedicalOrder;
+import gov.hhs.onc.leap.adr.model.PowerOfAttorneyHealthCare;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -38,6 +41,9 @@ import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
+import gov.hhs.onc.leap.ui.util.pdf.PDFPOAHealthcareHandler;
+import gov.hhs.onc.leap.ui.util.pdf.PDFPOLSTHandler;
+import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +52,12 @@ import org.vaadin.alejandro.PdfBrowserViewer;
 
 import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 @PageTitle("National POLST Form - A Portable Medical Order")
 @Route(value = "portablemedicalorderview", layout = MainLayout.class)
@@ -118,7 +129,7 @@ public class PortableMedicalOrder extends ViewFrame {
     private TextField healthcareProviderPhoneNumberField;
     private TextField healthcareProviderLicenseField;
     private FlexBoxLayout healthcareProviderSignatureLayout;
-    // if required by state
+    // if required by state or institution
     private SignaturePad supervisingPhysicianSignature;
     private byte[] base64SupervisingPhysicianSignature;
     private TextField supervisingPhysicianLicenseField;
@@ -172,11 +183,20 @@ public class PortableMedicalOrder extends ViewFrame {
 
     private Dialog docDialog;
 
+    private QuestionnaireResponse questionnaireResponse;
+
+    private List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList;
+
+    private POLSTPortableMedicalOrder polst;
+
     @Autowired
     private FHIRConsent fhirConsentClient;
 
     @Autowired
     private PDFSigningService pdfSigningService;
+
+    @Autowired
+    private FHIRQuestionnaireResponse fhirQuestionnaireResponse;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -189,6 +209,7 @@ public class PortableMedicalOrder extends ViewFrame {
         setId("portablemedicalorderview");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
+        this.responseList = new ArrayList<>();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
     }
@@ -993,7 +1014,7 @@ public class PortableMedicalOrder extends ViewFrame {
         return header;
     }
     private String getDateString(Date dt) {
-        String pattern = "yyyy-MM-dd";
+        String pattern = "MM/dd/yyyy";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
 
         String date = simpleDateFormat.format(dt);
@@ -1316,8 +1337,500 @@ public class PortableMedicalOrder extends ViewFrame {
                 participantLayout.setVisible(false);
                 whoAssistedLayout.setVisible(true);
                 break;
+            case 14:
+                returnButton.setEnabled(true);
+                forwardButton.setEnabled(false);
+                getHumanReadable();
+                docDialog.open();
+                break;
             default:
                 break;
         }
+    }
+
+    private void getHumanReadable() {
+        StreamResource streamResource = setFieldsCreatePDF();
+        docDialog = new Dialog();
+
+        streamResource.setContentType("application/pdf");
+
+        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
+        viewer.setHeight("800px");
+        viewer.setWidth("840px");
+
+
+        Button closeButton = new Button("Cancel", e -> docDialog.close());
+        closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
+        closeButton.addClickListener(event -> {
+            docDialog.close();
+            questionPosition--;
+            evalNavigation();
+        });
+
+        Button acceptButton = new Button("Accept and Submit");
+        acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
+        acceptButton.addClickListener(event -> {
+            docDialog.close();
+            createQuestionnaireResponse();
+            createFHIRConsent();
+            successNotification();
+            //todo test for fhir consent create success
+            resetFormAndNavigation();
+            evalNavigation();
+        });
+
+        HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
+
+        FlexBoxLayout content = new FlexBoxLayout(viewer, hLayout);
+        content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        content.setBoxSizing(BoxSizing.BORDER_BOX);
+        content.setHeightFull();
+        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+
+        docDialog.add(content);
+
+        docDialog.setModal(false);
+        docDialog.setResizable(true);
+        docDialog.setDraggable(true);
+    }
+
+    private StreamResource setFieldsCreatePDF() {
+        polst = new POLSTPortableMedicalOrder();
+        //demographics
+        polst.setPatientFirstName(patientFirstName.getValue());
+        polst.setPatientMiddleName(patientMiddleName.getValue());
+        polst.setPatientLastName(patientLastName.getValue());
+        polst.setPatientPreferredName(patientPreferredName.getValue());
+        polst.setPatientSuffix(patientNameSuffix.getValue());
+        polst.setGenderF(patientGenderF.getValue());
+        polst.setGenderM(patientGenderM.getValue());
+        polst.setGenderX(patientGenderX.getValue());
+        polst.setPatientDateOfBirth(patientDobMonth.getValue()+"/"+patientDobDay.getValue()+"/"+patientDobYear.getValue());
+        polst.setLast4SSN(last4ssn1.getValue()+last4ssn2.getValue()+last4ssn3.getValue()+last4ssn4.getValue());
+        polst.setPatientHomeState(consentSession.getPrimaryState());
+        //cardiopulmonaryresuscitation
+        polst.setYesCPR(yesCPR.getValue());
+        polst.setNoCPR(noCPR.getValue());
+        //initial treatment
+        polst.setFullTreatments(fullTreatments.getValue());
+        polst.setSelectiveTreatments(selectiveTreatments.getValue());
+        polst.setComfortFocusedTreament(comfortTreatments.getValue());
+        //additional orders
+        polst.setAdditionalTreatments(additionalOrdersInstructions.getValue());
+        //nutrition
+        polst.setNutritionByArtificialMeans(provideFeeding.getValue());
+        polst.setTrialNutritionByArtificialMeans(trialPeriodFeeding.getValue());
+        polst.setNoArtificialMeans(noArtificialMeans.getValue());
+        polst.setNoNutritionDecisionMade(discussedNoDecision.getValue());
+
+        //patient or representative signature
+        polst.setBase64EncodedSignature(base64PatientOrRepresentativeSignature);
+        polst.setRepresentativeSigning(notPatientSigning.getValue());
+        polst.setRepresentativeName(patientOrRepresentativeNameField.getValue());
+        polst.setRepresentativeAuthority(authorityField.getValue());
+
+        //healthcare provider signature
+        polst.setHealthcareProviderFullName(healthcareProviderNameField.getValue());
+        polst.setHealthcareProviderLicenseOrCert(healthcareProviderLicenseField.getValue());
+        polst.setSignatureDate(getDateString(healthcareProviderSignatureDate));
+        polst.setHealthcareProviderPhoneNumber(healthcareProviderPhoneNumberField.getValue());
+        polst.setBase64EncodedSignatureHealthcareProvider(base64HealthcareProviderSignature);
+        //supervisor
+        polst.setSupervisingPhysicianLicense(supervisingPhysicianLicenseField.getValue());
+        polst.setRequiredSupervisingPhysicianSignature(supervisorSignatureChk.getValue());
+        polst.setBase64EncodedSupervisingPhysicianSignature(base64SupervisingPhysicianSignature);
+
+        //emergency contact
+        polst.setEmergencyContactFullName(emergencyContactNameField.getValue());
+        polst.setOtherEmergencyType(otherContactType.getValue());
+        polst.setLegalSurrogateOrHealthcareAgent(legalOrSurrogate.getValue());
+        polst.setEmergencyContactPhoneNumberDay(dayPhoneNumber.getValue());
+        polst.setEmergencyContactPhoneNumberNight(nightPhoneNumber.getValue());
+
+        //advance directive review
+        polst.setAdvancedDirectiveReviewed(livingWillReviewed.getValue());
+        polst.setDateAdvancedDirectiveReviewed(reviewedDate.getValue());
+        polst.setAdvanceDirectiveConflictExists(livingWillConflict.getValue());
+        polst.setAdvanceDirectiveNotAvailable(advanceDirectiveNotAvailable.getValue());
+        polst.setNoAdvanceDirectiveExists(noAdvanceDirective.getValue());
+
+        //who particpated
+        polst.setPatientWithDecisionMakingCapacity(patientParticipated.getValue());
+        polst.setLegalSurrogateOrHealthcareAgent(legalOrSurrogate.getValue());
+        polst.setCourtAppointedGuardian(courtAppointedGuardian.getValue());
+        polst.setParentOfMinor(parentOfMinor.getValue());
+        polst.setOtherParticipants(otherParticipant.getValue());
+        polst.setOtherParticipantsList(otherParticipantList.getValue());
+
+        polst.setAssistingHealthcareProviderFullName(whoAssistedInFormCompletionName.getValue());
+        polst.setDateAssistedByHealthcareProvider(dateAssisted.getValue());
+        polst.setAssistingHealthcareProviderPhoneNumber(whoAssistedPhoneNumber.getValue());
+
+        polst.setSocialWorker(socialWorkerAssist.getValue());
+        polst.setNurse(nurseAssisted.getValue());
+        polst.setClergy(clergyAssisted.getValue());
+        polst.setAssistingOther(otherAssisted.getValue());
+        polst.setAssistingOtherList(otherAssistedList.getValue());
+
+        PDFPOLSTHandler pdfHandler = new PDFPOLSTHandler(pdfSigningService);
+        StreamResource res = pdfHandler.retrievePDFForm(polst);
+
+        consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
+        return res;
+    }
+
+    private void createFHIRConsent() {
+        Patient patient = consentSession.getFhirPatient();
+        Consent polstDirective = new Consent();
+        polstDirective.setId("POLST-"+patient.getId());
+        polstDirective.setStatus(Consent.ConsentState.ACTIVE);
+        CodeableConcept cConcept = new CodeableConcept();
+        Coding coding = new Coding();
+        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
+        coding.setCode("adr");
+        cConcept.addCoding(coding);
+        polstDirective.setScope(cConcept);
+        List<CodeableConcept> cList = new ArrayList<>();
+        CodeableConcept cConceptCat = new CodeableConcept();
+        Coding codingCat = new Coding();
+        codingCat.setSystem("http://loinc.org");
+        codingCat.setCode("59284-6");
+        cConceptCat.addCoding(codingCat);
+        cList.add(cConceptCat);
+        polstDirective.setCategory(cList);
+        Reference patientRef = new Reference();
+        patientRef.setReference("Patient/"+patient.getId());
+        patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
+        polstDirective.setPatient(patientRef);
+        List<Reference> refList = new ArrayList<>();
+        Reference orgRef = new Reference();
+        //todo - this is the deployment and custodian organization for advanced directives and should be valid in fhir consent repository
+        orgRef.setReference(orgReference);
+        orgRef.setDisplay(orgDisplay);
+        refList.add(orgRef);
+        polstDirective.setOrganization(refList);
+        Attachment attachment = new Attachment();
+        attachment.setContentType("application/pdf");
+        attachment.setCreation(new Date());
+        attachment.setTitle("POLST");
+
+
+        String encodedString = Base64.getEncoder().encodeToString(consentPDFAsByteArray);
+        attachment.setSize(encodedString.length());
+        attachment.setData(encodedString.getBytes());
+
+        polstDirective.setSource(attachment);
+
+        Consent.provisionComponent provision = new Consent.provisionComponent();
+        Period period = new Period();
+        LocalDate sDate = LocalDate.now();
+        LocalDate eDate = LocalDate.now().plusYears(10);
+        Date startDate = Date.from(sDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(eDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        period.setStart(startDate);
+        period.setEnd(endDate);
+
+        provision.setPeriod(period);
+
+        polstDirective.setProvision(provision);
+
+        Extension extension = createPortableMedicalOrderQuestionnaireResponse();
+        polstDirective.getExtension().add(extension);
+
+        fhirConsentClient.createConsent(polstDirective);
+    }
+
+    private Extension createPortableMedicalOrderQuestionnaireResponse() {
+        Extension extension = new Extension();
+        extension.setUrl("http://sdhealthconnect.com/leap/adr/polst");
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-polst-"+consentSession.getFhirPatient().getId()));
+        return extension;
+    }
+
+    private void resetFormAndNavigation() {
+        last4ssn4.clear();
+        last4ssn3.clear();
+        last4ssn2.clear();
+        last4ssn1.clear();
+        yesCPR.clear();
+        noCPR.clear();
+        fullTreatments.clear();
+        selectiveTreatments.clear();
+        comfortTreatments.clear();
+        additionalOrdersInstructions.clear();
+        provideFeeding.clear();
+        trialPeriodFeeding.clear();
+        noArtificialMeans.clear();
+        discussedNoDecision.clear();
+        patientOrRepresentativeSignature.clear();
+        notPatientSigning.clear();
+        patientOrRepresentativeNameField.clear();
+        authorityField.clear();
+        healthcareProviderSignature.clear();
+        healthcareProviderLicenseField.clear();
+        healthcareProviderNameField.clear();
+        healthcareProviderPhoneNumberField.clear();
+        supervisingPhysicianSignature.clear();
+        supervisingPhysicianLicenseField.clear();
+        supervisorSignatureChk.clear();
+        emergencyContactNameField.clear();
+        legalOrSurrogate.clear();
+        otherContactType.clear();
+        primaryProviderPhoneNumber.clear();
+        primaryProviderName.clear();
+        inHospiceCare.clear();
+        hospicePhoneNumber.clear();
+        hospiceName.clear();
+        livingWillReviewed.clear();
+        reviewedDate.clear();
+        livingWillConflict.clear();
+        advanceDirectiveNotAvailable.clear();
+        noAdvanceDirective.clear();
+        patientParticipated.clear();
+        legalOrSurrogate.clear();
+        courtAppointedGuardian.clear();
+        parentOfMinor.clear();
+        otherParticipant.clear();
+        otherParticipantList.clear();
+        whoAssistedInFormCompletionName.clear();
+        whoAssistedPhoneNumber.clear();
+        dateAssisted.clear();
+        socialWorkerAssist.clear();
+        nurseAssisted.clear();
+        clergyAssisted.clear();
+        otherAssisted.clear();
+        otherAssistedList.clear();
+
+        questionPosition = 0;
+    }
+
+    private void createQuestionnaireResponse() {
+        questionnaireResponse = new QuestionnaireResponse();
+        questionnaireResponse.setId("leap-polst-" + consentSession.getFhirPatient().getId());
+        Reference refpatient = new Reference();
+        refpatient.setReference("Patient/" + consentSession.getFhirPatient().getId());
+        questionnaireResponse.setAuthor(refpatient);
+        questionnaireResponse.setAuthored(new Date());
+        questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
+        questionnaireResponse.setSubject(refpatient);
+        questionnaireResponse.setQuestionnaire("Questionnaire/leap-polst");
+
+
+        doNotResuscitateResponse();
+        treatmentsResponse();
+        additionalOrdersResponse();
+        nutritionResponse();
+        patientOrAlternateSignatureResponse();
+        healthcareProviderSignatureResponse();
+        emergencyContactResponse();
+        primaryProviderResponse();
+        hospiceResponse();
+        advanceDirectiveReviewResponse();
+        participantsResponse();
+        assistingIndividualResponse();
+
+        questionnaireResponse.setItem(responseList);
+        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+    }
+
+    private void doNotResuscitateResponse() {
+        //DNR
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", "YES CPR: Attempt Resuscitation, including mechanical ventilation, " +
+                "defibrillation and cardioversion. (Requires choosing Full Treatments in Section B)", polst.isYesCPR());
+        responseList.add(item1_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2 = createItemBooleanType("1.2", "NO CPR: Do Not Attempt Resuscitation.</b> (May choose any " +
+                "option in Section B)", polst.isNoCPR());
+        responseList.add(item1_2);
+    }
+
+    private void treatmentsResponse() {
+        //TREATMENTS
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemBooleanType("2.1", "Full Treatments (required if choose CPR in Section A). Goal: Attempt to " +
+                "sustain life by all medically effective means. Provide appropriate medical and surgical treatments as indicated to attempt to prolong life, including intensive care.", polst.isFullTreatments());
+        responseList.add(item2_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", "Selective Treatments. Goal: Attempt to restore function while avoiding intensive " +
+                "care and resuscitation efforts (ventilator, defibrillation and cardioversion). May use non-invasive positive airway pressure, antibiotics and IV fluids as indicated. Avoid intensive " +
+                "care. Transfer to hospital if treatment needs cannot be met in current location.)", polst.isSelectiveTreatments());
+        responseList.add(item2_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_3 = createItemBooleanType("2.3", "Comfort-focused Treatments. Goal: Maximize comfort through symptom management; allow " +
+                "natural death. Use oxygen, suction and manual treatment of airway obstruction as needed for comfort. Avoid treatments listed in full or select treatments unless consistent with comfort goal. " +
+                "Transfer to hospital <b>only</b> if comfort cannot be achieved in current setting.", polst.isComfortFocusedTreament());
+        responseList.add(item2_3);
+    }
+
+    private void additionalOrdersResponse() {
+        //Additional Orders
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3 = createItemStringType("3", "C. Additional Orders or Instructions - These orders are in addition to those in section B +" +
+                "(e.g., blood products, dialysis). [EMS protocols may limit emergency responder ability to act on orders in this section.]", polst.getAdditionalTreatments());
+        responseList.add(item3);
+
+        //Nutrition
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = createItemBooleanType("4.1", "Provide feeding through new or existing surgically-placed tubes", polst.isNutritionByArtificialMeans());
+        responseList.add(item4_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", "Trial period for artificial nutrition but no surgically-placed tubes", polst.isTrialNutritionByArtificialMeans());
+        responseList.add(item4_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_3 = createItemBooleanType("4.3", "No artificial means of nutrition desired", polst.isNoArtificialMeans());
+        responseList.add(item4_3);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_4 = createItemBooleanType("4.4", "Discussed but no decision made (standard of care provided)", polst.isNoNutritionDecisionMade());
+        responseList.add(item4_4);
+    }
+
+    private void nutritionResponse() {
+        //Nutrition
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = createItemBooleanType("4.1", "Provide feeding through new or existing surgically-placed tubes", polst.isNutritionByArtificialMeans());
+        responseList.add(item4_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", "Trial period for artificial nutrition but no surgically-placed tubes", polst.isTrialNutritionByArtificialMeans());
+        responseList.add(item4_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_3 = createItemBooleanType("4.3", "No artificial means of nutrition desired", polst.isNoArtificialMeans());
+        responseList.add(item4_3);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_4 = createItemBooleanType("4.4", "Discussed but no decision made (standard of care provided)", polst.isNoNutritionDecisionMade());
+        responseList.add(item4_4);
+    }
+
+    private void patientOrAlternateSignatureResponse() {
+        //Patient and Alternate Signature
+        boolean patientSignatureBool = false;
+        if (polst.getBase64EncodedSignature() != null && polst.getBase64EncodedSignature().length > 0) patientSignatureBool = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1 = createItemBooleanType("5.1", "Patient signature acquired)", patientSignatureBool);
+        responseList.add(item5_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_2 = createItemBooleanType("5.2", "If other than patient, enter full name, and provide authority if any.)", polst.isRepresentativeSigning());
+        responseList.add(item5_2);
+        if (polst.isRepresentativeSigning()) {
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item5_2_1 = createItemStringType("5.2.1", "Full Name", polst.getRepresentativeName());
+            responseList.add(item5_2_1);
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item5_2_2 = createItemStringType("5.2.2", "Authority", polst.getRepresentativeName());
+            responseList.add(item5_2_2);
+        }
+    }
+
+    private void healthcareProviderSignatureResponse() {
+        //Healthcare Provider Signature and Info
+        boolean healthcareProviderSignatureBool = false;
+        if (polst.getBase64EncodedSignatureHealthcareProvider() != null & polst.getBase64EncodedSignatureHealthcareProvider().length > 0) healthcareProviderSignatureBool = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_1 = createItemBooleanType("6.1", "Healthcare provider signature acquired", healthcareProviderSignatureBool);
+        responseList.add(item6_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_2 = createItemStringType("6.2", "Healthcare provider Full Name", polst.getHealthcareProviderFullName());
+        responseList.add(item6_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_3 = createItemStringType("6.3", "License/Cert#", polst.getHealthcareProviderLicenseOrCert());
+        responseList.add(item6_3);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_4_1 = createItemBooleanType("6.4.1", "Supervisor Signature Not Applicable", polst.isRequiredSupervisingPhysicianSignature());
+        responseList.add(item6_4_1);
+        if (!polst.isRequiredSupervisingPhysicianSignature()) {
+            boolean supervisingPhysicianSignatureBool = false;
+            if (polst.getBase64EncodedSupervisingPhysicianSignature() != null && polst.getBase64EncodedSupervisingPhysicianSignature().length > 0) supervisingPhysicianSignatureBool = true;
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item6_4_2 = createItemBooleanType("6.4.2", "Supervisor Signature Not Applicable", supervisingPhysicianSignatureBool);
+            responseList.add(item6_4_2);
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item6_4_3 = createItemStringType("6.4.3", "License #", polst.getSupervisingPhysicianLicense());
+            responseList.add(item6_4_3);
+        }
+    }
+
+    private void emergencyContactResponse() {
+        //emergency contact
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_1 = createItemStringType("7.1", "Full Name", polst.getEmergencyContactFullName());
+        responseList.add(item7_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_3_1 = createItemBooleanType("7.3.1", "Legal Representative", legalRepresentative.getValue());
+        responseList.add(item7_3_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_3_2 = createItemBooleanType("7.3.2", "Other Contact Type", polst.isOtherEmergencyType());
+        responseList.add(item7_3_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_4 = createItemStringType("7.4", "Day Phone Number", polst.getEmergencyContactPhoneNumberDay());
+        responseList.add(item7_4);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_5 = createItemStringType("7.5", "Night Phone Number", polst.getEmergencyContactPhoneNumberNight());
+        responseList.add(item7_5);
+    }
+
+    private void primaryProviderResponse() {
+        //primary provider
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item8_1 = createItemStringType("8.1", "Primary Provider Name", polst.getPrimaryPhysicianFullName());
+        responseList.add(item8_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item8_2 = createItemStringType("8.2", "Phone Number", polst.getPrimaryPhysicianPhoneNumber());
+        responseList.add(item8_2);
+    }
+
+    private void hospiceResponse() {
+        //Hospice
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item9_1 = createItemBooleanType("9.1", "Patient is enrolled in Hospice", polst.isInHospice());
+        responseList.add(item9_1);
+        if (polst.isInHospice()) {
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item9_2 = createItemStringType("9.2", "Name of Agency", polst.getHospiceAgencyName());
+            responseList.add(item9_2);
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item9_3 = createItemStringType("9.3", "Agency Phone Number", polst.getHospiceAgencyPhoneNumber());
+            responseList.add(item9_3);
+        }
+    }
+
+    private void advanceDirectiveReviewResponse() {
+        //Advanced Directive review (optional)
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_1 = createItemBooleanType("10.1", "Yes - Reviewed patient’s advance directive to confirm " +
+                "no conflict with POLST orders: (A POLST form does not replace an advance directive or living will)", polst.isAdvancedDirectiveReviewed());
+        responseList.add(item10_1);
+        if (polst.isAdvancedDirectiveReviewed()) {
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item10_2 = createItemStringType("10.2", "Date Reviewed", polst.getDateAdvancedDirectiveReviewed());
+            responseList.add(item10_2);
+        }
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_3 = createItemBooleanType("10.3", "Conflict exists, patient notified(if patient lacks capacity, noted in chart)", polst.isAdvanceDirectiveConflictExists());
+        responseList.add(item10_3);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_4 = createItemBooleanType("10.4", "Advanced Directive not available", polst.isAdvanceDirectiveNotAvailable());
+        responseList.add(item10_4);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_5 = createItemBooleanType("10.5", "Advanced Directive does not exist", polst.isNoAdvanceDirectiveExists());
+        responseList.add(item10_5);
+    }
+
+    private void participantsResponse() {
+        //Participants
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_1 = createItemBooleanType("11.1", "Patient with decision making capacity", polst.isPatientWithDecisionMakingCapacity());
+        responseList.add(item11_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_2 = createItemBooleanType("11.2", "Legal Surrogate/Health care agent", polst.isLegalSurrogateOrHealthcareAgent());
+        responseList.add(item11_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_3 = createItemBooleanType("11.3", "Court appointed guardian", polst.isCourtAppointedGuardian());
+        responseList.add(item11_3);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_4 = createItemBooleanType("11.4", "Parent of minor", polst.isParentOfMinor());
+        responseList.add(item11_4);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_5 = createItemBooleanType("11.5", "Other", polst.isOtherParticipants());
+        responseList.add(item11_5);
+        if (polst.isOtherParticipants()) {
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item11_6 = createItemStringType("11.6", "List of other participants", polst.getOtherParticipantsList());
+            responseList.add(item11_6);
+        }
+    }
+
+    private void assistingIndividualResponse() {
+        //Professional Assisting Health Care Provider w/ Form Completion (if applicable):
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_1 = createItemStringType("12.1", "Full Name", polst.getAssistingHealthcareProviderFullName());
+        responseList.add(item12_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_2 = createItemStringType("12.2", "Date Assisted", polst.getDateAssistedByHealthcareProvider());
+        responseList.add(item12_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_3 = createItemStringType("12.3", "Phone Number", polst.getAssistingHealthcareProviderPhoneNumber());
+        responseList.add(item12_3);
+        //relationship
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_1 = createItemBooleanType("12.4.1", "Social Worker", polst.isSocialWorker());
+        responseList.add(item12_4_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_2 = createItemBooleanType("12.4.2", "Nurse", polst.isNurse());
+        responseList.add(item12_4_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_3 = createItemBooleanType("12.4.3", "Clergy", polst.isClergy());
+        responseList.add(item12_4_3);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_4 = createItemBooleanType("12.4.4", "Other", polst.isAssistingOther());
+        responseList.add(item12_4_4);
+        if (polst.isAssistingOther()) {
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_5 = createItemStringType("12.4.5", "Enter Type", polst.getAssistingOtherList());
+            responseList.add(item12_4_5);
+        }
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemBooleanType(String linkId, String definition, boolean bool) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new BooleanType(bool)));
+        item.setDefinition(definition);
+        return item;
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemStringType(String linkId, String definition, String string) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new StringType(string)));
+        item.setDefinition(definition);
+        return item;
     }
 }

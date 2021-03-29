@@ -22,6 +22,7 @@ import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.adr.model.*;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -126,11 +127,19 @@ public class LivingWill extends ViewFrame {
 
     private Dialog docDialog;
 
+    private QuestionnaireResponse questionnaireResponse;
+    private List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList;
+
+    private gov.hhs.onc.leap.adr.model.LivingWill livingWill;
+
     @Autowired
     private FHIRConsent fhirConsentClient;
 
     @Autowired
     private PDFSigningService pdfSigningService;
+
+    @Autowired
+    private FHIRQuestionnaireResponse fhirQuestionnaireResponse;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -143,6 +152,7 @@ public class LivingWill extends ViewFrame {
         setId("livingwillview");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
+        this.responseList = new ArrayList<>();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
     }
@@ -722,6 +732,7 @@ public class LivingWill extends ViewFrame {
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
+            createQuestionnaireResponse();
             createFHIRConsent();
             successNotification();
             //todo test for fhir consent create success
@@ -749,7 +760,7 @@ public class LivingWill extends ViewFrame {
     }
 
     private StreamResource setFieldsCreatePDF() {
-        gov.hhs.onc.leap.adr.model.LivingWill livingWill = new gov.hhs.onc.leap.adr.model.LivingWill();
+        livingWill = new gov.hhs.onc.leap.adr.model.LivingWill();
         //Set principle
         Principle principle = new Principle();
         principle.setAddress1(patientAddress1Field.getValue());
@@ -881,8 +892,19 @@ public class LivingWill extends ViewFrame {
 
         poaDirective.setProvision(provision);
 
+        Extension extension = createLivingWillQuestionnaireResponse();
+        poaDirective.getExtension().add(extension);
+
         fhirConsentClient.createConsent(poaDirective);
     }
+
+    private Extension createLivingWillQuestionnaireResponse() {
+        Extension extension = new Extension();
+        extension.setUrl("http://sdhealthconnect.com/leap/adr/livingwill");
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-livingwill-"+consentSession.getFhirPatient().getId()));
+        return extension;
+    }
+
     private void resetFormAndNavigation() {
         patientInitials.clear();
         comfortCareOnlyButNo.clear();
@@ -902,5 +924,105 @@ public class LivingWill extends ViewFrame {
         witnessName.clear();
 
         questionPosition = 0;
+    }
+
+    private void createQuestionnaireResponse() {
+        questionnaireResponse = new QuestionnaireResponse();
+        questionnaireResponse.setId("leap-livingwill-" + consentSession.getFhirPatient().getId());
+        Reference refpatient = new Reference();
+        refpatient.setReference("Patient/" + consentSession.getFhirPatient().getId());
+        questionnaireResponse.setAuthor(refpatient);
+        questionnaireResponse.setAuthored(new Date());
+        questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
+        questionnaireResponse.setSubject(refpatient);
+        questionnaireResponse.setQuestionnaire("Questionnaire/leap-livingwill");
+
+        lifeSustainingDecisionsResponse();
+        additionalInstructionsResponse();
+        signatureRequirementsResponse();
+
+        questionnaireResponse.setItem(responseList);
+        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+    }
+
+    private void lifeSustainingDecisionsResponse() {
+        //general statements and selections
+        if (!livingWill.isProlongLifeToGreatestExtentPossible()) {
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", "If I have a terminal condition I do not want my life to be prolonged, and I do not " +
+                    "want lifesustaining treatment, beyond comfort care, that would serve only to artificially delay the moment of my death.", livingWill.isComfortCareOnly());
+            responseList.add(item1_1);
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2 = createItemBooleanType("1.2", "If I am in a terminal condition or an irreversible coma or a persistent vegetative " +
+                    "state that my doctors reasonably feel to be irreversible or incurable, I do want the medical treatment necessary to provide care that would keep me comfortable, but I DO NOT want the following:", livingWill.isComfortCareOnlyButNot());
+            responseList.add(item1_2);
+            if (livingWill.isComfortCareOnlyButNot()) {
+                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_1 = createItemBooleanType("1.3.1", "Cardiopulmonary resuscitation (CPR). For example: the use of drugs, electric " +
+                        "shock and artificial breathing.", livingWill.isNoCardioPulmonaryRecusitation());
+                responseList.add(item1_3_1);
+                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_2 = createItemBooleanType("1.3.2", "Artificially administered food and fluids.", livingWill.isNoArtificalFluidsFoods());
+                responseList.add(item1_3_2);
+                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_3 = createItemBooleanType("1.3.3", "To be taken to a hospital if at all avoidable.", livingWill.isAvoidTakingToHospital());
+                responseList.add(item1_3_3);
+            }
+            if (consentSession.getConsentUser().getGender().equals("F")) {
+                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_4 = createItemBooleanType("1.4", "Regardless of any other directions I have given in this Living Will, " +
+                        "if I am known to be pregnant, I do not want life-sustaining treatment withheld or withdrawn if it is possible that the embryo/fetus will develop to the point of live birth" +
+                        " with the continued application of lifesustaining treatment.", livingWill.isPregnantSaveFetus());
+                responseList.add(item1_4);
+            }
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_5 = createItemBooleanType("1.5", "Regardless of any other directions I have given in this Living Will, I do want" +
+                    " the use of all medical care necessary to treat my condition until my doctors reasonably conclude that my condition is terminal or is irreversible and incurable or I am in a " +
+                    "persistent vegetative state.", livingWill.isCareUntilDoctorsConcludeNoHope());
+            responseList.add(item1_5);
+        }
+        else {
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_6 = createItemBooleanType("1.6", "I want my life to be prolonged to the greatest extent possible (If you select +" +
+                    "here, all others should be unselected).", livingWill.isProlongLifeToGreatestExtentPossible());
+            responseList.add(item1_6);
+        }
+    }
+
+    private void additionalInstructionsResponse() {
+        //attachements additional instructions
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemBooleanType("2.1", "I HAVE NOT attached additional special instructions about End of Life Care I want.",
+                livingWill.isNoAdditionalInstructions());
+        responseList.add(item2_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", "I HAVE attached additional special provisions or limitations about End of Life Care I want.",
+                livingWill.isAdditionalInstructions());
+        responseList.add(item2_2);
+    }
+
+    private void signatureRequirementsResponse() {
+        //signature requirements
+        boolean patientSignatureBool = false;
+        if (livingWill.getPrincipleSignature().getBase64EncodeSignature() != null && livingWill.getPrincipleSignature().getBase64EncodeSignature().length > 0) patientSignatureBool = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1 = createItemBooleanType("3.1", "Patient signature acquired",
+                patientSignatureBool);
+        responseList.add(item3_1);
+        boolean patientAlternateSignatureBool = false;
+        if (livingWill.getPrincipleAlternateSignature().getBase64EncodedSignature() != null && livingWill.getPrincipleAlternateSignature().getBase64EncodedSignature().length > 0) patientAlternateSignatureBool = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2 = createItemBooleanType("3.2", "Patient Unable to Sign, Alternate's Signature Acquired.",
+                patientAlternateSignatureBool);
+        responseList.add(item3_2);
+        boolean witnessSignatureBool = false;
+        if (livingWill.getWitnessSignature().getBase64EncodedSignature() != null && livingWill.getWitnessSignature().getBase64EncodedSignature().length > 0) witnessSignatureBool = true;
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3 = createItemBooleanType("3.3", "Witness Signature Acquired.",
+                witnessSignatureBool);
+        responseList.add(item3_3);
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemBooleanType(String linkId, String definition, boolean bool) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new BooleanType(bool)));
+        item.setDefinition(definition);
+        return item;
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemStringType(String linkId, String definition, String string) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new StringType(string)));
+        item.setDefinition(definition);
+        return item;
     }
 }

@@ -1,0 +1,119 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "leap-livingwill",
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"> <pre>LEAP Living Will Questionnaire\n1. Some general statements about your health care choices are listed below. If you agree with one of the statements, you should select that statement. \nRead all of these statements carefully BEFORE you select your preferred statement. You can also write your own statement concerning life-sustaining \ntreatment and other matters relating to your health care. You may select any combination of items, BUT if you 'select' item 1.6 the others will not be selected.\n1.1 If I have a terminal condition I do not want my life to be prolonged, and I do not want lifesustaining \ntreatment, beyond comfort care, that would serve only to artificially delay the \nmoment of my death. \n1.2 If I am in a terminal condition or an irreversible coma or a persistent vegetative state that my \ndoctors reasonably feel to be irreversible or incurable, I do want the medical treatment \nnecessary to provide care that would keep me comfortable, but I DO NOT want the following \n1.3 Patient Does Not Want the following \n1.3.1 Cardiopulmonary resuscitation (CPR). For example: the use of drugs, electric shock and artificial breathing.\n1.3.2 Artificially administered food and fluids. \n1.3.3 To be taken to a hospital if at all avoidable. \n1.4 Regardless of any other directions I have given in this Living Will, if I am known to be pregnant, I do not \nwant life-sustaining treatment withheld or withdrawn if it is possible that the embryo/fetus will develop to the \npoint of live birth with the continued application of lifesustaining treatment. \n1.5 Regardless of any other directions I have given in this Living Will, I do want the use of all medical care necessary\nto treat my condition until my doctors reasonably conclude that my condition is terminal or is irreversible and incurable\nor I am in a persistent vegetative state.\n1.6 I want my life to be prolonged to the greatest extent possible (If you select here, all others should be unselected).\n\n2. Additional Instructions\n2.1 I HAVE NOT attached additional special instructions about End of Life Care I want.\n2.2 I HAVE attached additional special provisions or limitations about End of Life Care I want.\n3. Signature Verification\n3.1 Patient Signature Acquired\n3.2 Patient unable to sign Alternates Signature Acquired\n,3.3 Witness Signature Acquired\n</pre></div>"
+  },
+  "url": "http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/Questionnaire/leap-livingwill",
+  "status": "active",
+  "experimental": "true",
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2021",
+  "code": [
+    {
+      "system": "http://sdhealthconnect.com/leap/adr/livingwill",
+      "code": "2021-03-01",
+      "display": "Living Will Questionnaire Version 1"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "1",
+      "text": "Some general statements about your health care choices are listed below. If you agree with one ofthe statements, you should select that statement. Read all of these statements carefully BEFORE you select your preferred statement. You can also write your own statement concerning life-sustaining treatment and other matters relating to your health care. You may select any combination of items 1, 2, 3 and 4, BUT if you 'select' item 5 the others will not be selected.",
+      "type": "group"
+    },
+    {
+      "linkId": "1.1",
+      "text": "If I have a terminal condition I do not want my life to be prolonged, and I do not want lifesustaining treatment, beyond comfort care, that would serve only to artificially delay the moment of my death.",
+      "type": "boolean"
+
+    },
+    {
+      "linkId": "1.2",
+      "text": "If I am in a terminal condition or an irreversible coma or a persistent vegetative state that my doctors reasonably feel to be irreversible or incurable, I do want the medical treatment necessary to provide care that would keep me comfortable, but I DO NOT want the following:",
+      "type": "boolean"
+    },
+    {
+      "linkId": "1.3",
+      "text": "Patient Does Not Want the following:",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "1.2",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ],
+      "item": [
+        {
+          "linkId": "1.3.1",
+          "text": "Cardiopulmonary resuscitation (CPR). For example: the use of drugs, electric shock and artificial breathing.",
+          "type": "boolean"
+        },
+        {
+          "linkId": "1.3.2",
+          "text": "Artificially administered food and fluids.",
+          "type": "boolean"
+        },
+        {
+          "linkId": "1.3.3",
+          "text": "To be taken to a hospital if at all avoidable.",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "linkId": "1.4",
+      "text": "Regardless of any other directions I have given in this Living Will, if I am known to be pregnant, I do not want life-sustaining treatment withheld or withdrawn if it is possible that the embryo/fetus will develop to the point of live birth with the continued application of lifesustaining treatment.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "1.5",
+      "text": "Regardless of any other directions I have given in this Living Will, I do want the use of all medical care necessary to treat my condition until my doctors reasonably conclude that my condition is terminal or is irreversible and incurable or I am in a persistent vegetative state.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "1.6",
+      "text": "I want my life to be prolonged to the greatest extent possible (If you select here, all others should be unselected).",
+      "type": "boolean"
+    },
+    {
+      "linkId": "2",
+      "text": "Additional Instructions",
+      "type": "group"
+    },
+    {
+      "linkId": "2.1",
+      "text": "I HAVE NOT attached additional special instructions about End of Life Care I want.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "2.2",
+      "text": "I HAVE attached additional special provisions or limitations about End of Life Care I want.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3",
+      "text": "Signature Verficiation",
+      "type": "group"
+    },
+    {
+      "linkId": "3.1",
+      "text": "Patient Signature Acquired.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.2",
+      "text": "Patient Unable to Sign, Alternate's Signature Acquired.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.3",
+      "text": "Witness Signature Acquired",
+      "type": "boolean"
+    }
+  ]
+}
