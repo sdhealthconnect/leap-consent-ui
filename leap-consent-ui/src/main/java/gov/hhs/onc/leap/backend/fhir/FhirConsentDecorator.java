@@ -10,6 +10,7 @@ import org.hl7.fhir.r4.model.HumanName;
 import org.hl7.fhir.r4.model.Patient;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FhirConsentDecorator implements ConsentDecorator {
 
@@ -26,19 +27,15 @@ public class FhirConsentDecorator implements ConsentDecorator {
         Patient fhirPatient = fhirPatientUtil.get();
         consentSession.setFhirPatient(fhirPatient);
         ConsentUser consentUser = consentSession.getConsentUser();
-        List<HumanName> names = fhirPatient.getName();
-        // Firstname
+        List<HumanName> names = fhirPatient.getName().stream().filter(hname -> HumanName.NameUse.OFFICIAL.equals(hname.getUse())).collect(Collectors.toList());// Firstname
         if (names.size()>0) {
             consentUser.setPrefix(names.get(0).getPrefix().get(0).getValue());
-            consentUser.setFirstName(names.get(0).getFamily());
+            consentUser.setFirstName(names.get(0).getGiven().get(0).getValue());
+            consentUser.setLastName(names.get(0).getFamily());
         }
-        // Middle name and lastname
-        if (names.size()>2) {
-            consentUser.setMiddleName(names.get(1).getFamily());
-            consentUser.setLastName(names.get(2).getFamily());
-        } else if (names.size()==2) {
-            // Lastname
-            consentUser.setLastName(names.get(1).getFamily());
+        // Middle name
+        if (names.size()>1) {
+            consentUser.setMiddleName(names.get(0).getGiven().get(0).getValue());
         }
         //Date of birth
         consentUser.setDateOfBirth(fhirPatient.getBirthDate());
