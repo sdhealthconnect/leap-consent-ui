@@ -39,7 +39,7 @@ public class FHIRConsent {
     public Collection<Consent> getPatientConsents() {
         ConsentSession consentSession = (ConsentSession)VaadinSession.getCurrent().getAttribute("consentSession");
         //get just the id portion
-        String patientId = consentSession.getFhirPatient().getId().replace("Patient/", "");
+        String patientId = consentSession.getFhirPatient().getId();
         Collection<Consent> consentCollection = new ArrayList<>();
         Bundle bundle = hapiFhirServer.getAllConsentsForPatient(patientId);
         List<Bundle.BundleEntryComponent> resourceList = bundle.getEntry();
