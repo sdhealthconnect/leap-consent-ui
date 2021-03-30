@@ -4,13 +4,16 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.SearchTotalModeEnum;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
+import ca.uhn.fhir.rest.gclient.ReferenceClientParam;
 import gov.hhs.onc.leap.backend.fhir.client.exceptions.HapiFhirCreateException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hl7.fhir.instance.model.api.IBaseOperationOutcome;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.r4.model.*;
+import org.hl7.fhir.r4.utils.ResourceUtilities;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -229,6 +232,7 @@ public class HapiFhirServer {
         }
 
         public Bundle getAllConsentsForPatient(String id) {
+            log.warn("ID from session: "+id);
             Bundle bundle = hapiClient
                     .search()
                     .forResource(Consent.class)

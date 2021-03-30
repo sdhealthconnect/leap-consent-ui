@@ -323,13 +323,14 @@ public class PortableMedicalOrder extends ViewFrame {
         patientDobMonth.setValue(getDateMonth(consentUser.getDateOfBirth()));
         patientDobDay.setValue(getDateDay(consentUser.getDateOfBirth()));
         patientDobYear.setValue(getDateYear(consentUser.getDateOfBirth()));
-        if (consentUser.getGender().equals("M")) {
+        log.warn("ConsentUser Gender" +consentUser.getGender());
+        if (consentUser.getGender().equals("Male")) {
             patientGenderM.setValue(true);
         }
-        else if (consentUser.getGender().equals("F")) {
+        else if (consentUser.getGender().equals("Female")) {
             patientGenderF.setValue(true);
         }
-        else if (consentUser.getGender().equals("X")) {
+        else {
             patientGenderX.setValue(true);
         }
 
@@ -1321,7 +1322,7 @@ public class PortableMedicalOrder extends ViewFrame {
                 break;
             case 13:
                 returnButton.setEnabled(true);
-                forwardButton.setEnabled(false);
+                forwardButton.setEnabled(true);
                 patientGeneralInfoLayout.setVisible(false);
                 cardiopulmonaryResuscitationOrdersLayout.setVisible(false);
                 initialTreatmentOrders.setVisible(false);
@@ -1482,7 +1483,7 @@ public class PortableMedicalOrder extends ViewFrame {
     private void createFHIRConsent() {
         Patient patient = consentSession.getFhirPatient();
         Consent polstDirective = new Consent();
-        polstDirective.setId("POLST-"+patient.getId().replace("Patient/", ""));
+        polstDirective.setId("POLST-"+consentSession.getFhirPatientId());
         polstDirective.setStatus(Consent.ConsentState.ACTIVE);
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
@@ -1499,7 +1500,7 @@ public class PortableMedicalOrder extends ViewFrame {
         cList.add(cConceptCat);
         polstDirective.setCategory(cList);
         Reference patientRef = new Reference();
-        patientRef.setReference(patient.getId());
+        patientRef.setReference("Patient/"+consentSession.getFhirPatientId());
         patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
         polstDirective.setPatient(patientRef);
         List<Reference> refList = new ArrayList<>();
@@ -1544,7 +1545,7 @@ public class PortableMedicalOrder extends ViewFrame {
     private Extension createPortableMedicalOrderQuestionnaireResponse() {
         Extension extension = new Extension();
         extension.setUrl("http://sdhealthconnect.com/leap/adr/polst");
-        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-polst-"+consentSession.getFhirPatient().getId().replace("Patient/", "")));
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-polst-"+consentSession.getFhirPatientId()));
         return extension;
     }
 
@@ -1607,9 +1608,9 @@ public class PortableMedicalOrder extends ViewFrame {
 
     private void createQuestionnaireResponse() {
         questionnaireResponse = new QuestionnaireResponse();
-        questionnaireResponse.setId("leap-polst-" + consentSession.getFhirPatient().getId().replace("Patient/", ""));
+        questionnaireResponse.setId("leap-polst-" + consentSession.getFhirPatientId());
         Reference refpatient = new Reference();
-        refpatient.setReference(consentSession.getFhirPatient().getId());
+        refpatient.setReference("Patient/"+consentSession.getFhirPatientId());
         questionnaireResponse.setAuthor(refpatient);
         questionnaireResponse.setAuthored(new Date());
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);

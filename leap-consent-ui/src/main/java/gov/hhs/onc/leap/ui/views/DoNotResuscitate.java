@@ -644,7 +644,7 @@ public class DoNotResuscitate extends ViewFrame {
     private void createFHIRConsent() {
         Patient patient = consentSession.getFhirPatient();
         Consent dnrDirective = new Consent();
-        dnrDirective.setId("DNR-"+patient.getId().replace("Patient/", ""));
+        dnrDirective.setId("DNR-"+consentSession.getFhirPatientId());
         dnrDirective.setStatus(Consent.ConsentState.ACTIVE);
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
@@ -661,7 +661,7 @@ public class DoNotResuscitate extends ViewFrame {
         cList.add(cConceptCat);
         dnrDirective.setCategory(cList);
         Reference patientRef = new Reference();
-        patientRef.setReference(patient.getId());
+        patientRef.setReference("Patient/"+consentSession.getFhirPatientId());
         patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
         dnrDirective.setPatient(patientRef);
         List<Reference> refList = new ArrayList<>();
@@ -707,7 +707,7 @@ public class DoNotResuscitate extends ViewFrame {
     private Extension createDoNotResuscitateQuestionnaireResponse() {
         Extension extension = new Extension();
         extension.setUrl("http://sdhealthconnect.com/leap/adr/dnr");
-        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-dnr-"+consentSession.getFhirPatient().getId().replace("Patient/", "")));
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-dnr-"+consentSession.getFhirPatientId()));
         return extension;
     }
 
@@ -727,9 +727,9 @@ public class DoNotResuscitate extends ViewFrame {
         BooleanType booleanTypeFalse = new BooleanType(false);
         BooleanType answerBoolean = new BooleanType();
         questionnaireResponse = new QuestionnaireResponse();
-        questionnaireResponse.setId("leap-dnr-"+consentSession.getFhirPatient().getId().replace("Patient/", ""));
+        questionnaireResponse.setId("leap-dnr-"+consentSession.getFhirPatientId());
         Reference refpatient = new Reference();
-        refpatient.setReference(consentSession.getFhirPatient().getId());
+        refpatient.setReference("Patient/"+consentSession.getFhirPatientId());
         questionnaireResponse.setAuthor(refpatient);
         questionnaireResponse.setAuthored(new Date());
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);

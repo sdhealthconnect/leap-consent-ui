@@ -26,6 +26,7 @@ public class DBConsentDecorator implements ConsentDecorator {
         consentSession.setUserId(consentSession.getConsentUser().getUser().getFhirPatientId());
         consentSession.setUsername(consentUser.getUserName());
         consentSession.setPrimaryState(consentUser.getState());
+        consentSession.setFhirPatientId(consentSession.getConsentUser().getUser().getFhirPatientId());
         return consentSession;
     }
 }

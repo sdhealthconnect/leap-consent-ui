@@ -9,6 +9,7 @@ import org.hl7.fhir.r4.model.Practitioner;
 public class ConsentSession {
     private String username;
     private String userId;
+    private String fhirPatientId;
     private String languagePreference;  // Manual entry default English
     private String primaryState;        // Manual entry default "Arizona"
     private Patient fhirPatient;        // Fhir entry
@@ -100,5 +101,13 @@ public class ConsentSession {
 
     public void setFhirbase(String fhirbase) {
         this.fhirbase = fhirbase;
+    }
+
+    public String getFhirPatientId() {
+        return fhirPatientId;
+    }
+
+    public void setFhirPatientId(String fhirPatientId) {
+        this.fhirPatientId = fhirPatientId;
     }
 }
