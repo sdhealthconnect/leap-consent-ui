@@ -968,7 +968,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
     private void createFHIRConsent() {
         Patient patient = consentSession.getFhirPatient();
         Consent poaDirective = new Consent();
-        poaDirective.setId("POAMentalHealth-"+patient.getId().replace("Patient/", ""));
+        poaDirective.setId("POAMentalHealth-"+consentSession.getFhirPatientId());
         poaDirective.setStatus(Consent.ConsentState.ACTIVE);
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
@@ -985,7 +985,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         cList.add(cConceptCat);
         poaDirective.setCategory(cList);
         Reference patientRef = new Reference();
-        patientRef.setReference(patient.getId());
+        patientRef.setReference("Patient/"+consentSession.getFhirPatientId());
         patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
         poaDirective.setPatient(patientRef);
         List<Reference> refList = new ArrayList<>();
@@ -1030,7 +1030,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
     private Extension createPowerOfAttorneyMentalHealthQuestionnaireResponse() {
         Extension extension = new Extension();
         extension.setUrl("http://sdhealthconnect.com/leap/adr/poamentalhealth");
-        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-poamentalhealth-"+consentSession.getFhirPatient().getId().replace("Patient/", "")));
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-poamentalhealth-"+consentSession.getFhirPatientId()));
         return extension;
     }
 
@@ -1073,9 +1073,9 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         BooleanType booleanTypeFalse = new BooleanType(false);
         BooleanType answerBoolean = new BooleanType();
         questionnaireResponse = new QuestionnaireResponse();
-        questionnaireResponse.setId("leap-poamentalhealth-" + consentSession.getFhirPatient().getId().replace("Patient/", ""));
+        questionnaireResponse.setId("leap-poamentalhealth-" + consentSession.getFhirPatientId());
         Reference refpatient = new Reference();
-        refpatient.setReference(consentSession.getFhirPatient().getId());
+        refpatient.setReference("Patient/"+consentSession.getFhirPatientId());
         questionnaireResponse.setAuthor(refpatient);
         questionnaireResponse.setAuthored(new Date());
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);

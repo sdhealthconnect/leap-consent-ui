@@ -328,7 +328,7 @@ public class LivingWill extends ViewFrame {
                 "pregnant, I do not want life-sustaining treatment withheld or withdrawn if it is possible that " +
                 "the embryo/fetus will develop to the point of live birth with the continued application of lifesustaining " +
                 "treatment.");
-        if (consentSession.getConsentUser().getGender().equals("M")) {
+        if (consentSession.getConsentUser().getGender().equals("Male")) {
             ifPregnantSaveFetus.setEnabled(false);
         }
         ifPregnantSaveFetus.addValueChangeListener(event -> {
@@ -839,7 +839,7 @@ public class LivingWill extends ViewFrame {
     private void createFHIRConsent() {
         Patient patient = consentSession.getFhirPatient();
         Consent poaDirective = new Consent();
-        poaDirective.setId("LivingWill-"+patient.getId().replace("Patient/", ""));
+        poaDirective.setId("LivingWill-"+consentSession.getFhirPatientId());
         poaDirective.setStatus(Consent.ConsentState.ACTIVE);
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
@@ -856,7 +856,7 @@ public class LivingWill extends ViewFrame {
         cList.add(cConceptCat);
         poaDirective.setCategory(cList);
         Reference patientRef = new Reference();
-        patientRef.setReference(patient.getId());
+        patientRef.setReference("Patient/"+consentSession.getFhirPatientId());
         patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
         poaDirective.setPatient(patientRef);
         List<Reference> refList = new ArrayList<>();
@@ -901,7 +901,7 @@ public class LivingWill extends ViewFrame {
     private Extension createLivingWillQuestionnaireResponse() {
         Extension extension = new Extension();
         extension.setUrl("http://sdhealthconnect.com/leap/adr/livingwill");
-        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-livingwill-"+consentSession.getFhirPatient().getId().replace("Patient/","")));
+        extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-livingwill-"+consentSession.getFhirPatientId()));
         return extension;
     }
 
@@ -928,9 +928,9 @@ public class LivingWill extends ViewFrame {
 
     private void createQuestionnaireResponse() {
         questionnaireResponse = new QuestionnaireResponse();
-        questionnaireResponse.setId("leap-livingwill-" + consentSession.getFhirPatient().getId().replace("Patient/", ""));
+        questionnaireResponse.setId("leap-livingwill-" + consentSession.getFhirPatientId());
         Reference refpatient = new Reference();
-        refpatient.setReference(consentSession.getFhirPatient().getId());
+        refpatient.setReference("Patient/"+consentSession.getFhirPatientId());
         questionnaireResponse.setAuthor(refpatient);
         questionnaireResponse.setAuthored(new Date());
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
