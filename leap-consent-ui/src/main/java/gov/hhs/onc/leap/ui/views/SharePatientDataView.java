@@ -757,7 +757,7 @@ public class SharePatientDataView extends ViewFrame {
 
         //set patient ref
         Reference patientRef = new Reference();
-        patientRef.setReference("Patient/"+patient.getId().replace(fhirBase, ""));
+        patientRef.setReference(patient.getId().replace(fhirBase, ""));
         patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
         patientPrivacyConsent.setPatient(patientRef);
 
