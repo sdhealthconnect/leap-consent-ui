@@ -1,0 +1,13 @@
+.view-frame__content {
+  padding-left: 20px;
+  padding-top: 20px;
+}
+
+vaadin-text-field {
+  align-self: auto;
+  width: 80%;
+}
+
+vaadin-date-picker {
+  width: 80%;
+}

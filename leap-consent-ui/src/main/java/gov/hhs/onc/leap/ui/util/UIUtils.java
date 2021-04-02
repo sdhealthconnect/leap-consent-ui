@@ -18,7 +18,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
@@ -408,6 +412,52 @@ public class UIUtils {
 
 	public static Image createImage(final String path, final String name){
 		return createImage(path, name, "");
+	}
+
+
+    public static Image createImageFromText(final String text){
+		return createImage(createImageFromText(text, 40, Color.BLACK, new Color(244,128,36)), text, text);
+	}
+
+	private static byte[] createImageFromText(final String initials, int fontSize, Color fontColor, Color backgroundColor, int offsetX, int offsetY){
+
+		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = img.createGraphics();
+		Font font = new Font("Arial", Font.BOLD, fontSize);
+		g2d.setFont(font);
+		FontMetrics fm = g2d.getFontMetrics();
+		int width = fm.stringWidth(initials);
+		int height = fm.getHeight();
+		g2d.dispose();
+		int size = Math.max(width,height)+20;
+		img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+		g2d = img.createGraphics();
+		g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+		g2d.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+		g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+		g2d.setFont(font);
+		fm = g2d.getFontMetrics();
+		g2d.setPaint ( backgroundColor );
+		g2d.fillRect ( 0, 0, size, size);
+		g2d.setColor(fontColor);
+		g2d.drawString(initials, offsetX, fm.getAscent() + offsetY);
+		g2d.dispose();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+			ImageIO.write(img, "png", baos);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return baos.toByteArray();
+	}
+
+	private static byte[] createImageFromText(final String initials, int fontSize, Color fontColor, Color backgroundColor) {
+		return createImageFromText(initials, fontSize, fontColor, backgroundColor, 10, 25);
 	}
 
 	/* === DATES === */
