@@ -11,6 +11,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinSession;
@@ -179,6 +180,10 @@ public class MainLayout extends FlexBoxLayout
 		menu.addNaviItem(covid, "Provider Attestation", COVIDProviderAttestation.class);
 
 		 */
+		RouteConfiguration routeConfiguration = RouteConfiguration.forSessionScope();
+		if (!routeConfiguration.isRouteRegistered(UserPreferencesView.class)) {
+			routeConfiguration.setAnnotatedRoute(UserPreferencesView.class);
+		}
 	}
 
 	/**

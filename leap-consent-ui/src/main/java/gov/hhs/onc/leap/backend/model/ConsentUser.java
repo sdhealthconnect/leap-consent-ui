@@ -80,7 +80,7 @@ public class ConsentUser {
     @Transient
     private String emergencyContact;            // Manual entry attribute
     @Transient
-    private String getEmergencyContactPhone;    // Manual entry attribute
+    private String emergencyContactPhone;      // Manual entry attribute
     @Transient
     private String relationship;                // Manual entry attribute
 

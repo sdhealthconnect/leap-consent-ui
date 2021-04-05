@@ -176,4 +176,51 @@
             <dropTable  tableName="consentuser"/>
         </rollback>
     </changeSet>
+    <changeSet id="00000000000004" author="sgroh" logicalFilePath="changelog.xml" labels="consentUserAvatar">
+        <update tableName="user">
+            <column name="photo" valueBlobFile="../../images/avatar_user1.png"/>
+            <where>user_id=1</where>
+        </update>
+        <update tableName="user">
+            <column name="photo" valueBlobFile="../../images/avatar_user2.png"/>
+            <where>user_id=2</where>
+        </update>
+        <update tableName="user">
+            <column name="photo" valueBlobFile="../../images/avatar_user3.png"/>
+            <where>user_id=3</where>
+        </update>
+        <update tableName="user">
+            <column name="photo" valueBlobFile="../../images/avatar_user4.png"/>
+            <where>user_id=4</where>
+        </update>
+        <update tableName="user">
+            <column name="photo" valueBlobFile="../../images/avatar_user5.png"/>
+            <where>user_id=5</where>
+        </update>
+        <update tableName="user">
+            <column name="photo" valueBlobFile="../../images/avatar_user6.png"/>
+            <where>user_id=6</where>
+        </update>
+        <update tableName="user">
+            <column name="photo" valueBlobFile="../../images/avatar_user7.png"/>
+            <where>user_id=7</where>
+        </update>
+        <update tableName="user">
+            <column name="photo" valueBlobFile="../../images/avatar_user8.png"/>
+            <where>user_id=8</where>
+        </update>
+        <update tableName="user">
+            <column name="photo" valueBlobFile="../../images/avatar_user9.png"/>
+            <where>user_id=9</where>
+        </update>
+        <update tableName="user">
+            <column name="photo" valueBlobFile="../../images/avatar_user10.png"/>
+            <where>user_id=10</where>
+        </update>
+        <rollback>
+            <update tableName="user">
+                <column name="photo" value="null"/>
+            </update>
+        </rollback>
+    </changeSet>
 </databaseChangeLog>

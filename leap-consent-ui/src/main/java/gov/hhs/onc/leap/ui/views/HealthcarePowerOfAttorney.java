@@ -57,7 +57,6 @@ import java.util.List;
 @Route(value = "healthcarepowerofattorney", layout = MainLayout.class)
 public class HealthcarePowerOfAttorney extends ViewFrame {
 
-    private PDFSigningService PDFSigningService;
     private ConsentSession consentSession;
     private ConsentUser consentUser;
 

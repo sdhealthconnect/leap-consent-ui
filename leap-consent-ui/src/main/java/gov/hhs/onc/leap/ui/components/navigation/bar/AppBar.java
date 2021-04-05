@@ -14,7 +14,6 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
@@ -130,9 +129,10 @@ public class AppBar extends Header {
 		avatar.setClassName(CLASS_NAME + "__avatar");
 		ContextMenu contextMenu = new ContextMenu(avatar);
 		contextMenu.setOpenOnClick(true);
-		contextMenu.addItem("Settings",
-				e -> Notification.show("Not implemented yet.", 3000,
-						Notification.Position.BOTTOM_CENTER));
+		contextMenu.addItem("Settings", event -> {
+					 UI.getCurrent().navigate("userpreferencesview");
+				}
+		);
 		contextMenu.addItem("Log Out",
 				e -> {
 					SecurityContextHolder.clearContext();
