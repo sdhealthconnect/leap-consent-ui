@@ -53,7 +53,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
-@PageTitle("Healthcare Power Of Attorney")
+@PageTitle("Health Care Power Of Attorney")
 @Route(value = "healthcarepowerofattorney", layout = MainLayout.class)
 public class HealthcarePowerOfAttorney extends ViewFrame {
 
@@ -117,6 +117,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     private TextField buriedInField;
     private TextField ashesDispositionField;
     private FlexBoxLayout burialSelectionLayout;
+
+    private FlexBoxLayout otherAttachmentsLayout;
 
     private TextField attestationDRName;
     private TextField attestationPatientName;
@@ -188,7 +190,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 "to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose"+
                 " and trust can make medical decisions for you. Be sure you review and understand the importance of the document that is created at the end of this process."+
                 " It is a good idea to talk to your doctor and loved ones if you have questions about the type of health care you do or do not want. At anytime click on "+
-                "the <b>View your states Healthcare Power of Attorney form and instructions</b> button for additional information." );
+                "the <b>View your state's Health Care Power of Attorney form and instructions</b> button for additional information." );
 
 
         createPatientsInitials();
@@ -200,6 +202,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         createAutopsySelection();
         createOrganDonationSelection();
         createBurialSelection();
+        createOtherDirectivesSection();
         createAttestation();
         createHipaa();
         createPatientSignature();
@@ -210,7 +213,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
         FlexBoxLayout content = new FlexBoxLayout(intro, patientInitialsLayout, patientGeneralInfoLayout, poaSelectionLayout,
                 altSelectionLayout, authorizationLayout, authExceptionLayout, autopsySelectionLayout, organDonationSelectionLayout, burialSelectionLayout,
-                attestationLayout, hipaaLayout, patientSignatureLayout, patientUnableSignatureLayout, witnessSignatureLayout);
+                otherAttachmentsLayout, attestationLayout, hipaaLayout, patientSignatureLayout, patientUnableSignatureLayout, witnessSignatureLayout);
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -221,7 +224,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     }
 
     private void createPatientsInitials() {
-        Html intro2 = new Html("<p>Before you begin with the <b>Healthcare Power of Attorney</b> questionnaire we need to capture" +
+        Html intro2 = new Html("<p>Before you begin with the <b>Health Care Power of Attorney</b> questionnaire we need to capture" +
                                " your initials.  Your initials will be applied your state's form based on your responsives.</p>");
 
         patientInitials = new SignaturePad();
@@ -247,7 +250,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        patientInitialsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"),intro2, new BasicDivider(), patientInitials, sigLayout);
+        patientInitialsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"),intro2, new BasicDivider(), patientInitials, sigLayout);
         patientInitialsLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientInitialsLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         patientInitialsLayout.setHeightFull();
@@ -262,7 +265,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
 
     private void createPatientGeneralInfo() {
-        Html intro3 = new Html("<p><b>My Information(I am the \"Principle\")</b></p>");
+        Html intro3 = new Html("<p><b>My Information(I am the \"Principal\")</b></p>");
 
         patientFullNameField = new TextField("Name");
         patientAddress1Field = new TextField("Address");
@@ -273,13 +276,20 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
         //set values
         patientFullNameField.setValue(consentUser.getFirstName()+" "+consentUser.getMiddleName()+" "+consentUser.getLastName());
-        patientAddress1Field.setValue(consentUser.getStreetAddress1()+" "+consentUser.getStreetAddress2());
+        String addressHolder = "";
+        if (consentUser.getStreetAddress2() != null) {
+            addressHolder = consentUser.getStreetAddress1() +" "+consentUser.getStreetAddress2();
+        }
+        else {
+            addressHolder = consentUser.getStreetAddress1();
+        }
+        patientAddress1Field.setValue(addressHolder);
         patientAddress2Field.setValue(consentUser.getCity()+" "+consentUser.getState()+" "+consentUser.getZipCode());
         patientPhoneNumberField.setValue(consentUser.getPhone());
         patientDateOfBirthField.setValue(getDateString(consentUser.getDateOfBirth()));
         patientEmailAddressField.setValue(consentUser.getEmailAddress());
 
-        patientGeneralInfoLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"),intro3, new BasicDivider(),
+        patientGeneralInfoLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"),intro3, new BasicDivider(),
                 patientFullNameField, patientAddress1Field, patientAddress2Field, patientDateOfBirthField, patientPhoneNumberField, patientEmailAddressField);
         patientGeneralInfoLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientGeneralInfoLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -295,8 +305,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     }
 
     private void createPOASelection() {
-        Html intro4 = new Html("<p><b>Selection of my Healthcare Power of Attorney and Alternate:</b> "+
-                "I choose the following person to act as my <b>agent</b> to make health care decisions for me.</p>");
+        Html intro4 = new Html("<p><b>Selection of my Health Care Power of Attorney and Alternate:</b> "+
+                "I choose the following person to act as my <b>agent</b> to make health care decisions for me:</p>");
 
         poaFullNameField = new TextField("Name");
         poaAddress1Field = new TextField("Address");
@@ -305,7 +315,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         poaWorkPhoneField = new TextField("Work Phone");
         poaCellPhoneField = new TextField("Cell Phone");
 
-        poaSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"),intro4, new BasicDivider(),
+        poaSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"),intro4, new BasicDivider(),
                 poaFullNameField, poaAddress1Field, poaAddress2Field, poaHomePhoneField, poaWorkPhoneField, poaCellPhoneField);
         poaSelectionLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         poaSelectionLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -321,9 +331,9 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     }
 
     private void createALTSelection() {
-        Html intro5 = new Html("<p><b>Selection of my Healthcare Power of Attorney and Alternate:</b> "+
+        Html intro5 = new Html("<p><b>Selection of my Health Care Power of Attorney and Alternate:</b> "+
                 "I choose the following person to act as an <b>alternate</b> to make health care decisions for me if my "+
-                "first agent is unavailable, unwilling, or unable to make decisions for me.</p>");
+                "first agent is unavailable, unwilling, or unable to make decisions for me:</p>");
 
         altFullNameField = new TextField("Name");
         altAddress1Field = new TextField("Address");
@@ -332,7 +342,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         altWorkPhoneField = new TextField("Work Phone");
         altCellPhoneField = new TextField("Cell Phone");
 
-        altSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"),intro5, new BasicDivider(),
+        altSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"),intro5, new BasicDivider(),
                 altFullNameField, altAddress1Field, altAddress2Field, altHomePhoneField, altWorkPhoneField, altCellPhoneField);
         altSelectionLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         altSelectionLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -352,10 +362,10 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 "or communicate my own health care decisions. I want my agent to make all such decisions for me except any decisions "+
                 "that I have expressly stated in this form that I do not authorize him/her to make. My agent should explain to me any "+
                 "choices he or she made if I am able to understand. I further authorize my agent to have access to my "+
-                "<b>personal protected health care information and medical records</b>. This appointment is effective unless it is "+
+                "<b>\"personal protected health care information and medical records\"</b>. This appointment is effective unless it is "+
                 "revoked by me or by a court order.</p>");
 
-        authorizationLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"),intro6, new BasicDivider());
+        authorizationLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"),intro6, new BasicDivider());
         authorizationLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         authorizationLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         authorizationLayout.setHeightFull();
@@ -377,7 +387,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         authException2Field = new TextField("");
         authException3Field = new TextField("");
 
-        authExceptionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"),intro7, new BasicDivider(),
+        authExceptionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"),intro7, new BasicDivider(),
                 authException1Field, authException2Field, authException3Field);
         authExceptionLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         authExceptionLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -401,7 +411,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 "Upon my death I DO consent to a voluntary autopsy.", "My agent may give or refuse consent for an autopsy.");
         autopsyButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
 
-        autopsySelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"),intro8, new BasicDivider(),
+        autopsySelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"),intro8, new BasicDivider(),
                 autopsyButtonGroup);
         autopsySelectionLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         autopsySelectionLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -468,8 +478,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         institutionAgreementField.setVisible(false);
 
         whatTissuesButtonGroup = new RadioButtonGroup();
-        whatTissuesButtonGroup.setLabel("What organs/tissues I choose to donate");
-        whatTissuesButtonGroup.setItems("Whole body", "Any needed parts or organs","Specific parts or organs only");
+        whatTissuesButtonGroup.setLabel("What organs/tissues I choose to donate:");
+        whatTissuesButtonGroup.setItems("Whole body", "Any needed parts or organs","These parts or organs only:");
         whatTissuesButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
         whatTissuesButtonGroup.addValueChangeListener(event -> {
            String v = (String)event.getValue();
@@ -486,7 +496,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         specificOrgansField.setVisible(false);
 
         pouOrganDonationButtonGroup = new RadioButtonGroup();
-        pouOrganDonationButtonGroup.setLabel("I am donating organs/tissue for");
+        pouOrganDonationButtonGroup.setLabel("I am donating organs/tissue for:");
         pouOrganDonationButtonGroup.setItems("Any legally authorized purpose","Transplant or therapeutic purposes only",
                 "Research only","Other");
         pouOrganDonationButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
@@ -505,7 +515,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         otherPurposesField.setVisible(false);
 
         organizationOrganDonationButtonGroup = new RadioButtonGroup();
-        organizationOrganDonationButtonGroup.setLabel("The organization or person I want my organs/tissue to go to are");
+        organizationOrganDonationButtonGroup.setLabel("The organization or person I want my organs/tissue to go to are:");
         organizationOrganDonationButtonGroup.setItems("My List", "Any that my agent chooses");
         organizationOrganDonationButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
         organizationOrganDonationButtonGroup.addValueChangeListener(event -> {
@@ -523,7 +533,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         patientChoiceOfOrganizations.setVisible(false);
 
 
-        organDonationSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"),intro9, new BasicDivider(),
+        organDonationSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"),intro9, new BasicDivider(),
                 organDonationButtonGroup, institutionAgreementField, whatTissuesButtonGroup, specificOrgansField, pouOrganDonationButtonGroup, otherPurposesField,
                 organizationOrganDonationButtonGroup, patientChoiceOfOrganizations);
         organDonationSelectionLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -540,12 +550,12 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     }
 
     private void createBurialSelection() {
-        Html intro10 = new Html("<p><b>My specific wishes regarding funeral and burial disposition</b></p>");
+        Html intro10 = new Html("<p><b>My specific wishes regarding funeral and burial disposition:</b></p>");
 
         burialSelectionButtonGroup = new RadioButtonGroup();
         burialSelectionButtonGroup.setItems("Upon my death, I direct my body to be buried. (Instead of cremated)",
                 "Upon my death, I direct my body to be buried in:", "Upon my death, I direct my body to be cremated.",
-                "Upon my death, I direct my body to be cremated with my ashes to be", "My agent will make all funeral and burial decisions.");
+                "Upon my death, I direct my body to be cremated with my ashes to be:", "My agent will make all funeral and burial decisions.");
         burialSelectionButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
         burialSelectionButtonGroup.addValueChangeListener(event -> {
             if (event.getValue() != null) {
@@ -563,13 +573,13 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
             }
         });
 
-        buriedInField = new TextField("I direct my body to be buried in following");
+        buriedInField = new TextField("I direct my body to be buried in:");
         buriedInField.setVisible(false);
 
         ashesDispositionField = new TextField("I direct the following to be done with my ashes:");
         ashesDispositionField.setVisible(false);
 
-        burialSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro10, new BasicDivider(),
+        burialSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"), intro10, new BasicDivider(),
                 burialSelectionButtonGroup, buriedInField, ashesDispositionField);
         burialSelectionLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         burialSelectionLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -584,18 +594,59 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         burialSelectionLayout.setVisible(false);
     }
 
+    private void createOtherDirectivesSection() {
+        Html livingWill1 = new Html("<p><b>Do you have a living will?</b></p>");
+        Html livingWill2 = new Html("<p>If you have a Living Will, you must attach the Living Will to this form.</p>");
+        RadioButtonGroup rbgLivingWill = new RadioButtonGroup();
+        rbgLivingWill.setItems("I have SIGNED AND ATTACHED a completed LivingWill to this Health Care Power of Attorney.",
+                "I have NOT SIGNED a Living Will.");
+        rbgLivingWill.setEnabled(false);
+
+        Html polst1 = new Html("<p><b>Do you have a POLST (Portable Medical Order)?</b></p>");
+        Html polst2 = new Html("<p>A POLST form is for when you become seriously ill or frail and toward the end of life.</p>");
+        RadioButtonGroup rbgPolst = new RadioButtonGroup();
+        rbgPolst.setItems("I have SIGNED AND ATTACHED a completed POLST to this Health Care Power of Attorney.",
+                "I have NOT SIGNED a POLST.");
+        rbgPolst.setEnabled(false);
+
+        Html dnr1 = new Html("<p><b>Do you have a Prehospital Medical Care Directive – a type of Do Not Resuscitate form (DNR)?</b></p>");
+        RadioButtonGroup rbgDNR = new RadioButtonGroup();
+        rbgDNR.setItems("I and my doctor or health care provider HAVE SIGNED a Prehospital Medical Care Directive or\n" +
+                "DNR on Paper with ORANGE background in the event that Emergency Medical Technicians\n" +
+                "or hospital emergency personnel are called and my heart or breathing has stopped.","I have NOT SIGNED a Prehospital Medical Care Directive or DNR.");
+        rbgDNR.setEnabled(false);
+
+        Html r4Disclaimer = new Html("<p style=\"color:blue\"><b>Note:</b> Due to FHIR R4 attachment limitations on consent resource this section has been " +
+                "disabled for demonstration purposes.</p>");
+
+        otherAttachmentsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"), livingWill1, livingWill2, rbgLivingWill,
+                polst1, polst2, rbgPolst, dnr1, rbgDNR, new BasicDivider(), r4Disclaimer);
+        otherAttachmentsLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        otherAttachmentsLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        otherAttachmentsLayout.setHeightFull();
+        otherAttachmentsLayout.setBackgroundColor("white");
+        otherAttachmentsLayout.setShadow(Shadow.S);
+        otherAttachmentsLayout.setBorderRadius(BorderRadius.S);
+        otherAttachmentsLayout.getStyle().set("margin-bottom", "10px");
+        otherAttachmentsLayout.getStyle().set("margin-right", "10px");
+        otherAttachmentsLayout.getStyle().set("margin-left", "10px");
+        otherAttachmentsLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        otherAttachmentsLayout.setVisible(false);
+
+    }
+
     private void createAttestation() {
-        Html intro11 = new Html("<p><b>Physician Affidavit(Optional)</b></p>");
+        Html intro11 = new Html("<p><b>Physician Affidavit (Optional)</b></p>");
         Html intro12 = new Html("<p>You may wish to ask questions of your physician regarding a particular treatment or about the options "+
                 "in the form. If you do speak with your physician it is a good idea to ask your physician to complete" +
                 " this affidavit and keep a copy for his/her file.</p>");
 
-        Html para1 = new Html("<p>I Dr.</p>");
-        attestationDRName = new TextField("Physicians Name");
+        Html para1 = new Html("<p>I, Dr.</p>");
+        attestationDRName = new TextField("Physician's Name");
         Html para2 = new Html("<p>have reviewed this document and have discussed with</p>");
-        attestationPatientName = new TextField("Patients Name");
+        attestationPatientName = new TextField("Patient's Name");
         attestationPatientName.setValue(consentUser.getFirstName()+" "+consentUser.getMiddleName()+" "+consentUser.getLastName());
-        Html para3 = new Html("any questions regarding the probable medical consequences of the treatment choices provided above. "+
+        Html para3 = new Html("<p>any questions regarding the probable medical consequences of the treatment choices provided above. "+
                 "This discussion with the principal occurred on this day</p>");
         attestationDate = new TextField("Date");
         attestationDate.setValue(getDateString(new Date()));
@@ -624,7 +675,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        attestationLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro11, intro12, new BasicDivider(),
+        attestationLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"), intro11, intro12, new BasicDivider(),
                 para1, attestationDRName, para2, attestationPatientName, para3, attestationDate, para4, physcianSignature, sigLayout);
         attestationLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         attestationLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -650,7 +701,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 "Portability and Accountability Act of 1996 (aka HIPAA), 42 USC 1320d and 45 CFR 160-164.");
         hipaaButton.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
 
-        hipaaLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro13, new BasicDivider(),
+        hipaaLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"), intro13, new BasicDivider(),
                 hipaaButton);
         hipaaLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         hipaaLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -668,7 +719,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
     private void createPatientSignature() {
         Html intro14 = new Html("<p><b>MY SIGNATURE VERIFICATION FOR THE HEALTH CARE POWER OF ATTORNEY</b></p>");
-
+        Html revocationLbl = new Html("<p><b>Revocability of this Health Care Power of Attorney:</b> I retain the right to revoke all or any portion of\n" +
+                "this form or to disqualify any agent designated by me in this document.");
         patientSignature = new SignaturePad();
         patientSignature.setHeight("100px");
         patientSignature.setWidth("400px");
@@ -693,7 +745,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro14, new BasicDivider(),
+        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"), revocationLbl, intro14, new BasicDivider(),
                 patientSignature, sigLayout);
         patientSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -741,7 +793,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        patientUnableSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro15, intro16, new BasicDivider(),
+        patientUnableSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"), intro15, intro16, new BasicDivider(),
                 patientUnableSignatureNameField, patientUnableSignature, sigLayout);
         patientUnableSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientUnableSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -789,7 +841,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        witnessSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"), intro17, intro18, new BasicDivider(),
+        witnessSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"), intro17, intro18, new BasicDivider(),
                 witnessName, witnessAddress, witnessSignature, sigLayout);
         witnessSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         witnessSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -817,7 +869,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
             questionPosition++;
             evalNavigation();
         });
-        viewStateForm = new Button("View your states Healthcare Power of Attorney instructions");
+        viewStateForm = new Button("View your state's Health Care Power of Attorney instructions");
         viewStateForm.setIconAfterText(true);
         viewStateForm.addClickListener(event -> {
             Dialog d = createInfoDialog();
@@ -852,7 +904,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     }
 
     private void successNotification() {
-        Span content = new Span("FHIR advanced directive - POA Healthcare successfully created!");
+        Span content = new Span("FHIR advanced directive - POA Health Care successfully created!");
 
         Notification notification = new Notification(content);
         notification.setDuration(3000);
@@ -876,6 +928,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
@@ -894,6 +947,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
@@ -912,6 +966,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
@@ -930,6 +985,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
@@ -948,6 +1004,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
@@ -966,6 +1023,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
@@ -984,6 +1042,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(true);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
@@ -1002,6 +1061,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(true);
                 burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
@@ -1020,6 +1080,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(true);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
@@ -1038,7 +1099,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
-                attestationLayout.setVisible(true);
+                otherAttachmentsLayout.setVisible(true);
+                attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
                 patientUnableSignatureLayout.setVisible(false);
@@ -1056,8 +1118,9 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
-                attestationLayout.setVisible(false);
-                hipaaLayout.setVisible(true);
+                otherAttachmentsLayout.setVisible(false);
+                attestationLayout.setVisible(true);
+                hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
                 patientUnableSignatureLayout.setVisible(false);
                 witnessSignatureLayout.setVisible(false);
@@ -1074,9 +1137,10 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
-                hipaaLayout.setVisible(false);
-                patientSignatureLayout.setVisible(true);
+                hipaaLayout.setVisible(true);
+                patientSignatureLayout.setVisible(false);
                 patientUnableSignatureLayout.setVisible(false);
                 witnessSignatureLayout.setVisible(false);
                 break;
@@ -1092,13 +1156,33 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
+                attestationLayout.setVisible(false);
+                hipaaLayout.setVisible(false);
+                patientSignatureLayout.setVisible(true);
+                patientUnableSignatureLayout.setVisible(false);
+                witnessSignatureLayout.setVisible(false);
+                break;
+            case 13:
+                returnButton.setEnabled(true);
+                forwardButton.setEnabled(true);
+                patientInitialsLayout.setVisible(false);
+                patientGeneralInfoLayout.setVisible(false);
+                poaSelectionLayout.setVisible(false);
+                altSelectionLayout.setVisible(false);
+                authorizationLayout.setVisible(false);
+                authExceptionLayout.setVisible(false);
+                autopsySelectionLayout.setVisible(false);
+                organDonationSelectionLayout.setVisible(false);
+                burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
                 patientUnableSignatureLayout.setVisible(true);
                 witnessSignatureLayout.setVisible(false);
                 break;
-            case 13:
+            case 14:
                 returnButton.setEnabled(true);
                 forwardButton.setEnabled(false);
                 patientInitialsLayout.setVisible(false);
@@ -1110,6 +1194,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 autopsySelectionLayout.setVisible(false);
                 organDonationSelectionLayout.setVisible(false);
                 burialSelectionLayout.setVisible(false);
+                otherAttachmentsLayout.setVisible(false);
                 attestationLayout.setVisible(false);
                 hipaaLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
