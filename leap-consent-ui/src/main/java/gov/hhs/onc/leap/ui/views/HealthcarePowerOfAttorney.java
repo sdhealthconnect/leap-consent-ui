@@ -186,11 +186,11 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     }
 
     private Component createViewContent() {
-        Html intro = new Html("<p><b>GENERAL INFORMATION AND INSTRUCTIONS:</b> Use this questionnaire if you want to select a person, called an <b>agent</b>, "+
+        Html intro = new Html("<p><b>GENERAL INSTRUCTIONS:</b> Use this questionnaire if you want to select a person, called an <b>agent</b>, "+
                 "to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose"+
                 " and trust can make medical decisions for you. Be sure you review and understand the importance of the document that is created at the end of this process."+
                 " It is a good idea to talk to your doctor and loved ones if you have questions about the type of health care you do or do not want. At anytime click on "+
-                "the <b>View your state's Health Care Power of Attorney form and instructions</b> button for additional information." );
+                "the <b>View your state's Health Care Power of Attorney instructions</b> button for additional information." );
 
 
         createPatientsInitials();
@@ -225,7 +225,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
     private void createPatientsInitials() {
         Html intro2 = new Html("<p>Before you begin with the <b>Health Care Power of Attorney</b> questionnaire we need to capture" +
-                               " your initials.  Your initials will be applied your state's form based on your responsives.</p>");
+                               " your initials.  Your initials will be applied your state's form, based on your responses.</p>");
 
         patientInitials = new SignaturePad();
         patientInitials.setHeight("100px");
