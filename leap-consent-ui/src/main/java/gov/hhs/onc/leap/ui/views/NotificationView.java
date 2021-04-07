@@ -1,6 +1,8 @@
 package gov.hhs.onc.leap.ui.views;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
@@ -104,7 +106,7 @@ public class NotificationView extends ViewFrame {
                 .setAutoWidth(true);
         grid.addColumn(badgeRenderer)
                 .setAutoWidth(true)
-                .setHeader("Status");
+                .setHeader("Current Status");
         grid.addColumn(new ComponentRenderer<>(this::createShortName))
                 .setHeader("Name")
                 .setAutoWidth(true);
@@ -112,7 +114,7 @@ public class NotificationView extends ViewFrame {
                 .setHeader("Description")
                 .setWidth("250px");
         grid.addColumn(new ComponentRenderer<>(this::createDestination))
-                .setHeader("View Destination")
+                .setHeader("Take Me There")
                 .setAutoWidth(true);
 
         gridLayout = new FlexBoxLayout(grid);
@@ -147,9 +149,14 @@ public class NotificationView extends ViewFrame {
     }
 
     private Component createDestination(ConsentNotification consentNotification) {
-        ListItem item = new ListItem(consentNotification.getDestinationView());
-        item.setPadding(Vertical.XS);
-        return item;
+        Button btn = new Button("Get Started");
+        btn.addClickListener(event -> {
+            UI.getCurrent().navigate(consentNotification.getDestinationView());
+        });
+        if (consentNotification.getActionRequired().equals("None")) {
+            btn.setEnabled(false);
+        }
+        return btn;
     }
 
     private Collection<ConsentNotification> getConsentRequirements() {
@@ -163,7 +170,7 @@ public class NotificationView extends ViewFrame {
         //todo This is a listing of user consent requirements, ideally this is read in from a properties file or db based on the user's primary state's requirements and may require evaluation of patient's age and other demographic or conditional info
         //patient privacy
         patientPrivacyNotification = new ConsentNotification("Action Required", ConsentNotification.Status.NOTCOMPLETE, "patient-privacy",
-                "Requires, at minimum a exchange policy between your primary provider's organization and the hosting Healthcare Information Exchange(HIE)", "sharePatientDataView");
+                "Requires, at minimum a exchange policy between your primary provider's organization and the hosting Healthcare Information Exchange(HIE)", "sharepatientdataview");
         //Advance Directives
         adrLivingWillNotification = new ConsentNotification("Action Required",ConsentNotification.Status.NOTCOMPLETE,"Advance Directive - Living Will",
                 "Use this form to make decisions now about your medical care if you are ever in a terminal condition, a persistent vegetative state or an irreversible coma.",
@@ -219,18 +226,21 @@ public class NotificationView extends ViewFrame {
             }
 
             String destination = "";
-            if (c.getProvision().getActor() != null && !c.getProvision().getActor().isEmpty()) {
-                destination = c.getProvision().getActor().get(0).getReference().getReference();
+            try {
+                if (c.getProvision().getProvision().get(0).getActor() != null && !c.getProvision().getProvision().get(0).getActor().isEmpty()) {
+                    destination = c.getProvision().getProvision().get(0).getActor().get(0).getReference().getReference();
+                }
+            }
+            catch (Exception ex) {
+                log.warn("No provision actor for patient consent "+ex.getMessage());
             }
 
             // Set values for specfic consent notification
-            log.warn("notification type "+notificationType);
-            log.warn("destination "+destination);
-            log.warn("status "+status.getName());
             if (notificationType.equals("patient-privacy") && destination != null && destination.equals(orgReference) && status.equals(ConsentNotification.Status.ACTIVE)) {
                 if (!activeExchangeExists) {
                     //at least one exchange consent should exist
                     patientPrivacyNotification.setStatus(status);
+                    patientPrivacyNotification.setActionRequired("None");
                     activeExchangeExists = true;
                 }
             }
