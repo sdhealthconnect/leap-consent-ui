@@ -1,15 +1,12 @@
 package gov.hhs.onc.leap.ui.views;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
@@ -21,7 +18,6 @@ import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.Badge;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.components.ListItem;
-import gov.hhs.onc.leap.ui.components.navigation.BasicDivider;
 import gov.hhs.onc.leap.ui.layout.size.Horizontal;
 import gov.hhs.onc.leap.ui.layout.size.Top;
 import gov.hhs.onc.leap.ui.layout.size.Vertical;
@@ -176,7 +172,7 @@ public class NotificationView extends ViewFrame {
                 "Helps you identify a person, called an agent, to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose",
                 "healthcarepowerofattorney");
         adrPOAMentalHealthNotification = new ConsentNotification("Optional", ConsentNotification.Status.NOTCOMPLETE, "Advance Directive - Mental Health Power of Attorney",
-                "Helps you want to appoint a person, also referred to as your agent, to make future mental health care decisions for you if you become incapable of making those decisions for yourself.",
+                "Helps you identify a person, also referred to as your agent, to make future mental health care decisions for you if you become incapable of making those decisions for yourself.",
                 "mentalhealthpowerofattorney");
         adrDNRNotification = new ConsentNotification("Optional", ConsentNotification.Status.NOTCOMPLETE, "Advance Directive - Do Not Resuscitate",
                 "A document signed by you and your doctor that informs emergency medical technicians (EMTs) or hospital emergency personnel not to resuscitate you.",
