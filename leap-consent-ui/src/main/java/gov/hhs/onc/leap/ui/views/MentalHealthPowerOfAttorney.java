@@ -168,11 +168,13 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
     }
 
     private Component createViewContent() {
-        Html intro = new Html("<p><b>GENERAL INFORMATION AND INSTRUCTIONS:</b> Use this questionnaire if you want to select a person, called an <b>agent</b>, "+
-                "to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose"+
-                " and trust can make medical decisions for you. Be sure you review and understand the importance of the document that is created at the end of this process."+
-                " It is a good idea to talk to your doctor and loved ones if you have questions about the type of health care you do or do not want. At anytime click on "+
-                "the <b>View your states Healthcare Power of Attorney form and instructions</b> button for additional information.</p>" );
+        Html intro = new Html("<p><b>GENERAL INSTRUCTIONS:</b> Use this form if you want to appoint a person, also referred to as your " +
+                "<b>agent</b>, to make future mental health care decisions for you if you become incapable of making those " +
+                "decisions for yourself. The decision about whether you are incapable can only be made by a specialist in neurology or a " +
+                "licensed psychiatrist or psychologist who will evaluate whether you can give informed " +
+                "consent. Be sure you understand the importance of this document. It is a good idea to talk to your " +
+                "doctor and loved ones if you have questions about the type of mental health care you do or do not " +
+                "want. At anytime click on the <b>View your state's Mental Health Power of Attorney instructions</b> button for additional information.</p>" );
 
 
         createPatientsInitials();
