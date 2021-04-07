@@ -111,7 +111,7 @@ public class SharePatientDataView extends ViewFrame {
 
     @PostConstruct
     public void setup() {
-        setId("sharePatientDataView");
+        setId("sharepatientdataView");
         setViewContent(createViewContent());
         setViewFooter(getFooter());
     }
