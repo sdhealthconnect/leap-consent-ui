@@ -16,12 +16,13 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
+import gov.hhs.onc.leap.backend.AuditEventService;
 import gov.hhs.onc.leap.backend.ConsentLog;
-import gov.hhs.onc.leap.backend.TestData;
+import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.components.ListItem;
-import gov.hhs.onc.leap.ui.components.navigation.BasicDivider;
 import gov.hhs.onc.leap.ui.layout.size.Horizontal;
 import gov.hhs.onc.leap.ui.layout.size.Right;
 import gov.hhs.onc.leap.ui.layout.size.Top;
@@ -33,6 +34,9 @@ import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
+import java.util.Collection;
 
 @PageTitle("My Record Disclosures")
 @Route(value = "auditview", layout = MainLayout.class)
@@ -46,9 +50,10 @@ public class AuditView extends ViewFrame {
     private FlexBoxLayout chartLayout;
 
     @Autowired
-    private TestData testData;
+    private AuditEventService consentLogService;
 
-    public AuditView() {
+    @PostConstruct
+    public void setup() {
         setId("auditview");
         setViewContent(createViewContent());
         setViewFooter(getFooter());
@@ -90,7 +95,9 @@ public class AuditView extends ViewFrame {
     }
 
     private Component createGrid() {
-        dataProvider = DataProvider.ofCollection(testData.getConsentLogs());
+        ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
+        Collection<ConsentLog> consentLogs = consentLogService.getConsentLogs(consentSession.getFhirPatientId());
+        dataProvider = DataProvider.ofCollection(consentLogs);
 
         grid = new Grid<>();
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);

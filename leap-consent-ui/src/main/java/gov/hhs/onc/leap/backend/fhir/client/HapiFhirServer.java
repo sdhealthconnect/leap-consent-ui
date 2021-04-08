@@ -5,15 +5,14 @@ import ca.uhn.fhir.rest.api.SearchTotalModeEnum;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam;
+import ca.uhn.fhir.rest.gclient.TokenClientParam;
 import gov.hhs.onc.leap.backend.fhir.client.exceptions.HapiFhirCreateException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hl7.fhir.instance.model.api.IBaseOperationOutcome;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.r4.model.*;
-import org.hl7.fhir.r4.utils.ResourceUtilities;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,223 +25,223 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class HapiFhirServer {
 
-        @Getter
-        FhirContext ctx;
+    @Getter
+    FhirContext ctx;
 
-        @Getter
-        IGenericClient hapiClient;
+    @Getter
+    IGenericClient hapiClient;
 
-        @Value("${hapi-fhir.url:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}")
-        private String baseURL;
+    @Value("${hapi-fhir.url:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}")
+    private String baseURL;
 
     @PostConstruct
     public void setUp() {
-            ctx = FhirContext.forR4();
-            hapiClient = ctx.newRestfulGenericClient(baseURL);
-            hapiClient.registerInterceptor(createLoggingInterceptor());
+        ctx = FhirContext.forR4();
+        hapiClient = ctx.newRestfulGenericClient(baseURL);
+        hapiClient.registerInterceptor(createLoggingInterceptor());
 
-            log.info("Created hapi client for server: {} ", baseURL);
-        }
+        log.info("Created hapi client for server: {} ", baseURL);
+    }
 
 
-        public <T extends Resource> Optional<T> findResourceInBundle(Bundle bundle, Class<T> clazz) {
-            if (bundle.hasEntry()) {
-                if (bundle.getEntry().size() > 1) {
-                    log.error("Hapi-Fhir Resource for {} returned more than one resource count: {}",
-                            clazz.getSimpleName(), bundle.getEntry().size());
-                    return Optional.empty();
-                } else {
-                    return findResourceFromBundle(bundle, clazz);
-                }
-            } else {
-                log.debug("Hapi-Fhir Resource for {} NOT found in DB.",
-                        clazz.getSimpleName());
+    public <T extends Resource> Optional<T> findResourceInBundle(Bundle bundle, Class<T> clazz) {
+        if (bundle.hasEntry()) {
+            if (bundle.getEntry().size() > 1) {
+                log.error("Hapi-Fhir Resource for {} returned more than one resource count: {}",
+                        clazz.getSimpleName(), bundle.getEntry().size());
                 return Optional.empty();
-            }
-        }
-
-        public <T extends Resource> Optional<T> findResourceFromBundle(Bundle bundle, Class<T> clazz) {
-            Resource resource = bundle.getEntry().get(0).getResource();
-
-            if (clazz.isInstance(resource)) {
-                log.debug("Hapi-Fhir Resource for {} found in DB.",
-                        clazz.getSimpleName());
-                return Optional.of((T) resource);
             } else {
-                log.error("Hapi-Fhir Resource is of wrong type expected: {} found in bundle: {}",
-                        clazz.getSimpleName(),
-                        resource.getClass().getSimpleName());
-                return Optional.empty();
+                return findResourceFromBundle(bundle, clazz);
             }
+        } else {
+            log.debug("Hapi-Fhir Resource for {} NOT found in DB.",
+                    clazz.getSimpleName());
+            return Optional.empty();
         }
+    }
+
+    public <T extends Resource> Optional<T> findResourceFromBundle(Bundle bundle, Class<T> clazz) {
+        Resource resource = bundle.getEntry().get(0).getResource();
+
+        if (clazz.isInstance(resource)) {
+            log.debug("Hapi-Fhir Resource for {} found in DB.",
+                    clazz.getSimpleName());
+            return Optional.of((T) resource);
+        } else {
+            log.error("Hapi-Fhir Resource is of wrong type expected: {} found in bundle: {}",
+                    clazz.getSimpleName(),
+                    resource.getClass().getSimpleName());
+            return Optional.empty();
+        }
+    }
 
 
-        public Optional<String> processBundleLink(Bundle bundle) {
-            if (bundle.hasEntry()) {
-                if (bundle.getEntry().isEmpty()) {
-                    return Optional.of(bundle.getLink().get(0).getUrl());
-                } else {
-                    return Optional.of(bundle.getEntry().get(0).getFullUrl());
-                }
+    public Optional<String> processBundleLink(Bundle bundle) {
+        if (bundle.hasEntry()) {
+            if (bundle.getEntry().isEmpty()) {
+                return Optional.of(bundle.getLink().get(0).getUrl());
             } else {
-                return Optional.empty();
+                return Optional.of(bundle.getEntry().get(0).getFullUrl());
             }
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public String persist(Resource resource) {
+        log.debug("Persisting resource {} with id {}",
+                resource.getResourceType() != null ? resource.getResourceType().name() : "null",
+                resource.getId());
+        Bundle bundle = createAndExecuteBundle(resource);
+
+        validatePersistedBundle(resource, bundle);
+
+        //todo this is wrong without it we cannot find object after we create
+        try {
+            TimeUnit.MILLISECONDS.sleep(500);
+        } catch (InterruptedException e) {
+            log.debug("InterruptedException", e);
         }
 
-        public String persist(Resource resource) {
-            log.debug("Persisting resource {} with id {}",
+        return buildResourceUrl(resource);
+    }
+
+    public String buildResourceUrl(Resource resource) {
+        return buildHapiFhirUrl(resource.fhirType(), resource.getId());
+    }
+
+    public String buildHapiFhirUrl(String type, String id) {
+        return new StringBuilder(hapiClient.getServerBase())
+                .append(type)
+                .append('/')
+                .append(id)
+                .toString();
+    }
+
+    private void validatePersistedBundle(Resource resource, Bundle bundle) {
+        if (CollectionUtils.isEmpty(bundle.getEntry()) || bundle.getEntry().size() > 1) {
+            log.error("Bundle size is invalid: {}", bundle.getEntry() != null ? bundle.getEntry().size() : null);
+            throw new HapiFhirCreateException(resource.getIdElement().getValue());
+        }
+
+        Bundle.BundleEntryComponent bundleEntryComponent = bundle.getEntry().get(0);
+
+        if (!bundleEntryComponent.hasResponse()) {
+            log.error("Bundle does not contain a response");
+            throw new HapiFhirCreateException(resource.getIdElement().getValue());
+        }
+
+        if (bundleEntryComponent.getResponse().getStatus() != null &&
+                bundleEntryComponent.getResponse().getStatus().startsWith("20")) {
+            log.debug("Successfully (OK) Persisted resource {} with id {}",
                     resource.getResourceType() != null ? resource.getResourceType().name() : "null",
                     resource.getId());
-            Bundle bundle = createAndExecuteBundle(resource);
-
-            validatePersistedBundle(resource, bundle);
-
-            //todo this is wrong without it we cannot find object after we create
-            try {
-                TimeUnit.MILLISECONDS.sleep(500);
-            } catch (InterruptedException e) {
-                log.debug("InterruptedException", e);
-            }
-
-            return buildResourceUrl(resource);
+        } else {
+            log.error("FAILED Persisted resource: {} with id: {} status:{}",
+                    resource.getResourceType().name(), resource.getId(),
+                    bundleEntryComponent.getResponse().getStatus());
+            throw new HapiFhirCreateException(resource.getIdElement().getValue());
         }
+    }
 
-        public String buildResourceUrl(Resource resource) {
-            return buildHapiFhirUrl(resource.fhirType(), resource.getId());
-        }
+    public Bundle createAndExecuteBundle(Resource resource) {
+        Bundle bundle = buildBundle(resource);
 
-        public String buildHapiFhirUrl(String type, String id) {
-            return new StringBuilder(hapiClient.getServerBase())
-                    .append(type)
-                    .append('/')
-                    .append(id)
-                    .toString();
-        }
+        return hapiClient.transaction()
+                .withBundle(bundle)
+                .execute();
+    }
 
-        private void validatePersistedBundle(Resource resource, Bundle bundle) {
-            if (CollectionUtils.isEmpty(bundle.getEntry()) || bundle.getEntry().size() > 1) {
-                log.error("Bundle size is invalid: {}", bundle.getEntry() != null ? bundle.getEntry().size() : null);
-                throw new HapiFhirCreateException(resource.getIdElement().getValue());
-            }
+    public Bundle buildBundle(Resource resource) {
+        Bundle bundle = new Bundle();
+        bundle.setType(Bundle.BundleType.TRANSACTION);
+        bundle.addEntry().setResource(resource)
+                .getRequest()
+                .setUrl(baseURL + resource.getResourceType().name() + "/" + resource.getId())
+                .setMethod(Bundle.HTTPVerb.PUT);
+        return bundle;
+    }
 
-            Bundle.BundleEntryComponent bundleEntryComponent = bundle.getEntry().get(0);
+    private LoggingInterceptor createLoggingInterceptor() {
+        LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
+        loggingInterceptor.setLogger(log);
 
-            if (!bundleEntryComponent.hasResponse()) {
-                log.error("Bundle does not contain a response");
-                throw new HapiFhirCreateException(resource.getIdElement().getValue());
-            }
+        // Optionally you may configure the interceptor (by default only summary info is logged)
+        loggingInterceptor.setLogRequestBody(false);
+        loggingInterceptor.setLogRequestHeaders(false);
+        loggingInterceptor.setLogRequestSummary(true);
 
-            if (bundleEntryComponent.getResponse().getStatus() != null &&
-                    bundleEntryComponent.getResponse().getStatus().startsWith("20")) {
-                log.debug("Successfully (OK) Persisted resource {} with id {}",
-                        resource.getResourceType() != null ? resource.getResourceType().name() : "null",
-                        resource.getId());
-            } else {
-                log.error("FAILED Persisted resource: {} with id: {} status:{}",
-                        resource.getResourceType().name(), resource.getId(),
-                        bundleEntryComponent.getResponse().getStatus());
-                throw new HapiFhirCreateException(resource.getIdElement().getValue());
-            }
-        }
+        loggingInterceptor.setLogResponseBody(false);
+        loggingInterceptor.setLogResponseHeaders(false);
+        loggingInterceptor.setLogResponseSummary(true);
 
-        public Bundle createAndExecuteBundle(Resource resource) {
-            Bundle bundle = buildBundle(resource);
+        return loggingInterceptor;
+    }
 
-            return hapiClient.transaction()
-                    .withBundle(bundle)
-                    .execute();
-        }
+    public IBaseOperationOutcome delete(IBaseResource resource) {
+        return hapiClient.delete()
+                .resource(resource)
+                .prettyPrint()
+                .encodedJson()
+                .execute();
+    }
 
-        public Bundle buildBundle(Resource resource) {
-            Bundle bundle = new Bundle();
-            bundle.setType(Bundle.BundleType.TRANSACTION);
-            bundle.addEntry().setResource(resource)
-                    .getRequest()
-                    .setUrl(baseURL + resource.getResourceType().name() + "/" + resource.getId())
-                    .setMethod(Bundle.HTTPVerb.PUT);
-            return bundle;
-        }
+    public int count(Class<? extends Resource> resourceClass) {
+        return hapiClient.search()
+                .forResource(resourceClass)
+                .totalMode(SearchTotalModeEnum.ACCURATE)
+                .returnBundle(Bundle.class)
+                .execute()
+                .getTotal();
+    }
 
-        private LoggingInterceptor createLoggingInterceptor() {
-            LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
-            loggingInterceptor.setLogger(log);
+    public Bundle getAll(Class<? extends Resource> resourceClass) {
+        return hapiClient.search()
+                .forResource(resourceClass)
+                .returnBundle(Bundle.class)
+                .execute();
+    }
 
-            // Optionally you may configure the interceptor (by default only summary info is logged)
-            loggingInterceptor.setLogRequestBody(false);
-            loggingInterceptor.setLogRequestHeaders(false);
-            loggingInterceptor.setLogRequestSummary(true);
+    public Bundle getNextPage(Bundle bundle) {
+        return hapiClient.loadPage()
+                .next(bundle)
+                .execute();
+    }
 
-            loggingInterceptor.setLogResponseBody(false);
-            loggingInterceptor.setLogResponseHeaders(false);
-            loggingInterceptor.setLogResponseSummary(true);
+    public String toJson(Resource resource) {
+        return getCtx().newJsonParser()
+                .setPrettyPrint(true)
+                .encodeResourceToString(resource);
+    }
 
-            return loggingInterceptor;
-        }
+    public <T extends Resource> T parseResource(Class<T> resourceClass, String resourceJson) {
+        return getCtx()
+                .newJsonParser()
+                .parseResource(resourceClass, resourceJson);
+    }
 
-        public IBaseOperationOutcome delete(IBaseResource resource) {
-            return hapiClient.delete()
-                    .resource(resource)
-                    .prettyPrint()
-                    .encodedJson()
-                    .execute();
-        }
+    public Bundle getConsentById(String id) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Consent.class)
+                .where(Consent.IDENTIFIER.exactly().systemAndValues("http://sdhealthconnect.github.io/leap/samples/ids", id))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
 
-        public int count(Class<? extends Resource> resourceClass) {
-            return hapiClient.search()
-                    .forResource(resourceClass)
-                    .totalMode(SearchTotalModeEnum.ACCURATE)
-                    .returnBundle(Bundle.class)
-                    .execute()
-                    .getTotal();
-        }
+    public Bundle getAllConsentsForPatient(String id) {
+        log.warn("ID from session: " + id);
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Consent.class)
+                .where(Consent.PATIENT.hasId(id))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
 
-        public Bundle getAll(Class<? extends Resource> resourceClass) {
-            return hapiClient.search()
-                    .forResource(resourceClass)
-                    .returnBundle(Bundle.class)
-                    .execute();
-        }
-
-        public Bundle getNextPage(Bundle bundle) {
-            return hapiClient.loadPage()
-                    .next(bundle)
-                    .execute();
-        }
-
-        public String toJson(Resource resource) {
-            return getCtx().newJsonParser()
-                    .setPrettyPrint(true)
-                    .encodeResourceToString(resource);
-        }
-
-        public <T extends Resource> T parseResource(Class<T> resourceClass, String resourceJson) {
-            return getCtx()
-                    .newJsonParser()
-                    .parseResource(resourceClass, resourceJson);
-        }
-
-        public Bundle getConsentById(String id) {
-            Bundle bundle = hapiClient
-                    .search()
-                    .forResource(Consent.class)
-                    .where(Consent.IDENTIFIER.exactly().systemAndValues("http://sdhealthconnect.github.io/leap/samples/ids",id))
-                    .returnBundle(Bundle.class)
-                    .execute();
-            return bundle;
-        }
-
-        public Bundle getAllConsentsForPatient(String id) {
-            log.warn("ID from session: "+id);
-            Bundle bundle = hapiClient
-                    .search()
-                    .forResource(Consent.class)
-                    .where(Consent.PATIENT.hasId(id))
-                    .returnBundle(Bundle.class)
-                    .execute();
-            return bundle;
-        }
-
-        public Bundle getAllOrganizations(String state) {
+    public Bundle getAllOrganizations(String state) {
             /* Bundle bundle = hapiClient
                     .search()
                     .forResource(Organization.class)
@@ -251,15 +250,15 @@ public class HapiFhirServer {
                     .execute();
 
              */
-            Bundle bundle = hapiClient
-                    .search()
-                    .forResource(Organization.class)
-                    .returnBundle(Bundle.class)
-                    .execute();
-            return bundle;
-        }
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Organization.class)
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
 
-        public Bundle getAllPractitioners(String state) {
+    public Bundle getAllPractitioners(String state) {
             /*Bundle bundle = hapiClient
                     .search()
                     .forResource(Practitioner.class)
@@ -268,42 +267,62 @@ public class HapiFhirServer {
                     .execute();
 
              */
-            Bundle bundle = hapiClient
-                    .search()
-                    .forResource(Practitioner.class)
-                    .returnBundle(Bundle.class)
-                    .execute();
-            return bundle;
-        }
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Practitioner.class)
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
 
-        public Bundle getAllPatientAuditEvents(String id) {
-            Bundle bundle = hapiClient
-                    .search()
-                    .forResource(AuditEvent.class)
-                    .where(AuditEvent.PATIENT.hasId(id))
-                    .returnBundle(Bundle.class)
-                    .execute();
-            return bundle;
-        }
+    public Bundle getAllPatientAuditEvents(String id) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(AuditEvent.class)
+                .where(AuditEvent.PATIENT.hasId(id))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
 
-        public Bundle getQuestionnaireResponse(String questionnaireId, String patientId) {
-            Bundle bundle = hapiClient
-                    .search()
-                    .forResource(QuestionnaireResponse.class)
-                    .where(QuestionnaireResponse.PATIENT.hasId(patientId))
-                    .and(QuestionnaireResponse.QUESTIONNAIRE.hasId(questionnaireId))
-                    .returnBundle(Bundle.class)
-                    .execute();
-            return bundle;
-        }
+    public Bundle getQuestionnaireResponse(String questionnaireId, String patientId) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(QuestionnaireResponse.class)
+                .where(QuestionnaireResponse.PATIENT.hasId(patientId))
+                .and(QuestionnaireResponse.QUESTIONNAIRE.hasId(questionnaireId))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
 
-        public Bundle getPatientBundle(String id) {
-            Bundle bundle = hapiClient
-                    .search()
-                    .forResource(Patient.class)
-                    .where(Resource.RES_ID.exactly().code(id))
-                    .returnBundle(Bundle.class)
-                    .execute();
-            return bundle;
+    public Bundle getPatientBundle(String id) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Patient.class)
+                .where(Resource.RES_ID.exactly().code(id))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
+
+    public Bundle getAuditEvents(final String patientId) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(AuditEvent.class)
+                .where(new ReferenceClientParam("patient").hasId(patientId))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
+
+    public Bundle getOrganization(String organizationId) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Organization.class)
+                .where(new TokenClientParam("identifier").exactly().identifier(organizationId))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
     }
 }
