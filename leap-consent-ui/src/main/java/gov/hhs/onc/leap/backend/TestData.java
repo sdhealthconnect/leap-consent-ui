@@ -23,8 +23,6 @@ public class TestData {
         return CONSENT.values();
     }
 
-    public static Collection<ConsentLog> getConsentLogs() { return CONSENT_LOG_MAP.values(); }
-
     public static LocalDate getTodaysDate() {return LocalDate.now();}
 
     public static LocalDate getPastDate(int bound) {
@@ -44,13 +42,6 @@ public class TestData {
         CONSENT.put(i , new ConsentDocument(ConsentDocument.Status.EXPIRED, true, "CONSENT TO SHARE", "MARIPOSA Community Health Center", "Health Current", getPastDate(600), getPastDate(3), "Active", "N/A", new Consent()));
         i = 4;
         CONSENT.put(i , new ConsentDocument(ConsentDocument.Status.REVOKED, true, "CONSENT TO SHARE", "MARIPOSA Community Health Center", "Health Current", getPastDate(2), getFutureDate(300), "N/A", "N/A", new Consent()));
-
-        long x = 0;
-        CONSENT_LOG_MAP.put(x, new ConsentLog("Permit", LocalDate.now(), "Mariposa Community Clinic", "HealthCurrent"));
-        x = 1;
-        CONSENT_LOG_MAP.put(x, new ConsentLog("Deny", LocalDate.now(), "Dr. Bob", "HealthCurrent"));
-        x = 3;
-        CONSENT_LOG_MAP.put(x , new ConsentLog("No Consent", LocalDate.now(), "Kaiser Permanente", "HealthCurrent"));
     }
 
     public static String getLanguagePreference() {
