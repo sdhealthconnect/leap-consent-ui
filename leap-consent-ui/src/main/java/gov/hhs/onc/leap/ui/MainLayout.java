@@ -160,11 +160,11 @@ public class MainLayout extends FlexBoxLayout
 
 		NaviItem advDirective = menu.addNaviItem(VaadinIcon.EDIT, "Advanced Directives", AdvancedDirectiveView.class);
 		menu.addNaviItem(advDirective, "Living Will", LivingWill.class);
-		menu.addNaviItem(advDirective, "Healthcare Power of Attorney", HealthcarePowerOfAttorney.class);
-		menu.addNaviItem(advDirective, "Mental Healthcare Power of Attorney", MentalHealthPowerOfAttorney.class);
-		menu.addNaviItem(advDirective, "PreHospital Medical Care Directive(DNR)", DoNotResuscitate.class);
+		menu.addNaviItem(advDirective, "Health Care POA", HealthcarePowerOfAttorney.class);
+		menu.addNaviItem(advDirective, "Mental Health Care POA", MentalHealthPowerOfAttorney.class);
+		menu.addNaviItem(advDirective, "Do Not Resuscitate", DoNotResuscitate.class);
 
-		menu.addNaviItem(VaadinIcon.CLIPBOARD, "National Portable Medical Order", PortableMedicalOrder.class);
+		menu.addNaviItem(VaadinIcon.CLIPBOARD, "Portable Medical Order", PortableMedicalOrder.class);
 
 		menu.addNaviItem(VaadinIcon.BUILDING, "Participate In Research", ResearchView.class);
 		menu.addNaviItem(VaadinIcon.LIST, "Activity Logs", AuditView.class );

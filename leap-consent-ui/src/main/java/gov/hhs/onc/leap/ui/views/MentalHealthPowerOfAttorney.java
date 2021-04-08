@@ -53,7 +53,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
-@PageTitle("Mental Health Power of Attorney")
+@PageTitle("Mental Health Care Power of Attorney")
 @Route(value = "mentalhealthpowerofattorney", layout = MainLayout.class)
 public class MentalHealthPowerOfAttorney extends ViewFrame {
     private gov.hhs.onc.leap.signature.PDFSigningService PDFSigningService;
@@ -174,7 +174,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
                 "licensed psychiatrist or psychologist who will evaluate whether you can give informed " +
                 "consent. Be sure you understand the importance of this document. It is a good idea to talk to your " +
                 "doctor and loved ones if you have questions about the type of mental health care you do or do not " +
-                "want. At anytime click on the <b>View your state's Mental Health Power of Attorney instructions</b> button for additional information.</p>" );
+                "want. At anytime click on the <b>View your state's Mental Health Care Power of Attorney instructions</b> button for additional information.</p>" );
 
 
         createPatientsInitials();
@@ -203,8 +203,8 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
     }
 
     private void createPatientsInitials() {
-        Html intro2 = new Html("<p>Before you begin with the <b>Mental Health Power of Attorney</b> questionnaire we need to capture" +
-                " your initials.  Your initials will be applied your state's form based on your responsives.</p>");
+        Html intro2 = new Html("<p>Before you begin with the <b>Mental Health Care Power of Attorney</b> questionnaire we need to capture" +
+                " your initials.  Your initials will be applied your state's form based on your responses.</p>");
 
         patientInitials = new SignaturePad();
         patientInitials.setHeight("100px");
@@ -229,7 +229,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        patientInitialsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Healthcare Power of Attorney"),intro2, new BasicDivider(), patientInitials, sigLayout);
+        patientInitialsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Health Care Power of Attorney"),intro2, new BasicDivider(), patientInitials, sigLayout);
         patientInitialsLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientInitialsLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         patientInitialsLayout.setHeightFull();
@@ -243,7 +243,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
     }
 
     private void createPatientGeneralInfo() {
-        Html intro3 = new Html("<p><b>My Information(I am the \"Principle\")</b></p>");
+        Html intro3 = new Html("<p><b>My Information(I am the \"Principal\")</b></p>");
 
         patientFullNameField = new TextField("Name");
         patientAddress1Field = new TextField("Address");
@@ -254,13 +254,20 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
         //set values
         patientFullNameField.setValue(consentUser.getFirstName()+" "+consentUser.getMiddleName()+" "+consentUser.getLastName());
-        patientAddress1Field.setValue(consentUser.getStreetAddress1()+" "+consentUser.getStreetAddress2());
+        String addressHolder = "";
+        if (consentUser.getStreetAddress2() != null) {
+            addressHolder = consentUser.getStreetAddress1() +" "+consentUser.getStreetAddress2();
+        }
+        else {
+            addressHolder = consentUser.getStreetAddress1();
+        }
+        patientAddress1Field.setValue(addressHolder);
         patientAddress2Field.setValue(consentUser.getCity()+" "+consentUser.getState()+" "+consentUser.getZipCode());
         patientPhoneNumberField.setValue(consentUser.getPhone());
         patientDateOfBirthField.setValue(getDateString(consentUser.getDateOfBirth()));
         patientEmailAddressField.setValue(consentUser.getEmailAddress());
 
-        patientGeneralInfoLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Healthcare Power of Attorney"),intro3, new BasicDivider(),
+        patientGeneralInfoLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Health Care Power of Attorney"),intro3, new BasicDivider(),
                 patientFullNameField, patientAddress1Field, patientAddress2Field, patientDateOfBirthField, patientPhoneNumberField, patientEmailAddressField);
         patientGeneralInfoLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientGeneralInfoLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -275,8 +282,8 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         patientGeneralInfoLayout.setVisible(false);
     }
     private void createPOASelection() {
-        Html intro4 = new Html("<p><b>Selection of my Mental Healthcare Power of Attorney and Alternate:</b> "+
-                "I choose the following person to act as my <b>agent</b> to make mental health care decisions for me.</p>");
+        Html intro4 = new Html("<p><b>Selection of my Mental Health Care Power of Attorney and Alternate:</b> "+
+                "I choose the following person to act as my <b>agent</b> to make mental health care decisions for me:</p>");
 
         poaFullNameField = new TextField("Name");
         poaAddress1Field = new TextField("Address");
@@ -285,7 +292,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         poaWorkPhoneField = new TextField("Work Phone");
         poaCellPhoneField = new TextField("Cell Phone");
 
-        poaSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Healthcare Power of Attorney"),intro4, new BasicDivider(),
+        poaSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Health Care Power of Attorney"),intro4, new BasicDivider(),
                 poaFullNameField, poaAddress1Field, poaAddress2Field, poaHomePhoneField, poaWorkPhoneField, poaCellPhoneField);
         poaSelectionLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         poaSelectionLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -300,9 +307,9 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         poaSelectionLayout.setVisible(false);
     }
     private void createALTSelection() {
-        Html intro5 = new Html("<p><b>Selection of my Mental Healthcare Power of Attorney and Alternate:</b> "+
+        Html intro5 = new Html("<p><b>Selection of my Mental Health Care Power of Attorney and Alternate:</b> "+
                 "I choose the following person to act as an <b>alternate</b> to make mental health care decisions for me if my "+
-                "first agent is unavailable, unwilling, or unable to make decisions for me.</p>");
+                "first agent is unavailable, unwilling, or unable to make decisions for me:</p>");
 
         altFullNameField = new TextField("Name");
         altAddress1Field = new TextField("Address");
@@ -311,7 +318,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         altWorkPhoneField = new TextField("Work Phone");
         altCellPhoneField = new TextField("Cell Phone");
 
-        altSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Healthcare Power of Attorney"),intro5, new BasicDivider(),
+        altSelectionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Health Care Power of Attorney"),intro5, new BasicDivider(),
                 altFullNameField, altAddress1Field, altAddress2Field, altHomePhoneField, altWorkPhoneField, altCellPhoneField);
         altSelectionLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         altSelectionLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -367,7 +374,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         authOtherDecisionsField1 = new TextField();
         authOtherDecisionsField1.setVisible(false);
 
-        authorizationLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Healthcare Power of Attorney"),intro6, intro7, new BasicDivider(),
+        authorizationLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Health Care Power of Attorney"),intro6, intro7, new BasicDivider(),
                 authorizedDecisions1, authorizedDecisions2, authorizedDecisions3, authorizedDecisions4, authOtherDecisionsField1, authOtherDecisionsField2, authOtherDecisionsField3);
         authorizationLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         authorizationLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -389,7 +396,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         authException1Field = new TextField("");
         authException2Field = new TextField("");
 
-        authExceptionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Healthcare Power of Attorney"),intro8, new BasicDivider(),
+        authExceptionLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Health Care Power of Attorney"),intro8, new BasicDivider(),
                 authException1Field, authException2Field);
         authExceptionLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         authExceptionLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -410,7 +417,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
                 "times that I am found to be unable to give informed consent. However, at all other times I retain the right to revoke all "+
                 "or any portion of this mental health care power of attorney or to disqualify any agent designated by me in this document. ");
 
-        revocationLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Healthcare Power of Attorney"),intro9, new BasicDivider());
+        revocationLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Health Care Power of Attorney"),intro9, new BasicDivider());
         revocationLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         revocationLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         revocationLayout.setHeightFull();
@@ -434,7 +441,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
                 "Portability and Accountability Act of 1996 (aka HIPAA), 42 USC 1320d and 45 CFR 160-164.");
         hipaaButton.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
 
-        hipaaLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Healthcare Power of Attorney"), intro10, new BasicDivider(),
+        hipaaLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Health Care Power of Attorney"), intro10, new BasicDivider(),
                 hipaaButton);
         hipaaLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         hipaaLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -451,11 +458,14 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
     private void createPatientSignature() {
         Html intro11 = new Html("<p><b>MY SIGNATURE VERIFICATION FOR THE MENTAL HEALTH CARE POWER OF ATTORNEY</b></p>");
+        Html principalLBL = new Html("<p>My Signature (Principal):</p>");
 
         patientSignature = new SignaturePad();
         patientSignature.setHeight("100px");
         patientSignature.setWidth("400px");
         patientSignature.setPenColor("#2874A6");
+
+
 
         Button clearPatientSig = new Button("Clear Signature");
         clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
@@ -476,7 +486,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Healthcare Power of Attorney"), intro11, new BasicDivider(),
+        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Health Care Power of Attorney"), intro11, new BasicDivider(), principalLBL,
                 patientSignature, sigLayout);
         patientSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -491,12 +501,13 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         patientSignatureLayout.setVisible(false);
     }
     private void createPatientUnableSignature() {
-        Html intro12 = new Html("<p><b>If you are unable to physically sign this document, "+
-                "your witness/notary may sign and initial for you. If applicable have your witness/notary sign below.</b></p>");
+        Html intro12 = new Html("<p><b>If you are unable to physically sign this document "+
+                "your witness/notary may sign and initial for you. If applicable, have your witness/notary sign below.</b></p>");
         Html intro13 = new Html("<p>Witness/Notary Verification: The principal of this document directly indicated to me "+
                 "that Mental Health Care Power of Attorney expresses their wishes and that they intend to adopt it at this time.</p>");
+        Html witnessNotarySignatureLBL = new Html("<p>Witness/Notary Signature:</p>");
 
-        patientUnableSignatureNameField = new TextField("Name");
+        patientUnableSignatureNameField = new TextField("Name Printed");
 
         patientUnableSignature = new SignaturePad();
         patientUnableSignature.setHeight("100px");
@@ -522,8 +533,8 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        patientUnableSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Healthcare Power of Attorney"), intro12, intro13, new BasicDivider(),
-                patientUnableSignatureNameField, patientUnableSignature, sigLayout);
+        patientUnableSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Health Care Power of Attorney"), intro12, intro13, new BasicDivider(),
+                patientUnableSignatureNameField, witnessNotarySignatureLBL, patientUnableSignature, sigLayout);
         patientUnableSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientUnableSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         patientUnableSignatureLayout.setHeightFull();
@@ -541,6 +552,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         Html intro15 = new Html("<p>I was present when this form was signed (or marked). The principal appeared to "+
                 "be of sound mind and was not forced to sign this form. I affirm that I meet the requirements to be a witness "+
                 "as indicated on page one of the mental health care power of attorney form.</p>");
+        Html witnessSignatureLBL = new Html("<p>Witness Signature:</p>");
 
         witnessName = new TextField("Witness Name");
         witnessAddress = new TextField("Address");
@@ -569,8 +581,8 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        witnessSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Healthcare Power of Attorney"), intro14, intro15, new BasicDivider(),
-                witnessName, witnessAddress, witnessSignature, sigLayout);
+        witnessSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Mental Health Care Power of Attorney"), intro14, intro15, new BasicDivider(),
+                witnessName, witnessAddress, witnessSignatureLBL, witnessSignature, sigLayout);
         witnessSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         witnessSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         witnessSignatureLayout.setHeightFull();
@@ -596,7 +608,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
             questionPosition++;
             evalNavigation();
         });
-        viewStateForm = new Button("View your states Mental Healthcare Power of Attorney instructions");
+        viewStateForm = new Button("View your state's Mental Health Care Power of Attorney instructions");
         viewStateForm.setIconAfterText(true);
         viewStateForm.addClickListener(event -> {
             Dialog d = createInfoDialog();
@@ -630,7 +642,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
     }
 
     private void successNotification() {
-        Span content = new Span("FHIR advanced directive - Mental Healthcare successfully created!");
+        Span content = new Span("FHIR advanced directive - Mental Health Care successfully created!");
 
         Notification notification = new Notification(content);
         notification.setDuration(3000);
@@ -794,7 +806,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
                 break;
             case 10:
                 returnButton.setEnabled(true);
-                forwardButton.setEnabled(true);
+                forwardButton.setEnabled(false);
                 patientInitialsLayout.setVisible(false);
                 patientGeneralInfoLayout.setVisible(false);
                 poaSelectionLayout.setVisible(false);
@@ -927,11 +939,13 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         if (authDecision3.contains("hospitalization program")) {
             poa.setAuthorizeCommitIfNecessary(true);
         }
-        if (authDecision4.contains("Other:")) {
-            poa.setAuthorizeOtherMentalHealthActions(true);
-            poa.setMentalHealthActionsList1(authOtherDecisionsField1.getValue());
-            poa.setMentalHealthActionsList2(authOtherDecisionsField2.getValue());
-            poa.setMentalHealthActionsList3(authOtherDecisionsField3.getValue());
+        if (authDecision4 != null) {
+            if (authDecision4.contains("Other:")) {
+                poa.setAuthorizeOtherMentalHealthActions(true);
+                poa.setMentalHealthActionsList1(authOtherDecisionsField1.getValue());
+                poa.setMentalHealthActionsList2(authOtherDecisionsField2.getValue());
+                poa.setMentalHealthActionsList3(authOtherDecisionsField3.getValue());
+            }
         }
 
         poa.setDoNotAuthorizeActionList1(authException1Field.getValue());
