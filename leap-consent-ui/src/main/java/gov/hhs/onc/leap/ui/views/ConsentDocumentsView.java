@@ -325,7 +325,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
             viewDocument.setEnabled(false);
         }
 
-        for (ListItem item : new ListItem[]{docTitle, docType}) {
+        for (ListItem item : new ListItem[]{docTitle, docType, uploadAction}) {
             item.setReverse(true);
             item.setWhiteSpace(WhiteSpace.PRE_LINE);
         }
@@ -522,4 +522,5 @@ public class ConsentDocumentsView extends SplitViewFrame {
         docDialog.setResizable(true);
         docDialog.setDraggable(true);
     }
+
 }
