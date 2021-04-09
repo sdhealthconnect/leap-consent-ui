@@ -48,6 +48,8 @@ import gov.hhs.onc.leap.ui.util.css.WhiteSpace;
 import org.apache.commons.io.IOUtils;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Consent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
@@ -63,7 +65,7 @@ import java.util.*;
 @PageTitle("Consent Documents")
 @Route(value = "consentdocumentview", layout = MainLayout.class)
 public class ConsentDocumentsView extends SplitViewFrame {
-
+    private static final Logger log = LoggerFactory.getLogger(ConsentDocumentsView.class);
     private Grid<ConsentDocument> grid;
     private ListDataProvider<ConsentDocument> dataProvider;
     private DetailsDrawer detailsDrawer;
@@ -383,9 +385,15 @@ public class ConsentDocumentsView extends SplitViewFrame {
             }
             String policyType = c.getScope().getCoding().get(0).getCode();
             String destination = "N/A";
-            if (!policyType.equals("adr")) {
-                destination = c.getProvision().getProvision().get(0).getActor().get(0).getReference().getDisplay();
+            try {
+                if (!policyType.equals("adr")) {
+                    destination = c.getProvision().getProvision().get(0).getActor().get(0).getReference().getDisplay();
+                }
             }
+            catch (Exception ex) {
+                log.warn("No Destination for patient-privacy scoped consent");
+            }
+
             String source = c.getOrganization().get(0).getDisplay();
 
             String constrainSensitivity = "No";
