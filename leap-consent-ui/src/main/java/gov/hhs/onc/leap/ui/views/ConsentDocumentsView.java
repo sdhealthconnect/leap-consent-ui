@@ -14,6 +14,8 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -43,6 +45,8 @@ import gov.hhs.onc.leap.ui.util.TextColor;
 import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.WhiteSpace;
+import org.apache.commons.io.IOUtils;
+import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Consent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
@@ -50,6 +54,8 @@ import org.vaadin.alejandro.PdfBrowserViewer;
 import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -61,6 +67,9 @@ public class ConsentDocumentsView extends SplitViewFrame {
     private Grid<ConsentDocument> grid;
     private ListDataProvider<ConsentDocument> dataProvider;
     private DetailsDrawer detailsDrawer;
+    private MemoryBuffer uploadBuffer;
+    private Upload upload;
+
     @Autowired
     private FHIRConsent fhirConsentClient;
     private Dialog docDialog;
@@ -227,6 +236,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
         if (consentDocument.getStatus().getName().equals("Active")) {
             consentAction.setText("Revoke Consent");
             consentAction.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.STOP));
+            consentAction.setEnabled(true);
         }
         else if (consentDocument.getStatus().getName().equals("Revoked")) {
             consentAction.setText("Reinstate Consent");
@@ -237,6 +247,11 @@ public class ConsentDocumentsView extends SplitViewFrame {
             else {
                 consentAction.setEnabled(true);
             }
+        }
+        else if (consentDocument.getStatus().getName().equals("Pending")) {
+            consentAction.setText("Revoke Consent");
+            consentAction.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.STOP));
+            consentAction.setEnabled(false);
         }
         else {
             consentAction.setText("No Actions Available");
@@ -254,7 +269,6 @@ public class ConsentDocumentsView extends SplitViewFrame {
             }
         });
 
-
         Div details = new Div(status, source, destination, startDate, endDate, sensitivity, domains, consentAction);
         details.addClassName(LumoStyles.Padding.Vertical.S);
         return details;
@@ -262,8 +276,18 @@ public class ConsentDocumentsView extends SplitViewFrame {
 
     private Component createAttachments(ConsentDocument consentDocument) {
 
+        uploadBuffer = new MemoryBuffer();
+        upload = new Upload(uploadBuffer);
+        upload.setDropAllowed(true);
+        upload.setVisible(true);
+
+        upload.addSucceededListener(event -> {
+            updateAttachmentAndStatus();
+        });
+
         ListItem docTitle;
         ListItem docType;
+        ListItem uploadAction;
         Button viewDocument = new Button("View Document");
         viewDocument.addClickListener(buttonClickEvent -> {
             createDocumentDialog();
@@ -277,6 +301,16 @@ public class ConsentDocumentsView extends SplitViewFrame {
             docType = new ListItem(
                     UIUtils.createTertiaryIcon(VaadinIcon.FILE_CODE),
                     consentDocument.getFhirConsentResource().getSourceAttachment().getContentType(), "Content Type");
+            if (consentDocument.getStatus().getName().equals("Pending")) {
+                uploadAction = new ListItem(UIUtils.createTertiaryIcon(VaadinIcon.UPLOAD),
+                        "To Activate Upload Notarized Copy", "User Action Required");
+                upload.setVisible(true);
+            }
+            else {
+                uploadAction = new ListItem(UIUtils.createTertiaryIcon(VaadinIcon.UPLOAD),
+                        "None", "User Action Required");
+                upload.setVisible(false);
+            }
         }
         else {
             docTitle = new ListItem(
@@ -285,6 +319,9 @@ public class ConsentDocumentsView extends SplitViewFrame {
             docType = new ListItem(
                     UIUtils.createTertiaryIcon(VaadinIcon.FILE_CODE),
                     new String("Not Applicable"), "Content Type");
+            uploadAction = new ListItem(UIUtils.createTertiaryIcon(VaadinIcon.UPLOAD),
+                    "None", "User Action Required");
+            upload.setVisible(false);
             viewDocument.setEnabled(false);
         }
 
@@ -293,7 +330,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
             item.setWhiteSpace(WhiteSpace.PRE_LINE);
         }
 
-        Div attachments = new Div(docTitle, docType, viewDocument);
+        Div attachments = new Div(docTitle, docType, uploadAction, upload, viewDocument);
         attachments.addClassName(LumoStyles.Padding.Vertical.S);
         return attachments;
 
@@ -335,6 +372,8 @@ public class ConsentDocumentsView extends SplitViewFrame {
                     status = ConsentDocument.Status.REVOKED;
                 } else if (consentState.equals(Consent.ConsentState.INACTIVE)) {
                     status = ConsentDocument.Status.EXPIRED;
+                } else if (consentState.equals(Consent.ConsentState.PROPOSED)) {
+                    status = ConsentDocument.Status.PENDING;
                 } else {
                     status = ConsentDocument.Status.ACTIVE;
                 }
@@ -390,24 +429,56 @@ public class ConsentDocumentsView extends SplitViewFrame {
         Optional<ConsentDocument> ocd = grid.getSelectionModel().getFirstSelectedItem();
         ConsentDocument cd = ocd.get();
         Consent consent = cd.getFhirConsentResource();
-        hideDetail();
         fhirConsentClient.revokeConsent(consent);
         dataProvider = DataProvider.ofCollection(getAllPatientConsents());
         grid.setDataProvider(dataProvider);
         grid.getDataProvider().refreshAll();
-        MainLayout.get().getAppBar().getSelectedTab().setSelected(false);
+        filter();
+        detailsDrawer.hide();
     }
 
     private void setConsentToReinstated() {
         Optional<ConsentDocument> ocd = grid.getSelectionModel().getFirstSelectedItem();
         ConsentDocument cd = ocd.get();
         Consent consent = cd.getFhirConsentResource();
-        hideDetail();
         fhirConsentClient.reinstateConsent(consent);
         dataProvider = DataProvider.ofCollection(getAllPatientConsents());
         grid.setDataProvider(dataProvider);
         grid.getDataProvider().refreshAll();
-        MainLayout.get().getAppBar().getSelectedTab().setSelected(false);
+        filter();
+        detailsDrawer.hide();
+    }
+
+    private void updateAttachmentAndStatus() {
+        byte[] notarizedDocumentByteArray = null;
+        try {
+            InputStream in = uploadBuffer.getInputStream();
+            ByteArrayInputStream bais = new ByteArrayInputStream(IOUtils.toByteArray(in));
+            notarizedDocumentByteArray = bais.readAllBytes();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        Optional<ConsentDocument> ocd = grid.getSelectionModel().getFirstSelectedItem();
+        ConsentDocument cd = ocd.get();
+        Consent consent = cd.getFhirConsentResource();
+        Attachment attachment = consent.getSourceAttachment();
+        attachment.setCreation(new Date());
+
+        String encodedString = Base64.getEncoder().encodeToString(notarizedDocumentByteArray);
+        attachment.setSize(encodedString.length());
+        attachment.setData(encodedString.getBytes());
+        consent.setSource(attachment);
+
+        consent.setStatus(Consent.ConsentState.ACTIVE);
+
+        fhirConsentClient.createConsent(consent);
+
+        dataProvider = DataProvider.ofCollection(getAllPatientConsents());
+        grid.setDataProvider(dataProvider);
+        grid.getDataProvider().refreshAll();
+        filter();
+        detailsDrawer.hide();
     }
 
     private void createDocumentDialog() {

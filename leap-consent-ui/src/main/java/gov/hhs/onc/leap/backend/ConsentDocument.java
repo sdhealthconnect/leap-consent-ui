@@ -46,13 +46,10 @@ public class ConsentDocument {
     }
 
     public enum Status {
-        ACTIVE(VaadinIcon.LOCK, "Active",
-                "This consent is in force.",
-                BadgeColor.CONTRAST), EXPIRED(VaadinIcon.CLOCK,
-                "Expired", "Allowed Date Range is nolonger valid.",
-                BadgeColor.NORMAL), REVOKED(VaadinIcon.WARNING,
-                "Revoked", "Patient has set this Consent to Inactive.",
-                BadgeColor.ERROR);
+        ACTIVE(VaadinIcon.LOCK, "Active", "This consent is in force.", BadgeColor.CONTRAST),
+        EXPIRED(VaadinIcon.CLOCK, "Expired", "Allowed Date Range is nolonger valid.", BadgeColor.ERROR),
+        REVOKED(VaadinIcon.WARNING, "Revoked", "Patient has set this Consent to Inactive.", BadgeColor.ERROR),
+        PENDING(VaadinIcon.FILE_PROCESS, "Pending", "User Action Required.", BadgeColor.NORMAL);
 
         private VaadinIcon icon;
         private String name;
@@ -75,6 +72,9 @@ public class ConsentDocument {
                     icon = UIUtils.createPrimaryIcon(this.icon);
                     break;
                 case REVOKED:
+                    icon = UIUtils.createSuccessIcon(this.icon);
+                    break;
+                case PENDING:
                     icon = UIUtils.createSuccessIcon(this.icon);
                     break;
                 default:
