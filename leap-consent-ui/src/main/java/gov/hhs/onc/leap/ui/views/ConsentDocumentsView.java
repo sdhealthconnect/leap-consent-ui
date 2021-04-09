@@ -383,9 +383,13 @@ public class ConsentDocumentsView extends SplitViewFrame {
             }
             String policyType = c.getScope().getCoding().get(0).getCode();
             String destination = "N/A";
-            if (!policyType.equals("adr")) {
-                destination = c.getProvision().getProvision().get(0).getActor().get(0).getReference().getDisplay();
+            try {
+                if (!policyType.equals("adr")) {
+                    destination = c.getProvision().getProvision().get(0).getActor().get(0).getReference().getDisplay();
+                }
             }
+            catch (Exception ex) {}
+
             String source = c.getOrganization().get(0).getDisplay();
 
             String constrainSensitivity = "No";
