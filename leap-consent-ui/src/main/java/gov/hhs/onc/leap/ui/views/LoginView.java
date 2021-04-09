@@ -23,6 +23,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		login.setOpened(true);
 		login.setTitle("FHIR Consent");
 		login.setDescription("A Leading Edge Acceleration Project");
+		login.setForgotPasswordButtonVisible(false);
 		getElement().appendChild(login.getElement());
 	}
 
@@ -30,4 +31,5 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 	public void beforeEnter(BeforeEnterEvent event) {
 		login.setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));
 	}
+
 }

@@ -142,6 +142,8 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
     private PowerOfAttorneyMentalHealth poa;
 
+    private Consent.ConsentState consentState;
+
     @Autowired
     private PDFSigningService pdfSigningService;
 
@@ -204,7 +206,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
     private void createPatientsInitials() {
         Html intro2 = new Html("<p>Before you begin with the <b>Mental Health Care Power of Attorney</b> questionnaire we need to capture" +
-                " your initials.  Your initials will be applied your state's form based on your responses.</p>");
+                " your initials.  Your initials will be applied to your state's form based on your responses.</p>");
 
         patientInitials = new SignaturePad();
         patientInitials.setHeight("100px");
@@ -243,7 +245,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
     }
 
     private void createPatientGeneralInfo() {
-        Html intro3 = new Html("<p><b>My Information(I am the \"Principal\")</b></p>");
+        Html intro3 = new Html("<p><b>My Information (I am the \"Principal\")</b></p>");
 
         patientFullNameField = new TextField("Name");
         patientAddress1Field = new TextField("Address");
@@ -615,8 +617,6 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
             d.open();
         });
 
-
-
         HorizontalLayout footer = new HorizontalLayout(returnButton, forwardButton, viewStateForm);
         footer.setAlignItems(FlexComponent.Alignment.CENTER);
         footer.setPadding(true);
@@ -869,6 +869,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         Button acceptButton = new Button("Accept and Submit");
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
+            consentState = Consent.ConsentState.ACTIVE;
             docDialog.close();
             createQuestionnaireResponse();
             createFHIRConsent();
@@ -880,6 +881,16 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
         Button acceptAndPrintButton = new Button("Accept and Get Notarized");
         acceptAndPrintButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
+        acceptAndPrintButton.addClickListener(event -> {
+            consentState = Consent.ConsentState.PROPOSED;
+            docDialog.close();
+            createQuestionnaireResponse();
+            createFHIRConsent();
+            successNotification();
+            //todo test for fhir consent create success
+            resetFormAndNavigation();
+            evalNavigation();
+        });
 
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton, acceptAndPrintButton);
 
@@ -985,7 +996,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         Patient patient = consentSession.getFhirPatient();
         Consent poaDirective = new Consent();
         poaDirective.setId("POAMentalHealth-"+consentSession.getFhirPatientId());
-        poaDirective.setStatus(Consent.ConsentState.ACTIVE);
+        poaDirective.setStatus(consentState);
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
