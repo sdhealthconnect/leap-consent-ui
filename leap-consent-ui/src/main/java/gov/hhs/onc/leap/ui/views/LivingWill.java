@@ -132,6 +132,8 @@ public class LivingWill extends ViewFrame {
 
     private gov.hhs.onc.leap.adr.model.LivingWill livingWill;
 
+    private Consent.ConsentState consentState;
+
     @Autowired
     private FHIRConsent fhirConsentClient;
 
@@ -161,7 +163,7 @@ public class LivingWill extends ViewFrame {
         Html intro = new Html("<p><b>GENERAL INSTRUCTIONS:</b> Use this form to make decisions now about your medical care if you are " +
                 "ever in a terminal condition, a persistent vegetative state or an irreversible coma. You should talk to " +
                 "your doctor about what these terms mean. The Living Will is your written directions to your health care power of attorney, "+
-                "also referred to as your <b>agent</b>, your family, your physician, and any other person who might make medical care decisions for" +
+                "also referred to as your <b>agent</b>, your family, your physician, and any other person who might make medical care decisions for " +
                 "you if you are unable to communicate yourself. It is a good idea to talk to your doctor and loved ones if you have questions about "+
                 "the type of care you do or do not want.</p>" );
 
@@ -190,7 +192,7 @@ public class LivingWill extends ViewFrame {
 
     private void createPatientsInitials() {
         Html intro2 = new Html("<p>Before you begin with the <b>Living Will</b> questionnaire we need to capture" +
-                " your initials.  Your initials will be applied your state's form based on your responsives.</p>");
+                " your initials.  Your initials will be applied your state's form based on your responses.</p>");
 
         patientInitials = new SignaturePad();
         patientInitials.setHeight("100px");
@@ -229,7 +231,7 @@ public class LivingWill extends ViewFrame {
     }
 
     private void createPatientGeneralInfo() {
-        Html intro3 = new Html("<p><b>My Information(I am the \"Principle\")</b></p>");
+        Html intro3 = new Html("<p><b>My Information(I am the \"Principal\")</b></p>");
 
         patientFullNameField = new TextField("Name");
         patientAddress1Field = new TextField("Address");
@@ -240,7 +242,14 @@ public class LivingWill extends ViewFrame {
 
         //set values
         patientFullNameField.setValue(consentUser.getFirstName()+" "+consentUser.getMiddleName()+" "+consentUser.getLastName());
-        patientAddress1Field.setValue(consentUser.getStreetAddress1()+" "+consentUser.getStreetAddress2());
+        String addressHolder = "";
+        if (consentUser.getStreetAddress2() != null) {
+            addressHolder = consentUser.getStreetAddress1() +" "+consentUser.getStreetAddress2();
+        }
+        else {
+            addressHolder = consentUser.getStreetAddress1();
+        }
+        patientAddress1Field.setValue(addressHolder);
         patientAddress2Field.setValue(consentUser.getCity()+" "+consentUser.getState()+" "+consentUser.getZipCode());
         patientPhoneNumberField.setValue(consentUser.getPhone());
         patientDateOfBirthField.setValue(getDateString(consentUser.getDateOfBirth()));
@@ -262,14 +271,14 @@ public class LivingWill extends ViewFrame {
     }
 
     private void createHealthcareChoices() {
-        Html intro4 = new Html("<p>Some general statements about your health care choices are listed below. If you agree with one of" +
+        Html intro4 = new Html("<p>Some general statements about your health care choices are listed below. If you agree with one of " +
                 "the statements, you should select that statement. Read all of these statements carefully BEFORE you " +
                 "select your preferred statement. You can also write your own statement concerning life-sustaining " +
                 "treatment and other matters relating to your health care. You may select any combination of " +
                 "items 1, 2, 3 and 4, BUT if you 'select' item 5 the others will not be selected.</p>");
 
         comfortCareOnly = new Checkbox();
-        comfortCareOnly.setLabel("1. If I have a terminal condition I do not want my life to be prolonged, and I do not want lifesustaining " +
+        comfortCareOnly.setLabel("1. If I have a terminal condition I do not want my life to be prolonged, and I do not want life-sustaining " +
                 "treatment, beyond comfort care, that would serve only to artificially delay the " +
                 "moment of my death.");
         comfortCareOnly.addValueChangeListener(event -> {
@@ -326,7 +335,7 @@ public class LivingWill extends ViewFrame {
         ifPregnantSaveFetus = new Checkbox();
         ifPregnantSaveFetus.setLabel("3. Regardless of any other directions I have given in this Living Will, if I am known to be " +
                 "pregnant, I do not want life-sustaining treatment withheld or withdrawn if it is possible that " +
-                "the embryo/fetus will develop to the point of live birth with the continued application of lifesustaining " +
+                "the embryo/fetus will develop to the point of live birth with the continued application of life-sustaining " +
                 "treatment.");
         if (consentSession.getConsentUser().getGender().equals("Male")) {
             ifPregnantSaveFetus.setEnabled(false);
@@ -732,6 +741,7 @@ public class LivingWill extends ViewFrame {
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
+            consentState = Consent.ConsentState.ACTIVE;
             createQuestionnaireResponse();
             createFHIRConsent();
             successNotification();
@@ -742,6 +752,16 @@ public class LivingWill extends ViewFrame {
 
         Button acceptAndPrintButton = new Button("Accept and Get Notarized");
         acceptAndPrintButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
+        acceptAndPrintButton.addClickListener(event -> {
+            docDialog.close();
+            consentState = Consent.ConsentState.PROPOSED;
+            createQuestionnaireResponse();
+            createFHIRConsent();
+            successNotification();
+            //todo test for fhir consent create success
+            resetFormAndNavigation();
+            evalNavigation();
+        });
 
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton, acceptAndPrintButton);
 
@@ -840,7 +860,7 @@ public class LivingWill extends ViewFrame {
         Patient patient = consentSession.getFhirPatient();
         Consent poaDirective = new Consent();
         poaDirective.setId("LivingWill-"+consentSession.getFhirPatientId());
-        poaDirective.setStatus(Consent.ConsentState.ACTIVE);
+        poaDirective.setStatus(consentState);
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
