@@ -84,6 +84,7 @@ public class PDFDNRHandler {
         this.eyeColor = eyeColor;
         this.hairColor = hairColor;
         this.patientPhotoImage = patientPhotoImage;
+        log.info("Patient Image Size Handler: "+patientPhotoImage.length);
         this.primaryPhysician = primaryPhysician;
         this.primaryPhysicianPhoneNumber = primaryPhysicianPhoneNumber;
         this.hospiceProgram = hospiceProgram;
@@ -186,6 +187,7 @@ public class PDFDNRHandler {
                     }
                     catch (Exception ex) {}
                 }
+                if (field.getFullyQualifiedName().equals("hospiceProgram")) field.setValue(hospiceProgram);
                 if (field.getFullyQualifiedName().equals("healthcareprovidersignaturedate")) field.setValue(healthcareprovidersignaturedate);
                 if (field.getFullyQualifiedName().equals("witnesssignature_af_image")) {
                     try {

@@ -158,7 +158,7 @@ public class MainLayout extends FlexBoxLayout
 		menu.addNaviItem(VaadinIcon.COGS, "Analyze My Data", AnalyzeRecordView.class);
 		menu.addNaviItem(VaadinIcon.SHARE, "Share My Data", SharePatientDataView.class);
 
-		NaviItem advDirective = menu.addNaviItem(VaadinIcon.EDIT, "Advanced Directives", AdvancedDirectiveView.class);
+		NaviItem advDirective = menu.addNaviItem(VaadinIcon.EDIT, "My Directives", AdvancedDirectiveView.class);
 		menu.addNaviItem(advDirective, "Living Will", LivingWill.class);
 		menu.addNaviItem(advDirective, "Health Care POA", HealthcarePowerOfAttorney.class);
 		menu.addNaviItem(advDirective, "Mental Health Care POA", MentalHealthPowerOfAttorney.class);
