@@ -84,7 +84,6 @@ public class PDFDNRHandler {
         this.eyeColor = eyeColor;
         this.hairColor = hairColor;
         this.patientPhotoImage = patientPhotoImage;
-        log.info("Patient Image Size Handler: "+patientPhotoImage.length);
         this.primaryPhysician = primaryPhysician;
         this.primaryPhysicianPhoneNumber = primaryPhysicianPhoneNumber;
         this.hospiceProgram = hospiceProgram;

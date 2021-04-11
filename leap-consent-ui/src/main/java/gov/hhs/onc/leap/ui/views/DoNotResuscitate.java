@@ -21,6 +21,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
+import elemental.json.Json;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
@@ -49,7 +50,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
 import javax.annotation.PostConstruct;
-import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -93,7 +93,6 @@ public class DoNotResuscitate extends ViewFrame {
     private Upload upload;
     private Image patientImage;
     private byte[] patientImageBytes;
-    private byte[] base64PatientImage;
     private HorizontalLayout hImageLayout;
 
     private FlexBoxLayout physicianOrHospice;
@@ -288,8 +287,6 @@ public class DoNotResuscitate extends ViewFrame {
             try {
                 ByteArrayInputStream bais = new ByteArrayInputStream(IOUtils.toByteArray(uploadBuffer.getInputStream()));
                 patientImageBytes = IOUtils.toByteArray(bais);
-                log.info("patient image size "+patientImageBytes.length);
-                base64PatientImage = Base64.getEncoder().encode(patientImageBytes);
                 patientImage = UIUtils.createImage(patientImageBytes, "patientimage.png", "patientimage");
                 patientImage.setHeight("200px");
                 patientImage.setWidth("200px");
@@ -860,6 +857,8 @@ public class DoNotResuscitate extends ViewFrame {
         hospiceField.clear();
         attestationSignature.clear();
         witnessSignature.clear();
+        upload.getElement().setPropertyJson("files", Json.createArray());
+        hImageLayout.remove(patientImage);
 
         questionPosition = 0;
     }
