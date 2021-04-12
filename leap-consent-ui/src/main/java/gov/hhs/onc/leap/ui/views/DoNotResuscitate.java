@@ -21,6 +21,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
+import elemental.json.Json;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
@@ -42,6 +43,8 @@ import gov.hhs.onc.leap.ui.util.pdf.PDFDNRHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
 import org.apache.commons.io.IOUtils;
 import org.hl7.fhir.r4.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.alejandro.PdfBrowserViewer;
@@ -60,7 +63,7 @@ import java.util.List;
 @PageTitle("Do Not Resuscitate (DNR)")
 @Route(value = "dnrview", layout = MainLayout.class)
 public class DoNotResuscitate extends ViewFrame {
-
+    private static final Logger log = LoggerFactory.getLogger(DoNotResuscitate.class);
     private Button returnButton;
     private Button forwardButton;
     private Button viewStateForm;
@@ -89,6 +92,8 @@ public class DoNotResuscitate extends ViewFrame {
     private MemoryBuffer uploadBuffer;
     private Upload upload;
     private Image patientImage;
+    private byte[] patientImageBytes;
+    private HorizontalLayout hImageLayout;
 
     private FlexBoxLayout physicianOrHospice;
     private TextField physicianNameField;
@@ -114,6 +119,8 @@ public class DoNotResuscitate extends ViewFrame {
     private QuestionnaireResponse questionnaireResponse;
 
     private List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList;
+
+    private Consent.ConsentState consentState;
 
     @Autowired
     private FHIRConsent fhirConsentClient;
@@ -273,23 +280,34 @@ public class DoNotResuscitate extends ViewFrame {
         uploadBuffer = new MemoryBuffer();
         upload = new Upload(uploadBuffer);
         upload.setDropAllowed(true);
+        upload.setAcceptedFileTypes("image/jpeg","image/jpg", "image/png", "image/gif");
         Div output = new Div();
 
         upload.addSucceededListener(event -> {
-
+            try {
+                ByteArrayInputStream bais = new ByteArrayInputStream(IOUtils.toByteArray(uploadBuffer.getInputStream()));
+                patientImageBytes = IOUtils.toByteArray(bais);
+                patientImage = UIUtils.createImage(patientImageBytes, "patientimage.png", "patientimage");
+                patientImage.setHeight("200px");
+                patientImage.setWidth("200px");
+                hImageLayout.add(patientImage);
+            }
+            catch (Exception ex) {
+                log.error("Error processing patient image: "+ex.getMessage());
+            }
         });
 
         patientImage = new Image();
         patientImage.setHeight("150px");
         patientImage.setWidth("200px");
 
-        HorizontalLayout hLayout = new HorizontalLayout(upload, output, patientImage);
-        hLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        hLayout.setPadding(true);
-        hLayout.setSpacing(true);
+        hImageLayout = new HorizontalLayout(upload);
+        hImageLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        hImageLayout.setPadding(true);
+        hImageLayout.setSpacing(true);
 
         physicalCharacteristics = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro4, new BasicDivider(), dateOfBirthField,
-                genderField, raceField, eyecolorField, haircolorField, new BasicDivider(), hLayout);
+                genderField, raceField, eyecolorField, haircolorField, new BasicDivider(), hImageLayout);
         physicalCharacteristics.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         physicalCharacteristics.setBoxSizing(BoxSizing.BORDER_BOX);
         physicalCharacteristics.setHeightFull();
@@ -495,7 +513,7 @@ public class DoNotResuscitate extends ViewFrame {
             questionPosition++;
             evalNavigation();
         });
-        viewStateForm = new Button("View your states DNR instructions");
+        viewStateForm = new Button("View your state's DNR instructions");
         viewStateForm.setIconAfterText(true);
         viewStateForm.addClickListener(event -> {
             Dialog d = createInfoDialog();
@@ -569,16 +587,27 @@ public class DoNotResuscitate extends ViewFrame {
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
+            consentState = Consent.ConsentState.ACTIVE;
             createQuestionnaireResponse();
             createFHIRConsent();
             successNotification();
             //todo test for fhir consent create success
-            //resetQuestionNavigation();
+            resetFormAndNavigation();
             evalNavigation();
         });
 
         Button acceptAndPrintButton = new Button("Accept and Get Notarized");
         acceptAndPrintButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
+        acceptAndPrintButton.addClickListener(event -> {
+            docDialog.close();
+            consentState = Consent.ConsentState.PROPOSED;
+            createQuestionnaireResponse();
+            createFHIRConsent();
+            successNotification();
+            //todo test for fhir consent create success
+            resetFormAndNavigation();
+            evalNavigation();
+        });
 
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton, acceptAndPrintButton);
 
@@ -625,7 +654,7 @@ public class DoNotResuscitate extends ViewFrame {
 
         PDFDNRHandler pdfHandler = new PDFDNRHandler(pdfSigningService);
         StreamResource res = pdfHandler.retrievePDFForm(patientName, base64PatientSignature, patientsignatureDate, poaHealthcare, base64HealthcarePOASignature,
-                                                        dateOfBirth, gender, ethnicity, eyeColor, hairColor, imageBytes,
+                                                        dateOfBirth, gender, ethnicity, eyeColor, hairColor, patientImageBytes,
                                                         primaryPhysician, primaryPhysicianPhoneNumber, hospiceProgram, base64AttestationSignature,
                                                         attestationdate, base64WitnessSignature, witnesssignaturedate);
 
@@ -645,7 +674,7 @@ public class DoNotResuscitate extends ViewFrame {
         Patient patient = consentSession.getFhirPatient();
         Consent dnrDirective = new Consent();
         dnrDirective.setId("DNR-"+consentSession.getFhirPatientId());
-        dnrDirective.setStatus(Consent.ConsentState.ACTIVE);
+        dnrDirective.setStatus(consentState);
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
@@ -817,5 +846,20 @@ public class DoNotResuscitate extends ViewFrame {
         item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new StringType(string)));
         item.setDefinition(definition);
         return item;
+    }
+
+    private void resetFormAndNavigation() {
+        patientSignature.clear();
+        physicianPhoneField.clear();
+        physicianNameField.clear();
+        healthcarePOASignature.clear();
+        healthcarePowerOfAttorneyName.clear();
+        hospiceField.clear();
+        attestationSignature.clear();
+        witnessSignature.clear();
+        upload.getElement().setPropertyJson("files", Json.createArray());
+        hImageLayout.remove(patientImage);
+
+        questionPosition = 0;
     }
 }
