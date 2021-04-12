@@ -16,6 +16,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
@@ -222,7 +224,7 @@ public class DoNotResuscitate extends ViewFrame {
 
     private void createHealthcarePowerOfAttorney() {
         Html intro3 = new Html("<p><b>If I am unable to communicate my wishes, and I have designated a Health Care Power of Attorney, my elected Health Care agent shall sign:</b></p>");
-        healthcarePowerOfAttorneyName = new TextField("Health Care Power of Attorney Printed Name");
+        healthcarePowerOfAttorneyName = new TextField("Health Care Power of Attorney Printed Name:");
 
         healthcarePOASignature = new SignaturePad();
         healthcarePOASignature.setHeight("100px");
@@ -264,8 +266,8 @@ public class DoNotResuscitate extends ViewFrame {
     }
 
     private void createPatientPhysicalCharacteristics() {
-        Html intro4 =  new Html("<p><b>PROVIDE THE FOLLOWING INFORMATION OR ATTACH A RECENT PHOTO</b></p>");
-
+        Html intro4 =  new Html("<p><b>PROVIDE THE FOLLOWING INFORMATION OR ATTACH A RECENT PHOTO:</b></p>");
+        Html fileTypes = new Html("<p><b>Note:</b> Supported file types are: *.jpeg, *.jpg, *.png, and *.gif. File size limit: 1Mb.</p>");
         dateOfBirthField = new TextField("Date of Birth");
         dateOfBirthField.setValue(getDateString(consentUser.getDateOfBirth()));
         genderField = new TextField("Gender");
@@ -297,6 +299,14 @@ public class DoNotResuscitate extends ViewFrame {
             }
         });
 
+        upload.getElement().addEventListener("file-remove", new DomEventListener() {
+            @Override
+            public void handleEvent(DomEvent domEvent) {
+                hImageLayout.remove(patientImage);
+            }
+        });
+
+
         patientImage = new Image();
         patientImage.setHeight("150px");
         patientImage.setWidth("200px");
@@ -307,7 +317,7 @@ public class DoNotResuscitate extends ViewFrame {
         hImageLayout.setSpacing(true);
 
         physicalCharacteristics = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro4, new BasicDivider(), dateOfBirthField,
-                genderField, raceField, eyecolorField, haircolorField, new BasicDivider(), hImageLayout);
+                genderField, raceField, eyecolorField, haircolorField, new BasicDivider(), hImageLayout, fileTypes);
         physicalCharacteristics.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         physicalCharacteristics.setBoxSizing(BoxSizing.BORDER_BOX);
         physicalCharacteristics.setHeightFull();
@@ -319,15 +329,14 @@ public class DoNotResuscitate extends ViewFrame {
         physicalCharacteristics.getStyle().set("margin-left", "10px");
         physicalCharacteristics.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         physicalCharacteristics.setVisible(false);
-
     }
 
     private void createPhysicianOrHospiceInfo() {
-        Html intro5 = new Html("<p><b>INFORMATION ABOUT MY DOCTOR AND HOSPICE</b> (if I am in Hospice)</p>");
+        Html intro5 = new Html("<p><b>INFORMATION ABOUT MY DOCTOR AND HOSPICE</b> (if I am in Hospice):</p>");
 
-        physicianNameField = new TextField("Physician");
-        physicianPhoneField = new TextField("Phone Number");
-        hospiceField = new TextField("Hospice Program, if applicable(name)");
+        physicianNameField = new TextField("Physician:");
+        physicianPhoneField = new TextField("Phone Number:");
+        hospiceField = new TextField("Hospice Program, if applicable(name):");
 
         physicianOrHospice = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro5, new BasicDivider(), physicianNameField, physicianPhoneField, hospiceField);
         physicianOrHospice.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
