@@ -72,10 +72,10 @@ public class UserPreferencesView extends ViewFrame {
         //DatePicker birthDate = new DatePicker();
         populateUSerFromSession();
 
-        layoutWithFormItems.addFormItem(firstName, "First name");
-        layoutWithFormItems.addFormItem(middleName, "Middle name");
+        layoutWithFormItems.addFormItem(firstName, "First Name");
+        layoutWithFormItems.addFormItem(middleName, "Middle Name");
 
-        layoutWithFormItems.addFormItem(lastName, "Last name");
+        layoutWithFormItems.addFormItem(lastName, "Last Name");
         layoutWithFormItems.addFormItem(maritalStatus, "Marital Status");
 
         layoutWithFormItems.addFormItem(eyeColor, "Eye Color");
@@ -89,17 +89,17 @@ public class UserPreferencesView extends ViewFrame {
         layoutWithFormItems.addFormItem(ethnicity, "Ethnicity");
 
         layoutWithFormItems.addFormItem(username, "Username");
-        layoutWithFormItems.addFormItem(prefix, "prefix");
+        layoutWithFormItems.addFormItem(prefix, "Prefix");
 
 
         layoutWithFormItems.addFormItem(dateOfBirth, "Birthdate");
         layoutWithFormItems.addFormItem(height, "Height");
 
-        layoutWithFormItems.addFormItem(streetAddress1, "Street address 1");
-        layoutWithFormItems.addFormItem(streetAddress2, "Street address 2");
+        layoutWithFormItems.addFormItem(streetAddress1, "Street Address 1");
+        layoutWithFormItems.addFormItem(streetAddress2, "Street Address 2");
 
         layoutWithFormItems.addFormItem(city, "City");
-        layoutWithFormItems.addFormItem(zipCode, "zipCode");
+        layoutWithFormItems.addFormItem(zipCode, "ZIP Code");
 
         layoutWithFormItems.addFormItem(phone, "Phone");
         layoutWithFormItems.addFormItem(mobile, "Mobile");
