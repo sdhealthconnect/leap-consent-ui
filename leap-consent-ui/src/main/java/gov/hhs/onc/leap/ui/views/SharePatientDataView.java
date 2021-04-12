@@ -118,12 +118,33 @@ public class SharePatientDataView extends ViewFrame {
 
 
     private Component createViewContent() {
-        Html intro = new Html("<p>The following allows you the <b>Patient</b> to create rules to control " +
+        Html intro = new Html("<p>The following allows you, the <b>Patient</b>, to create rules to control " +
                 "what, when, and to whom your <b>Personal Healthcare Information</b> can be exchanged with.  " +
                 "That exchange may be between your Primary Physician, Regional Hospital, Health Information Exchange, and others. " +
                 "You may choose not to share information that could be sensitive in nature, or choose not to constrain the exchange at all. "+
                 "If you have privacy concerns use the <b>Analyze My Data</b> option to determine if sensitive information exists in your "+
                 "clinical record.");
+
+        createDateRequirements();
+        createDataClassRequirements();
+        createDataSourceRequirements();
+        createDataDestinationRequirements();
+        createPrivacyRequirements();
+        createSignatureRequirements();
+
+        FlexBoxLayout content = new FlexBoxLayout(intro, dateRequirements, dataClassRequirements, sourceRequirements,
+                destinationRequirements, privacyRequirements, signatureRequirements);
+        content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        content.setBoxSizing(BoxSizing.BORDER_BOX);
+        content.setHeightFull();
+
+
+        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        return content;
+
+    }
+
+    private void createDateRequirements() {
         timeSettings = new RadioButtonGroup<>();
         timeSettings.setLabel("Set the dates this consent will be in force.");
         timeSettings.setItems("Use Default Option", "Custom Date Option");
@@ -151,33 +172,47 @@ public class SharePatientDataView extends ViewFrame {
         });
 
         consentDefaultPeriod = new RadioButtonGroup<>();
-        consentDefaultPeriod.setLabel("Default Date Options, beginning Today for;");
-        consentDefaultPeriod.setItems("24 Hours", "1 year", "5 years", "10 years");
+        consentDefaultPeriod.setLabel("Default date options, beginning today for:");
+        consentDefaultPeriod.setItems("24 hours", "1 year", "5 years", "10 years");
         consentDefaultPeriod.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         consentDefaultPeriod.setVisible(false);
 
         startDateTime = new DateTimePicker();
-        startDateTime.setLabel("Begin Enforceing this Consent On;");
+        startDateTime.setLabel("Begin enforcing this consent on:");
         startDateTime.setDatePlaceholder("Date");
         startDateTime.setTimePlaceholder("Time");
         startDateTime.setVisible(false);
 
         endDateTime = new DateTimePicker();
-        endDateTime.setLabel("This Consent will nolonger be valid on;");
+        endDateTime.setLabel("This consent will no longer be valid on:");
         endDateTime.setDatePlaceholder("Date");
         endDateTime.setTimePlaceholder("Time");
         endDateTime.setVisible(false);
 
+        dateRequirements = new FlexBoxLayout(createHeader(VaadinIcon.CALENDAR, "Date Requirements"),timeSettings, new BasicDivider(), consentDefaultPeriod, startDateTime, endDateTime);
+        dateRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        dateRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
+        dateRequirements.setHeightFull();
+        dateRequirements.setBackgroundColor("white");
+        dateRequirements.setShadow(Shadow.S);
+        dateRequirements.setBorderRadius(BorderRadius.S);
+        dateRequirements.getStyle().set("margin-bottom", "10px");
+        dateRequirements.getStyle().set("margin-right", "10px");
+        dateRequirements.getStyle().set("margin-left", "10px");
+        dateRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+    }
+
+    private void createDataClassRequirements() {
         constrainDataClass = new RadioButtonGroup<>();
-        constrainDataClass.setLabel("Control what types of clinical information are exchanged");
-        constrainDataClass.setItems("Deny access to following;", "Allow all types of data to be exchanged");
+        constrainDataClass.setLabel("Control what types of clinical information are exchanged.");
+        constrainDataClass.setItems("Deny access to following:", "Allow all types of data to be exchanged.");
         constrainDataClass.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         constrainDataClass.addValueChangeListener(event -> {
             if (event.getValue() == null) {
                 //do nothing
             }
             else {
-                if (event.getValue().equals("Deny access to following;")) {
+                if (event.getValue().equals("Deny access to following:")) {
                     dataClassComboBox.setVisible(true);
                 }
                 else {
@@ -203,29 +238,50 @@ public class SharePatientDataView extends ViewFrame {
         }
         dataClassComboBox.setVisible(false);
 
+        dataClassRequirements = new FlexBoxLayout(createHeader(VaadinIcon.RECORDS, "Data Class Requirements"), constrainDataClass, new BasicDivider(), dataClassComboBox);
+        dataClassRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        dataClassRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
+        dataClassRequirements.setHeightFull();
+        dataClassRequirements.setBackgroundColor("white");
+        dataClassRequirements.setShadow(Shadow.S);
+        dataClassRequirements.setBorderRadius(BorderRadius.S);
+        dataClassRequirements.getStyle().set("margin-bottom", "10px");
+        dataClassRequirements.getStyle().set("margin-right", "10px");
+        dataClassRequirements.getStyle().set("margin-left", "10px");
+        dataClassRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        dataClassRequirements.setVisible(false);
+    }
 
+    private void createDataSourceRequirements() {
+        Html practitionerLimitation = new Html("<p><b>Note:</b> Selection of practitioner has been disabled due to limitations of FHIR R4 Consent.  Please select an organization instead.</p>");
         custodianType = new RadioButtonGroup<>();
-        custodianType.setLabel("The source of information being exchanged");
+        custodianType.setLabel("The source of information being exchanged.");
         custodianType.setItems("Practitioner", "Organization");
         custodianType.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         custodianType.addValueChangeListener(event -> {
-           if (event.getValue() == null) {
-               //do nothing
-           }
-           else {
-               if (event.getValue().equals("Practitioner")) {
-                   practitionerComboBoxSource.setVisible(true);
-                   organizationComboBoxSource.setVisible(false);
-               }
-               else if (event.getValue().equals("Organization")) {
-                   practitionerComboBoxSource.setVisible(false);
-                   organizationComboBoxSource.setVisible(true);
-               }
-               else {
-                   practitionerComboBoxSource.setVisible(false);
-                   organizationComboBoxSource.setVisible(false);
-               }
-           }
+            if (event.getValue() == null) {
+                //do nothing
+            }
+            else {
+                if (event.getValue().equals("Practitioner")) {
+                    practitionerComboBoxSource.setVisible(true);
+                    practitionerComboBoxSource.setEnabled(false);
+                    practitionerLimitation.setVisible(true);
+                    organizationComboBoxSource.setVisible(false);
+                }
+                else if (event.getValue().equals("Organization")) {
+                    practitionerComboBoxSource.setVisible(false);
+                    practitionerComboBoxSource.setEnabled(false);
+                    practitionerLimitation.setVisible(false);
+                    organizationComboBoxSource.setVisible(true);
+                }
+                else {
+                    practitionerComboBoxSource.setVisible(false);
+                    practitionerComboBoxSource.setEnabled(false);
+                    practitionerLimitation.setVisible(false);
+                    organizationComboBoxSource.setVisible(false);
+                }
+            }
         });
 
         practitionerListDataProvider = DataProvider.ofCollection(getPractitioners());
@@ -243,9 +299,25 @@ public class SharePatientDataView extends ViewFrame {
         organizationComboBoxSource.setItems(organizationListDataProvider);
         organizationComboBoxSource.setVisible(false);
 
+        practitionerLimitation.setVisible(false);
 
+        sourceRequirements = new FlexBoxLayout(createHeader(VaadinIcon.DOCTOR, "Data Source - Custodian"),custodianType, new BasicDivider(), practitionerComboBoxSource, organizationComboBoxSource, practitionerLimitation);
+        sourceRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        sourceRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
+        sourceRequirements.setHeightFull();
+        sourceRequirements.setBackgroundColor("white");
+        sourceRequirements.setShadow(Shadow.S);
+        sourceRequirements.setBorderRadius(BorderRadius.S);
+        sourceRequirements.getStyle().set("margin-bottom", "10px");
+        sourceRequirements.getStyle().set("margin-right", "10px");
+        sourceRequirements.getStyle().set("margin-left", "10px");
+        sourceRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        sourceRequirements.setVisible(false);
+    }
+
+    private void createDataDestinationRequirements() {
         destinationType = new RadioButtonGroup<>();
-        destinationType.setLabel("The Person or Organization, the destination, requesting your information");
+        destinationType.setLabel("The Person, or Organization, requesting your information.");
         destinationType.setItems("Practitioner", "Organization");
         destinationType.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         destinationType.addValueChangeListener(event -> {
@@ -280,8 +352,24 @@ public class SharePatientDataView extends ViewFrame {
         organizationComboBoxDestination.setItems(organizationListDataProvider);
         organizationComboBoxDestination.setVisible(false);
 
+        destinationRequirements = new FlexBoxLayout(createHeader(VaadinIcon.HOSPITAL, "Destination - Recipient"),destinationType, new BasicDivider(), practitionerComboBoxDestination, organizationComboBoxDestination);
+        destinationRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        destinationRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
+        destinationRequirements.setHeightFull();
+        destinationRequirements.setBackgroundColor("white");
+        destinationRequirements.setShadow(Shadow.S);
+        destinationRequirements.setBorderRadius(BorderRadius.S);
+        destinationRequirements.getStyle().set("margin-bottom", "10px");
+        destinationRequirements.getStyle().set("margin-right", "10px");
+        destinationRequirements.getStyle().set("margin-left", "10px");
+        destinationRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        destinationRequirements.setVisible(false);
+    }
+
+    private void createPrivacyRequirements() {
+        Html enforceLimitation = new Html("<p><b>Note:</b> Current enforcement is limited to security labels where confidentialy is \"R\" for Restricted or above.  Defaulting selection to \"All\".</p>");
         sensConstraints = new RadioButtonGroup<>();
-        sensConstraints.setLabel("If portions of my clinical record are privacy sensitive I would like to;");
+        sensConstraints.setLabel("If portions of my clinical record are privacy sensitive, I would like to:");
         sensConstraints.setItems("Remove them", "I do not have privacy concerns");
         sensConstraints.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         sensConstraints.addValueChangeListener(event -> {
@@ -292,14 +380,17 @@ public class SharePatientDataView extends ViewFrame {
                 if (event.getValue().equals("Remove them")) {
                     allSensitivityOptions.setVisible(true);
                     sensitivityOptions.setVisible(true);
+                    enforceLimitation.setVisible(true);
                 }
                 else if(event.getValue().equals("I do not have privacy concerns")){
                     allSensitivityOptions.setVisible(false);
                     sensitivityOptions.setVisible(false);
+                    enforceLimitation.setVisible(false);
                 }
                 else {
                     allSensitivityOptions.setVisible(false);
                     sensitivityOptions.setVisible(false);
+                    enforceLimitation.setVisible(false);
                 }
             }
         });
@@ -332,69 +423,13 @@ public class SharePatientDataView extends ViewFrame {
             }
         });
         allSensitivityOptions.setVisible(false);
+        allSensitivityOptions.setValue(true);
         sensitivityOptions.setVisible(false);
+        enforceLimitation.setVisible(false);
+        allSensitivityOptions.setEnabled(false);
+        sensitivityOptions.setEnabled(false);
 
-        Html eSignLabel = new Html("<p>This last step will capture your signature and create a <b>human readible pdf</b> of this consent.</p>");
-        Button eSignButton = new Button("eSign Consent and Submit");
-        eSignButton.addClickListener(event -> {
-            dialog = createSignatureDialog();
-            dialog.open();
-        });
-
-
-
-        dateRequirements = new FlexBoxLayout(createHeader(VaadinIcon.CALENDAR, "Date Requirements"),timeSettings, new BasicDivider(), consentDefaultPeriod, startDateTime, endDateTime);
-        dateRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
-        dateRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
-        dateRequirements.setHeightFull();
-        dateRequirements.setBackgroundColor("white");
-        dateRequirements.setShadow(Shadow.S);
-        dateRequirements.setBorderRadius(BorderRadius.S);
-        dateRequirements.getStyle().set("margin-bottom", "10px");
-        dateRequirements.getStyle().set("margin-right", "10px");
-        dateRequirements.getStyle().set("margin-left", "10px");
-        dateRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
-
-        dataClassRequirements = new FlexBoxLayout(createHeader(VaadinIcon.RECORDS, "Data Class Requirements"), constrainDataClass, new BasicDivider(), dataClassComboBox);
-        dataClassRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
-        dataClassRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
-        dataClassRequirements.setHeightFull();
-        dataClassRequirements.setBackgroundColor("white");
-        dataClassRequirements.setShadow(Shadow.S);
-        dataClassRequirements.setBorderRadius(BorderRadius.S);
-        dataClassRequirements.getStyle().set("margin-bottom", "10px");
-        dataClassRequirements.getStyle().set("margin-right", "10px");
-        dataClassRequirements.getStyle().set("margin-left", "10px");
-        dataClassRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
-        dataClassRequirements.setVisible(false);
-
-        sourceRequirements = new FlexBoxLayout(createHeader(VaadinIcon.DOCTOR, "Data Source - Custodian"),custodianType, new BasicDivider(), practitionerComboBoxSource, organizationComboBoxSource);
-        sourceRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
-        sourceRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
-        sourceRequirements.setHeightFull();
-        sourceRequirements.setBackgroundColor("white");
-        sourceRequirements.setShadow(Shadow.S);
-        sourceRequirements.setBorderRadius(BorderRadius.S);
-        sourceRequirements.getStyle().set("margin-bottom", "10px");
-        sourceRequirements.getStyle().set("margin-right", "10px");
-        sourceRequirements.getStyle().set("margin-left", "10px");
-        sourceRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
-        sourceRequirements.setVisible(false);
-
-        destinationRequirements = new FlexBoxLayout(createHeader(VaadinIcon.HOSPITAL, "Destination - Recipient"),destinationType, new BasicDivider(), practitionerComboBoxDestination, organizationComboBoxDestination);
-        destinationRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
-        destinationRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
-        destinationRequirements.setHeightFull();
-        destinationRequirements.setBackgroundColor("white");
-        destinationRequirements.setShadow(Shadow.S);
-        destinationRequirements.setBorderRadius(BorderRadius.S);
-        destinationRequirements.getStyle().set("margin-bottom", "10px");
-        destinationRequirements.getStyle().set("margin-right", "10px");
-        destinationRequirements.getStyle().set("margin-left", "10px");
-        destinationRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
-        destinationRequirements.setVisible(false);
-
-        privacyRequirements = new FlexBoxLayout(createHeader(VaadinIcon.GLASSES, "Privacy Concerns"),sensConstraints, new BasicDivider(), allSensitivityOptions, sensitivityOptions);
+        privacyRequirements = new FlexBoxLayout(createHeader(VaadinIcon.GLASSES, "Privacy Concerns"),sensConstraints, new BasicDivider(), allSensitivityOptions, sensitivityOptions, enforceLimitation);
         privacyRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         privacyRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
         privacyRequirements.setHeightFull();
@@ -406,6 +441,15 @@ public class SharePatientDataView extends ViewFrame {
         privacyRequirements.getStyle().set("margin-left", "10px");
         privacyRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         privacyRequirements.setVisible(false);
+    }
+
+    private void createSignatureRequirements() {
+        Html eSignLabel = new Html("<p>This last step will capture your signature and create a <b>human readable pdf</b> of this consent.</p>");
+        Button eSignButton = new Button("eSign Consent and Submit");
+        eSignButton.addClickListener(event -> {
+            dialog = createSignatureDialog();
+            dialog.open();
+        });
 
         signatureRequirements = new FlexBoxLayout(createHeader(VaadinIcon.PENCIL, "Signature"), eSignLabel, eSignButton, new BasicDivider());
         signatureRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -419,20 +463,6 @@ public class SharePatientDataView extends ViewFrame {
         signatureRequirements.getStyle().set("margin-left", "10px");
         signatureRequirements.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         signatureRequirements.setVisible(false);
-
-
-        FlexBoxLayout content = new FlexBoxLayout(intro, dateRequirements, dataClassRequirements, sourceRequirements,
-                destinationRequirements, privacyRequirements, signatureRequirements);
-        content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
-        content.setBoxSizing(BoxSizing.BORDER_BOX);
-        content.setHeightFull();
-
-
-        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
-        return content;
-
-
-
     }
 
     private Collection<Practitioner> getPractitioners() {
@@ -607,15 +637,15 @@ public class SharePatientDataView extends ViewFrame {
                 else {
                     defDate = null;
                 }
-                sDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                eDate = defDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                sDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+                eDate = defDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
                 //for use later
                 provisionStartDateTime = LocalDateTime.now();
                 provisionEndDateTime = defDate;
             }
             else if (timeSettings.getValue().equals("Custom Date Option")) {
-                sDate = startDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                eDate = endDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                sDate = startDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
+                eDate = endDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
                 //for use later
                 provisionStartDateTime = startDateTime.getValue();
                 provisionEndDateTime = endDateTime.getValue();
@@ -625,8 +655,8 @@ public class SharePatientDataView extends ViewFrame {
                 //this is an error...
             }
             //get domain constraints
-            String dataDomainConstraintlist = "Deny access to following; ";
-            if (constrainDataClass.getValue().equals("Deny access to following;")) {
+            String dataDomainConstraintlist = "Deny access to following: ";
+            if (constrainDataClass.getValue().equals("Deny access to following:")) {
                 Set<String> classList = dataClassComboBox.getSelectedItems();
                 Iterator iterClass = classList.iterator();
                 while (iterClass.hasNext()) {

@@ -160,6 +160,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
     private PowerOfAttorneyHealthCare poa;
 
+    private Consent.ConsentState consentState;
+
     @Autowired
     private PDFSigningService pdfSigningService;
 
@@ -225,7 +227,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
     private void createPatientsInitials() {
         Html intro2 = new Html("<p>Before you begin with the <b>Health Care Power of Attorney</b> questionnaire we need to capture" +
-                               " your initials.  Your initials will be applied your state's form, based on your responses.</p>");
+                               " your initials.  Your initials will be applied to your state's form, based on your responses.</p>");
 
         patientInitials = new SignaturePad();
         patientInitials.setHeight("100px");
@@ -1256,6 +1258,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
+            consentState = Consent.ConsentState.ACTIVE;
             createQuestionnaireResponse();
             createFHIRConsent();
             successNotification();
@@ -1266,6 +1269,16 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
         Button acceptAndPrintButton = new Button("Accept and Get Notarized");
         acceptAndPrintButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
+        acceptAndPrintButton.addClickListener(event -> {
+            docDialog.close();
+            consentState = Consent.ConsentState.PROPOSED;
+            createQuestionnaireResponse();
+            createFHIRConsent();
+            successNotification();
+            //todo test for fhir consent create success
+            resetFormAndNavigation();
+            evalNavigation();
+        });
 
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton, acceptAndPrintButton);
 

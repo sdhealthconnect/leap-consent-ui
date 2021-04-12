@@ -170,23 +170,23 @@ public class NotificationView extends ViewFrame {
         //todo This is a listing of user consent requirements, ideally this is read in from a properties file or db based on the user's primary state's requirements and may require evaluation of patient's age and other demographic or conditional info
         //patient privacy
         patientPrivacyNotification = new ConsentNotification("Action Required", ConsentNotification.Status.NOTCOMPLETE, "patient-privacy",
-                "Requires, at minimum a exchange policy between your primary provider's organization and the hosting Healthcare Information Exchange(HIE)", "sharepatientdataview");
+                "Requires, at minimum, an exchange policy between your primary provider's organization and the hosting Healthcare Information Exchange(HIE)", "sharepatientdataview");
         //Advance Directives
         adrLivingWillNotification = new ConsentNotification("Action Required",ConsentNotification.Status.NOTCOMPLETE,"Advance Directive - Living Will",
                 "Use this form to make decisions now about your medical care if you are ever in a terminal condition, a persistent vegetative state or an irreversible coma.",
                 "livingwillview");
         adrPOAHealthCareNotification = new ConsentNotification("Action Required", ConsentNotification.Status.NOTCOMPLETE, "Advance Directive - Health Care Power of Attorney",
-                "Helps you identify a person, called an agent, to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose",
+                "Helps you identify a person, called an \"agent\", to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose and trust to make medical decisions for you.",
                 "healthcarepowerofattorney");
         adrPOAMentalHealthNotification = new ConsentNotification("Optional", ConsentNotification.Status.NOTCOMPLETE, "Advance Directive - Mental Health Power of Attorney",
-                "Helps you identify a person, also referred to as your agent, to make future mental health care decisions for you if you become incapable of making those decisions for yourself.",
+                "Helps you identify a person, also referred to as your \"agent\", to make future mental health care decisions for you if you become incapable of making those decisions for yourself.",
                 "mentalhealthpowerofattorney");
         adrDNRNotification = new ConsentNotification("Optional", ConsentNotification.Status.NOTCOMPLETE, "Advance Directive - Do Not Resuscitate",
                 "A document signed by you and your doctor that informs emergency medical technicians (EMTs) or hospital emergency personnel not to resuscitate you.",
                 "dnrview");
         polstNotification = new ConsentNotification("Optional", ConsentNotification.Status.NOTCOMPLETE, "National Portable Medical Order",
                 "Health care providers, the patient, or patient representative, should complete this form only after the " +
-                        "health care provider has had conversation with their patient or the patient’s representative.  " +
+                        "health care provider has had a conversation with their patient or the patient’s representative.  " +
                         "The POLST decision-making process is for patients who are at risk for a life-threatening clinical event because they have a serious life-limiting medical " +
                         "condition, which may include advanced frailty.",
                 "portablemedicalorderview");

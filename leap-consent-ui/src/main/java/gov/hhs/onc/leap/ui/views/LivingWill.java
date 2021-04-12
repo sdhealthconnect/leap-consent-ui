@@ -190,7 +190,7 @@ public class LivingWill extends ViewFrame {
 
     private void createPatientsInitials() {
         Html intro2 = new Html("<p>Before you begin with the <b>Living Will</b> questionnaire we need to capture" +
-                " your initials.  Your initials will be applied your state's form based on your responsives.</p>");
+                " your initials.  Your initials will be applied to your state's form based on your responses.</p>");
 
         patientInitials = new SignaturePad();
         patientInitials.setHeight("100px");
