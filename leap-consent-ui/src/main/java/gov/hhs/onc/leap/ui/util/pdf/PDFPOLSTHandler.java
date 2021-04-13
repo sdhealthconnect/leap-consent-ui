@@ -162,7 +162,7 @@ public class PDFPOLSTHandler {
                 if (field.getFullyQualifiedName().equals("trialFeeding")) {
                     if (polst.isTrialNutritionByArtificialMeans()) ((PDCheckbox) field).check();
                 }
-                if (field.getFullyQualifiedName().equals("noArtificialFeeding")) {
+                if (field.getFullyQualifiedName().equals("noArtificalFeeding")) {
                     if (polst.isNoArtificialMeans()) ((PDCheckbox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("noDecisionOnFeeding")) {
@@ -184,12 +184,29 @@ public class PDFPOLSTHandler {
                         }
                         catch (Exception ex) {}
                 }
+                if (field.getFullyQualifiedName().equals("healthcareProviderSignatureDate")) field.setValue(polst.getSignatureDate());
+
                 if (field.getFullyQualifiedName().equals("healthcareProviderName")) field.setValue(polst.getHealthcareProviderFullName());
                 if (field.getFullyQualifiedName().equals("healthcareProviderLicenseCert")) field.setValue(polst.getHealthcareProviderLicenseOrCert());
+
                 if (field.getFullyQualifiedName().equals("supervisorSignatureRequired")) {
                     if (polst.isRequiredSupervisingPhysicianSignature()) ((PDCheckbox) field).check();
                 }
-                if (field.getFullyQualifiedName().equals("supervisionPhysicianLicense")) field.setValue(polst.getSupervisingPhysicianLicense());
+                if (field.getFullyQualifiedName().equals("supervisingPhysicianLicense")) {
+                    if (!polst.isRequiredSupervisingPhysicianSignature()) {
+                        field.setValue(polst.getSupervisingPhysicianLicense());
+                    }
+                }
+                if (field.getFullyQualifiedName().equals("supervisingPhysicianSignature_af_image")) {
+                    if (!polst.isRequiredSupervisingPhysicianSignature()) {
+                        try {
+                            insertImageInField(field, polst.getBase64EncodedSupervisingPhysicianSignature(), doc);
+                        }
+                        catch (Exception ex) {}
+                    }
+                }
+
+                if (field.getFullyQualifiedName().equals("patientFullName")) field.setValue(polst.getPatientLastName()+", "+polst.getPatientFirstName()+" "+polst.getPatientMiddleName());
 
                 if (field.getFullyQualifiedName().equals("emergencyContactFullName")) field.setValue(polst.getEmergencyContactFullName());
                 if (field.getFullyQualifiedName().equals("legalRepresentative")) {
@@ -204,11 +221,20 @@ public class PDFPOLSTHandler {
                 if (field.getFullyQualifiedName().equals("primaryProviderFullName")) field.setValue(polst.getPrimaryPhysicianFullName());
                 if (field.getFullyQualifiedName().equals("primaryProviderPhoneNumber")) field.setValue(polst.getPrimaryPhysicianPhoneNumber());
 
+                //hospice
                 if (field.getFullyQualifiedName().equals("enrolledInHospice")) {
                     if (polst.isInHospice()) ((PDCheckbox) field).check();
                 }
-                if (field.getFullyQualifiedName().equals("hospiceAgencyName")) field.setValue(polst.getHospiceAgencyName());
-                if (field.getFullyQualifiedName().equals("hospiceAgencyPhoneNumber")) field.setValue(polst.getHospiceAgencyPhoneNumber());
+                if (field.getFullyQualifiedName().equals("hospiceAgencyName")) {
+                    if (polst.isInHospice()) {
+                        field.setValue(polst.getHospiceAgencyName());
+                    }
+                }
+                if (field.getFullyQualifiedName().equals("hospiceAgencyPhoneNumber")) {
+                    if (polst.isInHospice()) {
+                        field.setValue(polst.getHospiceAgencyPhoneNumber());
+                    }
+                }
 
                 //directive review
                 if (field.getFullyQualifiedName().equals("advanceDirectiveReviewed")) {

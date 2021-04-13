@@ -218,7 +218,7 @@ public class PortableMedicalOrder extends ViewFrame {
         Html intro = new Html("<p>Health care providers, the patient, or patient representative, should complete this form only after the "+
                 "health care provider has had conversation with their patient or the patient’s representative.  "+
                 "The POLST decision-making process is for patients who are at risk for a life-threatening clinical event because they have a serious life-limiting medical "+
-                "condition, which may include advanced frailty (www.polst.org/guidance-appropriate-patients-pdf).</p>" );
+                "condition, which may include advanced frailty <a href=\"http://www.polst.org//guidance-appropriate-patients-pdf\">(www.polst.org/guidance-appropriate-patients-pdf)</a>.</p>" );
 
         createPatientGeneralInfo();
         createCardiopulmonaryResuscitationOrders();
@@ -250,7 +250,7 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createPatientGeneralInfo() {
-        Html intro2 = new Html("<p><b>This is a medical order, not an advance directive. For information about POLST and to understand this document, visit: www.polst.org/form</b></p>");
+        Html intro2 = new Html("<p><b>This is a medical order, not an advance directive. For information about POLST and to understand this document, visit:</b> <a href=\"http://www.polst.org/form\">www.polst.org/form</a></p>");
 
         patientFirstName = new TextField("Patient's First Name");
         patientPreferredName = new TextField("Preferred Name");
@@ -653,6 +653,7 @@ public class PortableMedicalOrder extends ViewFrame {
         clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearPatientSig.addClickListener(event -> {
             supervisingPhysicianSignature.clear();
+            supervisingPhysicianLicenseField.clear();
         });
         Button savePatientSig = new Button("Accept Signature");
         savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
@@ -677,6 +678,7 @@ public class PortableMedicalOrder extends ViewFrame {
                clearPatientSig.setEnabled(false);
                savePatientSig.setEnabled(false);
                supervisingPhysicianSignature.clear();
+               supervisingPhysicianLicenseField.clear();
                supervisingPhysicianSignature.setReadOnly(true);
                supervisingPhysicianLicenseField.setEnabled(false);
            }
@@ -684,6 +686,7 @@ public class PortableMedicalOrder extends ViewFrame {
                clearPatientSig.setEnabled(true);
                savePatientSig.setEnabled(true);
                supervisingPhysicianSignature.clear();
+               supervisingPhysicianLicenseField.clear();
                supervisingPhysicianSignature.setReadOnly(false);
                supervisingPhysicianLicenseField.setEnabled(true);
            }
@@ -1436,6 +1439,7 @@ public class PortableMedicalOrder extends ViewFrame {
         polst.setSignatureDate(getDateString(healthcareProviderSignatureDate));
         polst.setHealthcareProviderPhoneNumber(healthcareProviderPhoneNumberField.getValue());
         polst.setBase64EncodedSignatureHealthcareProvider(base64HealthcareProviderSignature);
+
         //supervisor
         polst.setSupervisingPhysicianLicense(supervisingPhysicianLicenseField.getValue());
         polst.setRequiredSupervisingPhysicianSignature(supervisorSignatureChk.getValue());
@@ -1447,6 +1451,14 @@ public class PortableMedicalOrder extends ViewFrame {
         polst.setLegalSurrogateOrHealthcareAgent(legalOrSurrogate.getValue());
         polst.setEmergencyContactPhoneNumberDay(dayPhoneNumber.getValue());
         polst.setEmergencyContactPhoneNumberNight(nightPhoneNumber.getValue());
+        //primary care provider
+        polst.setPrimaryPhysicianFullName(primaryProviderName.getValue());
+        polst.setPrimaryPhysicianPhoneNumber(primaryProviderPhoneNumber.getValue());
+        //hospice
+        polst.setInHospice(inHospiceCare.getValue());
+        polst.setHospiceAgencyName(hospiceName.getValue());
+        polst.setHospiceAgencyPhoneNumber(hospicePhoneNumber.getValue());
+
 
         //advance directive review
         polst.setAdvancedDirectiveReviewed(livingWillReviewed.getValue());
@@ -1576,6 +1588,8 @@ public class PortableMedicalOrder extends ViewFrame {
         supervisingPhysicianLicenseField.clear();
         supervisorSignatureChk.clear();
         emergencyContactNameField.clear();
+        nightPhoneNumber.clear();
+        dayPhoneNumber.clear();
         legalOrSurrogate.clear();
         otherContactType.clear();
         primaryProviderPhoneNumber.clear();
