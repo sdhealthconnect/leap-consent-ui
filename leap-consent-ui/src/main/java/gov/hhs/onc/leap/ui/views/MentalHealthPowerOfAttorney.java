@@ -11,6 +11,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.component.textfield.TextField;
@@ -48,10 +49,7 @@ import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @PageTitle("Mental Health Care Power of Attorney")
 @Route(value = "mentalhealthpowerofattorney", layout = MainLayout.class)
@@ -143,6 +141,10 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
     private PowerOfAttorneyMentalHealth poa;
 
     private Consent.ConsentState consentState;
+
+    private List<QuestionnaireError> errorList;
+    private String advDirectiveFlowType = "Default";
+    private Dialog errorDialog;
 
     @Autowired
     private PDFSigningService pdfSigningService;
@@ -871,12 +873,20 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         acceptButton.addClickListener(event -> {
             consentState = Consent.ConsentState.ACTIVE;
             docDialog.close();
-            createQuestionnaireResponse();
-            createFHIRConsent();
-            successNotification();
-            //todo test for fhir consent create success
-            resetFormAndNavigation();
-            evalNavigation();
+            advDirectiveFlowType = "Default";
+            errorCheck();
+            if (errorList.size() > 0) {
+                createErrorDialog();
+                errorDialog.open();
+            }
+            else {
+                createQuestionnaireResponse();
+                createFHIRConsent();
+                successNotification();
+                //todo test for fhir consent create success
+                resetFormAndNavigation();
+                evalNavigation();
+            }
         });
 
         Button acceptAndPrintButton = new Button("Accept and Get Notarized");
@@ -884,12 +894,20 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         acceptAndPrintButton.addClickListener(event -> {
             consentState = Consent.ConsentState.PROPOSED;
             docDialog.close();
-            createQuestionnaireResponse();
-            createFHIRConsent();
-            successNotification();
-            //todo test for fhir consent create success
-            resetFormAndNavigation();
-            evalNavigation();
+            advDirectiveFlowType = "Notary";
+            errorCheck();
+            if (errorList.size() > 0) {
+                createErrorDialog();
+                errorDialog.open();
+            }
+            else {
+                createQuestionnaireResponse();
+                createFHIRConsent();
+                successNotification();
+                //todo test for fhir consent create success
+                resetFormAndNavigation();
+                evalNavigation();
+            }
         });
 
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton, acceptAndPrintButton);
@@ -941,21 +959,29 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         String authDecision2 = (String)authorizedDecisions2.getValue();
         String authDecision3 = (String)authorizedDecisions3.getValue();
         String authDecision4 = (String)authorizedDecisions4.getValue();
-        if (authDecision1.contains("To receive medical records")) {
-            poa.setAuthorizeReleaseOfRecords(true);
+        if (authDecision1 != null) {
+            if (authDecision1.contains("To receive medical records")) {
+                poa.setAuthorizeReleaseOfRecords(true);
+            }
         }
-        if (authDecision2.contains("administration of any medications")) {
-            poa.setAuthorizeMedicationAdminstration(true);
+        if (authDecision2 != null) {
+            if (authDecision2.contains("administration of any medications")) {
+                poa.setAuthorizeMedicationAdminstration(true);
+            }
         }
-        if (authDecision3.contains("hospitalization program")) {
-            poa.setAuthorizeCommitIfNecessary(true);
+        if (authDecision3 != null) {
+            if (authDecision3.contains("hospitalization program")) {
+                poa.setAuthorizeCommitIfNecessary(true);
+            }
         }
         if (authDecision4 != null) {
-            if (authDecision4.contains("Other:")) {
-                poa.setAuthorizeOtherMentalHealthActions(true);
-                poa.setMentalHealthActionsList1(authOtherDecisionsField1.getValue());
-                poa.setMentalHealthActionsList2(authOtherDecisionsField2.getValue());
-                poa.setMentalHealthActionsList3(authOtherDecisionsField3.getValue());
+            if (authDecision4 != null) {
+                if (authDecision4.contains("Other:")) {
+                    poa.setAuthorizeOtherMentalHealthActions(true);
+                    poa.setMentalHealthActionsList1(authOtherDecisionsField1.getValue());
+                    poa.setMentalHealthActionsList2(authOtherDecisionsField2.getValue());
+                    poa.setMentalHealthActionsList3(authOtherDecisionsField3.getValue());
+                }
             }
         }
 
@@ -965,8 +991,10 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         //Hipaa waiver
         HipaaWaiver hipaa = new HipaaWaiver();
         String hipaaValue = (String)hipaaButton.getValue();
-        hipaa.setUseDisclosure(hipaaValue.contains("I intend"));
-        poa.setHipaaWaiver(hipaa);
+        if (hipaaValue != null) {
+            hipaa.setUseDisclosure(hipaaValue.contains("I intend"));
+            poa.setHipaaWaiver(hipaa);
+        }
 
         PrincipleSignature principleSignature = new PrincipleSignature();
         principleSignature.setBase64EncodeSignature(base64PatientSignature);
@@ -1221,5 +1249,137 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new StringType(string)));
         item.setDefinition(definition);
         return item;
+    }
+
+    private void errorCheck() {
+        errorList = new ArrayList<>();
+        if (advDirectiveFlowType.equals("Default")) {
+            errorCheckCommon();
+            errorCheckSignature();
+        }
+        else if (advDirectiveFlowType.equals("Notary")) {
+            errorCheckCommon();
+        }
+        else {
+            errorList.add(new QuestionnaireError("Critical Error: Unable to determine signature path.", 0));
+        }
+    }
+
+    private void errorCheckCommon() {
+        //user initials
+        try {
+            if (base64PatientInitials == null || base64PatientInitials.length == 0) {
+                errorList.add(new QuestionnaireError("User initials can not be blank.", 0));
+            }
+        }
+        catch (Exception ex) {
+            errorList.add(new QuestionnaireError("User initials can not be blank.", 0));
+        }
+
+        //agent
+        if (poa.getAgent().getName() == null || poa.getAgent().getName().isEmpty()) {
+            errorList.add(new QuestionnaireError("Agent name can not be blank.", 2));
+        }
+        if (poa.getAgent().getAddress1() == null || poa.getAgent().getAddress1().isEmpty()) {
+            errorList.add(new QuestionnaireError("Agent address can not be blank.", 2));
+        }
+        if ((poa.getAgent().getHomePhone() == null || poa.getAgent().getHomePhone().isEmpty()) &&
+                (poa.getAgent().getWorkPhone() == null || poa.getAgent().getWorkPhone().isEmpty()) &&
+                (poa.getAgent().getCellPhone() == null || poa.getAgent().getCellPhone().isEmpty())) {
+            errorList.add(new QuestionnaireError("A minimum of 1 Agent phone number should be provided.", 2));
+        }
+
+        //alternate
+        if (poa.getAlternate().getName() == null || poa.getAlternate().getName().isEmpty()) {
+            errorList.add(new QuestionnaireError("Alternate name can not be blank.", 3));
+        }
+        if (poa.getAlternate().getAddress1() == null || poa.getAlternate().getAddress1().isEmpty()) {
+            errorList.add(new QuestionnaireError("Alternate address can not be blank.", 3));
+        }
+        if ((poa.getAlternate().getHomePhone() == null || poa.getAlternate().getHomePhone().isEmpty()) &&
+                (poa.getAlternate().getWorkPhone() == null || poa.getAlternate().getWorkPhone().isEmpty()) &&
+                (poa.getAlternate().getCellPhone() == null || poa.getAlternate().getCellPhone().isEmpty())) {
+            errorList.add(new QuestionnaireError("A minimum of 1 Alternate phone number should be provided.", 3));
+        }
+
+        //authorized actions
+        if (!poa.isAuthorizeOtherMentalHealthActions() && !poa.isAuthorizeCommitIfNecessary() && !poa.isAuthorizeMedicationAdminstration() && !poa.isAuthorizeReleaseOfRecords()) {
+            errorList.add(new QuestionnaireError("No authorization selection were made.", 4));
+        }
+
+    }
+
+    private void errorCheckSignature() {
+        try {
+            if (poa.getPrincipleSignature() == null || poa.getPrincipleSignature().getBase64EncodeSignature().length == 0) {
+
+                if (poa.getPrincipleAlternateSignature() == null || poa.getPrincipleAlternateSignature().getBase64EncodedSignature().length == 0) {
+                    errorList.add(new QuestionnaireError("User signature or alternate signature required.", 8));
+                }
+                else {
+                    if (poa.getPrincipleAlternateSignature().getBase64EncodedSignature().length > 0) {
+                        if (poa.getPrincipleAlternateSignature().getNameOfWitnessOrNotary() == null || poa.getPrincipleAlternateSignature().getNameOfWitnessOrNotary().isEmpty()) {
+                            errorList.add(new QuestionnaireError("Witness or notary as alternate name required.", 9));
+                        }
+                    }
+                }
+            }
+        }
+        catch(Exception ex) {
+            errorList.add(new QuestionnaireError("User signature or alternate signature required.", 8));
+        }
+
+        try {
+            if (poa.getWitnessSignature() == null || poa.getWitnessSignature().getBase64EncodedSignature().length == 0) {
+                errorList.add(new QuestionnaireError("Witness signature can not be blank.", 10));
+            }
+        }
+        catch (Exception ex) {
+            errorList.add(new QuestionnaireError("Witness signature can not be blank.", 10));
+        }
+        if (poa.getWitnessSignature().getWitnessName() == null || poa.getWitnessSignature().getWitnessName().isEmpty()) {
+            errorList.add(new QuestionnaireError("Witness name can not be blank.", 10));
+        }
+        if (poa.getWitnessSignature().getWitnessAddress() == null || poa.getWitnessSignature().getWitnessAddress().isEmpty()) {
+            errorList.add(new QuestionnaireError("Witness address can not be blank.", 10));
+        }
+    }
+
+    private void createErrorDialog() {
+        Html errorIntro = new Html("<p><b>The following errors were identified. You will need to correct them before saving this consent document.</b></p>");
+        Html flowTypeIntro;
+        if (advDirectiveFlowType.equals("Default")) {
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all questions, signatures, and signature information is required.</p>");
+        }
+        else {
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all questions are required. You are expected to print a copy of this " +
+                    "consent document and acquire signatures for it in the presence of a notary.  You are then required to scan and upload this document to activate enforcement of it.</p>");
+        }
+
+        Button errorBTN = new Button("Correct Errors");
+        errorBTN.setWidthFull();
+        errorBTN.addClickListener(event -> {
+            questionPosition = errorList.get(0).getQuestionnaireIndex();
+            errorDialog.close();
+            evalNavigation();
+        });
+
+        VerticalLayout verticalLayout = new VerticalLayout();
+        verticalLayout.setPadding(true);
+        verticalLayout.setMargin(true);
+        Iterator iter = errorList.iterator();
+        while (iter.hasNext()) {
+            QuestionnaireError q = (QuestionnaireError)iter.next();
+            verticalLayout.add(new Html("<p>"+q.getErrorMessage()+"</p>"));
+        }
+
+        errorDialog = new Dialog();
+        errorDialog.setHeight("600px");
+        errorDialog.setWidth("600px");
+        errorDialog.setModal(true);
+        errorDialog.setCloseOnOutsideClick(false);
+        errorDialog.setCloseOnEsc(false);
+        errorDialog.setResizable(true);
+        errorDialog.add(errorIntro, flowTypeIntro, verticalLayout, errorBTN);
     }
 }
