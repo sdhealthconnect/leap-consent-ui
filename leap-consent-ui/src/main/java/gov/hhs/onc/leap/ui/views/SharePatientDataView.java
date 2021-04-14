@@ -17,6 +17,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -27,6 +28,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import de.f0rce.signaturepad.SignaturePad;
+import gov.hhs.onc.leap.adr.model.QuestionnaireError;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIROrganization;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRPractitioner;
@@ -86,6 +88,7 @@ public class SharePatientDataView extends ViewFrame {
     private Button forwardButton;
     private Dialog dialog;
     private Dialog docDialog;
+    private Dialog errorDialog;
     private byte[] base64Signature;
     private RadioButtonGroup<String> timeSettings;
     private RadioButtonGroup<String> constrainDataClass;
@@ -97,6 +100,8 @@ public class SharePatientDataView extends ViewFrame {
     private LocalDateTime provisionStartDateTime;
     private LocalDateTime provisionEndDateTime;
     private byte[] consentPDFAsByteArray;
+    private List<QuestionnaireError> errorList;
+
     @Autowired
     private FHIROrganization fhirOrganization;
     @Autowired
@@ -589,8 +594,13 @@ public class SharePatientDataView extends ViewFrame {
             //todo create fhir consent resource and pdf for review in flow and final submittal of consent
             dialog.close();
             getHumanReadable();
-            docDialog.open();
-
+            if (errorList.size() == 0) {
+                docDialog.open();
+            }
+            else {
+                createErrorDialog();
+                errorDialog.open();
+            }
         });
         Button cancelSign = new Button("Cancel");
         cancelSign.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CLOSE));
@@ -616,98 +626,140 @@ public class SharePatientDataView extends ViewFrame {
     }
 
     private StreamResource setFieldsCreatePDF() {
-
+            errorList = new ArrayList<>();
             //get consent period
             String sDate = "";
             String eDate = "";
             LocalDateTime defDate = LocalDateTime.now();
-            if (timeSettings.getValue().equals("Use Default Option")) {
-                if (consentDefaultPeriod.equals("24 Hours")) {
-                    defDate = LocalDateTime.now().plusDays(1);
+            String dataDomainConstraintlist = "Deny access to following: ";
+            String custodian = "";
+            String recipient = "";
+            String sensitivities = "Remove following sensitivity types if found in my record; ";
+            try {
+                if (timeSettings.getValue().equals("Use Default Option")) {
+                    if (consentDefaultPeriod.equals("24 Hours")) {
+                        defDate = LocalDateTime.now().plusDays(1);
+                    } else if (consentDefaultPeriod.getValue().equals("1 year")) {
+                        defDate = LocalDateTime.now().plusYears(1);
+                    } else if (consentDefaultPeriod.getValue().equals("5 years")) {
+                        defDate = LocalDateTime.now().plusYears(5);
+                    } else if (consentDefaultPeriod.getValue().equals("10 years")) {
+                        defDate = LocalDateTime.now().plusYears(10);
+                    } else {
+                        errorList.add(new QuestionnaireError("No default date selected", 0));
+                        defDate = null;
+                    }
+                    sDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+                    eDate = defDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
+                    //for use later
+                    provisionStartDateTime = LocalDateTime.now();
+                    provisionEndDateTime = defDate;
+                } else if (timeSettings.getValue().equals("Custom Date Option")) {
+                    sDate = startDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
+                    eDate = endDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
+                    //for use later
+                    provisionStartDateTime = startDateTime.getValue();
+                    provisionEndDateTime = endDateTime.getValue();
+                    if (provisionStartDateTime == null || provisionEndDateTime == null) {
+                        errorList.add(new QuestionnaireError("Custom date can not be blank.", 0));
+                    }
+                    if (provisionEndDateTime.isBefore(provisionStartDateTime)) {
+                        errorList.add(new QuestionnaireError("Custom end date can not be before start date.", 0));
+                    }
+                    if (provisionEndDateTime.isBefore(defDate)) {
+                        errorList.add(new QuestionnaireError("Custom end date can not be before today.", 0));
+                    }
+                } else {
+                    errorList.add(new QuestionnaireError("No date range selection made.", 0));
                 }
-                else if (consentDefaultPeriod.getValue().equals("1 year")) {
-                    defDate = LocalDateTime.now().plusYears(1);
-                }
-                else if (consentDefaultPeriod.getValue().equals("5 years")) {
-                    defDate = LocalDateTime.now().plusYears(5);
-                }
-                else if (consentDefaultPeriod.getValue().equals("10 years")) {
-                    defDate = LocalDateTime.now().plusYears(10);
-                }
-                else {
-                    defDate = null;
-                }
-                sDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
-                eDate = defDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
-                //for use later
-                provisionStartDateTime = LocalDateTime.now();
-                provisionEndDateTime = defDate;
             }
-            else if (timeSettings.getValue().equals("Custom Date Option")) {
-                sDate = startDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
-                eDate = endDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
-                //for use later
-                provisionStartDateTime = startDateTime.getValue();
-                provisionEndDateTime = endDateTime.getValue();
-
-            }
-            else {
-                //this is an error...
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError("No date range selection made.", 0));
             }
             //get domain constraints
-            String dataDomainConstraintlist = "Deny access to following: ";
-            if (constrainDataClass.getValue().equals("Deny access to following:")) {
-                Set<String> classList = dataClassComboBox.getSelectedItems();
-                Iterator iterClass = classList.iterator();
-                while (iterClass.hasNext()) {
-                    String s = (String)iterClass.next();
-                    dataDomainConstraintlist = dataDomainConstraintlist + s +" ";
+            try {
+                if (constrainDataClass.getValue().equals("Deny access to following:")) {
+                    Set<String> classList = dataClassComboBox.getSelectedItems();
+                    Iterator iterClass = classList.iterator();
+                    while (iterClass.hasNext()) {
+                        String s = (String) iterClass.next();
+                        dataDomainConstraintlist = dataDomainConstraintlist + s + " ";
+                    }
+                    if (classList.isEmpty()) {
+                        errorList.add(new QuestionnaireError("No data class exceptions found in list.", 1));
+                    }
+                } else {
+                    //this is the default when none selected
+                    dataDomainConstraintlist = "Allow all types of data to be exchanged";
                 }
             }
-            else {
-                //this is the default when none selected
-                dataDomainConstraintlist = "Allow all types of data to be exchanged";
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError("No data class selection made.", 1));
             }
             //set custodian
-            String custodian = "";
-            if (custodianType.getValue().equals("Practitioner")) {
-                custodian = practitionerComboBoxSource.getValue().getName().get(0).getNameAsSingleString();
+            try {
+                if (custodianType.getValue().equals("Practitioner")) {
+                    custodian = practitionerComboBoxSource.getValue().getName().get(0).getNameAsSingleString();
+                } else if (custodianType.getValue().equals("Organization")) {
+                    custodian = organizationComboBoxSource.getValue().getName();
+                } else {
+                    errorList.add(new QuestionnaireError("No custodian selection made.", 2));
+                }
+                if (custodian.equals("") || custodian.isEmpty()) {
+                    errorList.add(new QuestionnaireError("No custodian selection made.", 2));
+                }
             }
-            else if (custodianType.getValue().equals("Organization")) {
-                custodian = organizationComboBoxSource.getValue().getName();
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError("No custodian selection made.", 2));
             }
-            else {
-                custodian = "ERROR! - No custodian value selected from list";
-            }
-
             //set recipient
-            String recipient = "";
-            if (destinationType.getValue().equals("Practitioner")) {
-                recipient = practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString();
+            try {
+
+                if (destinationType.getValue().equals("Practitioner")) {
+                    recipient = practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString();
+                } else if (destinationType.getValue().equals("Organization")) {
+                    recipient = organizationComboBoxDestination.getValue().getName();
+                } else {
+                    errorList.add(new QuestionnaireError("No recipient/destination selection made.", 3));
+                }
+                if (recipient.equals("") || recipient.isEmpty()) {
+                    errorList.add(new QuestionnaireError("No recipient/destination selection made.", 3));
+                }
             }
-            else if (destinationType.getValue().equals("Organization")) {
-                recipient = organizationComboBoxDestination.getValue().getName();
-            }
-            else {
-                recipient = "ERROR! - No recipient value selected from list";
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError("No recipient/destination selection made.", 3));
             }
 
             //set sensitivity constraints
-            String sensitivities = "Remove following sensitivity types if found in my record; ";
-            if (sensConstraints.getValue().equals("Remove them")) {
-                Set<String> sensSet = sensitivityOptions.getSelectedItems();
-                Iterator sensIter = sensSet.iterator();
-                while (sensIter.hasNext()) {
-                    String s = (String)sensIter.next();
-                    sensitivities = sensitivities + s + " ";
+            try {
+
+                if (sensConstraints.getValue().equals("Remove them")) {
+                    Set<String> sensSet = sensitivityOptions.getSelectedItems();
+                    Iterator sensIter = sensSet.iterator();
+                    while (sensIter.hasNext()) {
+                        String s = (String) sensIter.next();
+                        sensitivities = sensitivities + s + " ";
+                    }
+                } else if (sensConstraints.getValue().equals("I do not have privacy concerns")) {
+                    sensitivities = "I do not have privacy concerns";
+                } else {
+                    //default if none selected
+                    errorList.add(new QuestionnaireError("No privacy concern selected.", 4));
                 }
             }
-            else if (sensConstraints.getValue().equals("I do not have privacy concerns")) {
-                sensitivities = "I do not have privacy concerns";
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError("No privacy concern selection made.", 4));
             }
-            else {
-                //default if none selected
-                sensitivities = "I do not have privacy concerns";
+            try {
+                if (base64Signature.length == 0) {
+                    errorList.add(new QuestionnaireError("User signature can not be blank.", 5));
+                }
+            }
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError("User signature can not be blank.", 5));
+            }
+            if (errorList.size() > 0) {
+                return null;
             }
             PDFPatientPrivacyHandler pdfHandler = new PDFPatientPrivacyHandler(pdfSigningService);
             StreamResource res = pdfHandler.retrievePDFForm(sDate, eDate, dataDomainConstraintlist, custodian,
@@ -718,6 +770,9 @@ public class SharePatientDataView extends ViewFrame {
 
     private void getHumanReadable() {
         StreamResource streamResource = setFieldsCreatePDF();
+        if (streamResource == null) {
+            return;
+        }
         docDialog = new Dialog();
 
         streamResource.setContentType("application/pdf");
@@ -1014,6 +1069,36 @@ public class SharePatientDataView extends ViewFrame {
         notification.setPosition(Notification.Position.MIDDLE);
 
         notification.open();
+    }
+
+    private void createErrorDialog() {
+        Html errorIntro = new Html("<p><b>The following errors were identified. You will need to corrected them before saving this consent document.</b></p>");
+        Button errorBTN = new Button("Correct Errors");
+        errorBTN.setWidthFull();
+        errorBTN.addClickListener(event -> {
+           questionPosition = errorList.get(0).getQuestionnaireIndex();
+           errorDialog.close();
+           evalNavigation();
+        });
+
+        VerticalLayout verticalLayout = new VerticalLayout();
+        verticalLayout.setPadding(true);
+        verticalLayout.setMargin(true);
+        Iterator iter = errorList.iterator();
+        while (iter.hasNext()) {
+            QuestionnaireError q = (QuestionnaireError)iter.next();
+            verticalLayout.add(new Html("<p>"+q.getErrorMessage()+"</p>"));
+        }
+
+        errorDialog = new Dialog();
+        errorDialog.setHeight("600px");
+        errorDialog.setWidth("600px");
+        errorDialog.setModal(true);
+        errorDialog.setCloseOnOutsideClick(false);
+        errorDialog.setCloseOnEsc(false);
+        errorDialog.setResizable(true);
+
+        errorDialog.add(errorIntro, verticalLayout, errorBTN);
     }
 
 
