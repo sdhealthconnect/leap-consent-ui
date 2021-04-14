@@ -27,12 +27,12 @@ public class Home extends ViewFrame {
 	}
 
 	private Component createContent() {
-		Html intro = new Html("<p><b>LEAP FHIR Consent</b> client demonstration platform for <b>HL7 FHIR Connectathon 26</b> " +
-				"will utilize FHIR consent, investigate workflows in a number of key use cases including but not limited too "+
-				"Consent to \"Share\", Consent to \"Treat\", Consent for \"Research\", and \"Advanced Directives\". "+
-				"The use of FHIR based Consent Decision Service(CDS), Consent Enforcement Services(CES), " +
-				"Security Labeling Services(SLS), and Privacy Protective Services(PPS) previously demonstrated " +
-				"again will lay the foundation for this track.");
+		Html intro = new Html("<p><b>LEAP FHIR Consent</b> client demonstration platform for <b>HL7 FHIR Connectathon 27</b> " +
+				"will utilize FHIR consent, investigate workflows in a number of key use cases including but not limited to "+
+				"<b>Consent to Share</b> , <b>Consent to Treat</b>, <b>Consent for Research</b>, and <b>Advance Directives</b>. "+
+				"The use of FHIR based Consent Decision Service (CDS), Consent Enforcement Services (CES), " +
+				"Security Labeling Services (SLS), and Privacy Protective Services (PPS) previously demonstrated " +
+				"at FHIR Connectathons 25, and 26, will lay the foundation for this track.");
 
 
 		Anchor documentation = new Anchor("https://sdhealthconnect.github.io/leap/", UIUtils.createButton("Read the documentation", VaadinIcon.EXTERNAL_LINK));
