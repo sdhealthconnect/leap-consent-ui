@@ -1072,7 +1072,7 @@ public class SharePatientDataView extends ViewFrame {
     }
 
     private void createErrorDialog() {
-        Html errorIntro = new Html("<p><b>The following errors were identified. You will need to corrected them before saving this consent document.</b></p>");
+        Html errorIntro = new Html("<p><b>The following errors were identified. You will need to correct them before saving this consent document.</b></p>");
         Button errorBTN = new Button("Correct Errors");
         errorBTN.setWidthFull();
         errorBTN.addClickListener(event -> {
@@ -1097,7 +1097,6 @@ public class SharePatientDataView extends ViewFrame {
         errorDialog.setCloseOnOutsideClick(false);
         errorDialog.setCloseOnEsc(false);
         errorDialog.setResizable(true);
-
         errorDialog.add(errorIntro, verticalLayout, errorBTN);
     }
 
