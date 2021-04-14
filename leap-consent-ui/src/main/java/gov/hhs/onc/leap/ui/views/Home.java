@@ -12,9 +12,7 @@ import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.layout.size.Horizontal;
 import gov.hhs.onc.leap.ui.layout.size.Right;
 import gov.hhs.onc.leap.ui.layout.size.Top;
-import gov.hhs.onc.leap.ui.layout.size.Uniform;
 import gov.hhs.onc.leap.ui.util.UIUtils;
-import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 
 @PageTitle("LEAP FHIR Consent - Home")
@@ -27,16 +25,10 @@ public class Home extends ViewFrame {
 	}
 
 	private Component createContent() {
-		Html intro = new Html("<p><b>LEAP FHIR Consent</b> client demonstration platform for <b>HL7 FHIR Connectathon 26</b> " +
-				"will utilize FHIR consent, investigate workflows in a number of key use cases including but not limited too "+
-				"Consent to \"Share\", Consent to \"Treat\", Consent for \"Research\", and \"Advanced Directives\". "+
-				"The use of FHIR based Consent Decision Service(CDS), Consent Enforcement Services(CES), " +
-				"Security Labeling Services(SLS), and Privacy Protective Services(PPS) previously demonstrated " +
-				"again will lay the foundation for this track.");
+		Html intro = new Html(getTranslation("home-intro"));
 
-
-		Anchor documentation = new Anchor("https://sdhealthconnect.github.io/leap/", UIUtils.createButton("Read the documentation", VaadinIcon.EXTERNAL_LINK));
-		Anchor starter = new Anchor("https://github.com/sdhealthconnect", UIUtils.createButton("Access LEAP Projects on GitHub", VaadinIcon.EXTERNAL_LINK));
+		Anchor documentation = new Anchor("https://sdhealthconnect.github.io/leap/", UIUtils.createButton(getTranslation(getTranslation("home-Read_the_documentation")), VaadinIcon.EXTERNAL_LINK));
+		Anchor starter = new Anchor("https://github.com/sdhealthconnect", UIUtils.createButton(getTranslation(getTranslation("home-Access_leap_projects_on_github")), VaadinIcon.EXTERNAL_LINK));
 
 		FlexBoxLayout links = new FlexBoxLayout(documentation, starter);
 		links.setFlexWrap(FlexLayout.FlexWrap.WRAP);

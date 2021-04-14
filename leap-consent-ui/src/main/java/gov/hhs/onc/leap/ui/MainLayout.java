@@ -153,22 +153,22 @@ public class MainLayout extends FlexBoxLayout
 	 */
 	private void initNaviItems() {
 		NaviMenu menu = naviDrawer.getMenu();
-		menu.addNaviItem(VaadinIcon.HOME, "Home", Home.class);
-		menu.addNaviItem(VaadinIcon.RECORDS, "My Consent Documents", ConsentDocumentsView.class);
-		menu.addNaviItem(VaadinIcon.COGS, "Analyze My Data", AnalyzeRecordView.class);
-		menu.addNaviItem(VaadinIcon.SHARE, "Share My Data", SharePatientDataView.class);
+		menu.addNaviItem(VaadinIcon.HOME, getTranslation("mainLayout-menu-home"), Home.class);
+		menu.addNaviItem(VaadinIcon.RECORDS, getTranslation("mainLayout-menu-my_consent_documents"), ConsentDocumentsView.class);
+		menu.addNaviItem(VaadinIcon.COGS, getTranslation("mainLayout-menu-analyze_my_data"), AnalyzeRecordView.class);
+		menu.addNaviItem(VaadinIcon.SHARE, getTranslation("mainLayout-menu-share_my_data"), SharePatientDataView.class);
 
-		NaviItem advDirective = menu.addNaviItem(VaadinIcon.EDIT, "My Directives", AdvancedDirectiveView.class);
-		menu.addNaviItem(advDirective, "Living Will", LivingWill.class);
-		menu.addNaviItem(advDirective, "Health Care POA", HealthcarePowerOfAttorney.class);
-		menu.addNaviItem(advDirective, "Mental Health Care POA", MentalHealthPowerOfAttorney.class);
-		menu.addNaviItem(advDirective, "Do Not Resuscitate", DoNotResuscitate.class);
+		NaviItem advDirective = menu.addNaviItem(VaadinIcon.EDIT, getTranslation("mainLayout-menu-my_directives"), AdvancedDirectiveView.class);
+		menu.addNaviItem(advDirective, getTranslation("mainLayout-menu-living_will"), LivingWill.class);
+		menu.addNaviItem(advDirective, getTranslation("mainLayout-menu-healt_care_POA"), HealthcarePowerOfAttorney.class);
+		menu.addNaviItem(advDirective, getTranslation("mainLayout-menu-mental_healt_care_POA"), MentalHealthPowerOfAttorney.class);
+		menu.addNaviItem(advDirective, getTranslation("mainLayout-menu-do_not_resuscitate"), DoNotResuscitate.class);
 
-		menu.addNaviItem(VaadinIcon.CLIPBOARD, "Portable Medical Order", PortableMedicalOrder.class);
+		menu.addNaviItem(VaadinIcon.CLIPBOARD, getTranslation("mainLayout-menu-portable_medical_order"), PortableMedicalOrder.class);
 
-		menu.addNaviItem(VaadinIcon.BUILDING, "Participate In Research", ResearchView.class);
-		menu.addNaviItem(VaadinIcon.LIST, "Activity Logs", AuditView.class );
-		menu.addNaviItem(VaadinIcon.ENVELOPES, "Notifications", NotificationView.class);
+		menu.addNaviItem(VaadinIcon.BUILDING, getTranslation("mainLayout-menu-participate_in_research"), ResearchView.class);
+		menu.addNaviItem(VaadinIcon.LIST, getTranslation("mainLayout-menu-activity_logs"), AuditView.class );
+		menu.addNaviItem(VaadinIcon.ENVELOPES, getTranslation("mainLayout-menu-notifications"), NotificationView.class);
 		/*
 		NaviItem covid = menu.addNaviItem(VaadinIcon.GLOBE, "COVID-19",
 				COVID.class);

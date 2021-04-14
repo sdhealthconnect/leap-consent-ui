@@ -256,7 +256,11 @@
             <artifactId>mysql-socket-factory-connector-j-8</artifactId>
             <version>1.2.1</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.rapidpm</groupId>
+            <artifactId>rapidpm-functional-reactive</artifactId>
+            <version>01.00.07-RPM</version>
+        </dependency>
     </dependencies>
 
     <build>

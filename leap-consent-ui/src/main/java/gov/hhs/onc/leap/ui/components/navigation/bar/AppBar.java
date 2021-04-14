@@ -109,7 +109,7 @@ public class AppBar extends Header {
 
 	private void initSearch() {
 		search = new TextField();
-		search.setPlaceholder("Search");
+		search.setPlaceholder(getTranslation("appBar-search"));
 		search.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
 		search.setVisible(false);
 	}
