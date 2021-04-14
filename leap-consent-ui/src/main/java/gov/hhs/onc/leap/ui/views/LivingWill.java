@@ -1102,8 +1102,10 @@ public class LivingWill extends ViewFrame {
                     errorList.add(new QuestionnaireError("User signature or alternate signature required.", 4));
                 }
                 else {
-                    if (livingWill.getPrincipleAlternateSignature().getNameOfWitnessOrNotary() == null || livingWill.getPrincipleAlternateSignature().getNameOfWitnessOrNotary().isEmpty()) {
-                        errorList.add(new QuestionnaireError("Witness or notary as alternate name required.", 5));
+                    if (livingWill.getPrincipleAlternateSignature().getBase64EncodedSignature().length > 0) {
+                        if (livingWill.getPrincipleAlternateSignature().getNameOfWitnessOrNotary() == null || livingWill.getPrincipleAlternateSignature().getNameOfWitnessOrNotary().isEmpty()) {
+                            errorList.add(new QuestionnaireError("Witness or notary as alternate name required.", 5));
+                        }
                     }
                 }
             }

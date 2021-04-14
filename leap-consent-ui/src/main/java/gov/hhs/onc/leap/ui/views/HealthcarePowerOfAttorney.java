@@ -1882,8 +1882,10 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                     errorList.add(new QuestionnaireError("User signature or alternate signature required.", 12));
                 }
                 else {
-                    if (poa.getPrincipleAlternateSignature().getNameOfWitnessOrNotary() == null || poa.getPrincipleAlternateSignature().getNameOfWitnessOrNotary().isEmpty()) {
-                        errorList.add(new QuestionnaireError("Witness or notary as alternate name required.", 13));
+                    if (poa.getPrincipleAlternateSignature().getBase64EncodedSignature().length > 0) {
+                        if (poa.getPrincipleAlternateSignature().getNameOfWitnessOrNotary() == null || poa.getPrincipleAlternateSignature().getNameOfWitnessOrNotary().isEmpty()) {
+                            errorList.add(new QuestionnaireError("Witness or notary as alternate name required.", 13));
+                        }
                     }
                 }
             }
@@ -1912,7 +1914,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         Html errorIntro = new Html("<p><b>The following errors were identified. You will need to correct them before saving this consent document.</b></p>");
         Html flowTypeIntro;
         if (advDirectiveFlowType.equals("Default")) {
-            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all questions, and signatures and signature information is required.</p>");
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all questions, signatures, and signature information is required.</p>");
         }
         else {
             flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all questions are required. You are expected to print a copy of this " +
