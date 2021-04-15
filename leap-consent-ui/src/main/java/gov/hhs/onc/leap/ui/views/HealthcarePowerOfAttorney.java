@@ -817,6 +817,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         Html intro18 = new Html("<p>I was present when this form was signed (or marked). The principal appeared to "+
                 "be of sound mind and was not forced to sign this form. I affirm that I meet the requirements to be a witness "+
                 "as indicated on page one of the health care power of attorney form.</p>");
+        Html nextSteps = new Html("<p style=\"color:blue\">Click on the <b>\"Accept Signature\"</b> button to begin review process for this consent document.</p>");
 
         witnessName = new TextField("Witness Name");
         witnessAddress = new TextField("Address");
@@ -846,7 +847,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         sigLayout.setSpacing(true);
 
         witnessSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Health Care Power of Attorney"), intro17, intro18, new BasicDivider(),
-                witnessName, witnessAddress, witnessSignature, sigLayout);
+                witnessName, witnessAddress, witnessSignature, sigLayout, nextSteps);
         witnessSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         witnessSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         witnessSignatureLayout.setHeightFull();
@@ -1876,16 +1877,19 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
     private void errorCheckSignature() {
         try {
-            if (poa.getPrincipleSignature() == null || poa.getPrincipleSignature().getBase64EncodeSignature().length == 0) {
+            if (base64PatientSignature == null || base64PatientSignature.length == 0) {
 
-                if (poa.getPrincipleAlternateSignature() == null || poa.getPrincipleAlternateSignature().getBase64EncodedSignature().length == 0) {
+                if (base64PatientUnableSignature == null || base64PatientUnableSignature.length == 0) {
                     errorList.add(new QuestionnaireError("User signature or alternate signature required.", 12));
                 }
                 else {
-                    if (poa.getPrincipleAlternateSignature().getBase64EncodedSignature().length > 0) {
+                    try {
                         if (poa.getPrincipleAlternateSignature().getNameOfWitnessOrNotary() == null || poa.getPrincipleAlternateSignature().getNameOfWitnessOrNotary().isEmpty()) {
                             errorList.add(new QuestionnaireError("Witness or notary as alternate name required.", 13));
                         }
+                    }
+                    catch (Exception ex) {
+                        errorList.add(new QuestionnaireError("Witness or notary as alternate name required.", 13));
                     }
                 }
             }
@@ -1895,17 +1899,27 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         }
 
         try {
-            if (poa.getWitnessSignature() == null || poa.getWitnessSignature().getBase64EncodedSignature().length == 0) {
+            if (base64WitnessSignature == null || base64WitnessSignature.length == 0) {
                 errorList.add(new QuestionnaireError("Witness signature can not be blank.", 14));
             }
         }
         catch (Exception ex) {
             errorList.add(new QuestionnaireError("Witness signature can not be blank.", 14));
         }
-        if (poa.getWitnessSignature().getWitnessName() == null || poa.getWitnessSignature().getWitnessName().isEmpty()) {
+        try {
+            if (poa.getWitnessSignature().getWitnessName() == null || poa.getWitnessSignature().getWitnessName().isEmpty()) {
+                errorList.add(new QuestionnaireError("Witness name can not be blank.", 14));
+            }
+        }
+        catch (Exception ex) {
             errorList.add(new QuestionnaireError("Witness name can not be blank.", 14));
         }
-        if (poa.getWitnessSignature().getWitnessAddress() == null || poa.getWitnessSignature().getWitnessAddress().isEmpty()) {
+        try {
+            if (poa.getWitnessSignature().getWitnessAddress() == null || poa.getWitnessSignature().getWitnessAddress().isEmpty()) {
+                errorList.add(new QuestionnaireError("Witness address can not be blank.", 14));
+            }
+        }
+        catch (Exception ex) {
             errorList.add(new QuestionnaireError("Witness address can not be blank.", 14));
         }
     }
@@ -1914,10 +1928,10 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         Html errorIntro = new Html("<p><b>The following errors were identified. You will need to correct them before saving this consent document.</b></p>");
         Html flowTypeIntro;
         if (advDirectiveFlowType.equals("Default")) {
-            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all questions, signatures, and signature information is required.</p>");
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all non-optional questions, signatures, and signature information is required.</p>");
         }
         else {
-            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all questions are required. You are expected to print a copy of this " +
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all non-optional questions are required. You are expected to print a copy of this " +
                     "consent document and acquire signatures for it in the presence of a notary.  You are then required to scan and upload this document to activate enforcement of it.</p>");
         }
 
@@ -1929,13 +1943,28 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
             evalNavigation();
         });
 
-        VerticalLayout verticalLayout = new VerticalLayout();
-        verticalLayout.setPadding(true);
-        verticalLayout.setMargin(true);
+        FlexBoxLayout verticalLayout = new FlexBoxLayout();
+
+        verticalLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        verticalLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        if (advDirectiveFlowType.equals("Default")) {
+            verticalLayout.setHeight("350px");
+        }
+        else {
+            verticalLayout.setHeight("275px");
+        }
+        verticalLayout.setBackgroundColor("white");
+        verticalLayout.setShadow(Shadow.S);
+        verticalLayout.setBorderRadius(BorderRadius.S);
+        verticalLayout.getStyle().set("margin-bottom", "10px");
+        verticalLayout.getStyle().set("margin-right", "10px");
+        verticalLayout.getStyle().set("margin-left", "10px");
+        verticalLayout.getStyle().set("overflow", "auto");
+        verticalLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         Iterator iter = errorList.iterator();
         while (iter.hasNext()) {
             QuestionnaireError q = (QuestionnaireError)iter.next();
-            verticalLayout.add(new Html("<p>"+q.getErrorMessage()+"</p>"));
+            verticalLayout.add(new Html("<p style=\"color:#259AC9\">"+q.getErrorMessage()+"</p>"));
         }
 
         errorDialog = new Dialog();
@@ -1945,6 +1974,6 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         errorDialog.setCloseOnOutsideClick(false);
         errorDialog.setCloseOnEsc(false);
         errorDialog.setResizable(true);
-        errorDialog.add(errorIntro, flowTypeIntro, verticalLayout, errorBTN);
+        errorDialog.add(createHeader(VaadinIcon.WARNING, "Failed Verification"),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
     }
 }
