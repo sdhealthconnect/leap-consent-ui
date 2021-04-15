@@ -4,7 +4,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -22,7 +21,6 @@ import gov.hhs.onc.leap.ces.sls.client.SLSRequestClient;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
-import gov.hhs.onc.leap.ui.components.navigation.BasicDivider;
 import gov.hhs.onc.leap.ui.layout.size.Horizontal;
 import gov.hhs.onc.leap.ui.layout.size.Right;
 import gov.hhs.onc.leap.ui.layout.size.Top;
@@ -56,7 +54,7 @@ public class AnalyzeRecordView extends ViewFrame {
     @Value("${sls.url:http://34.94.253.50:9091}")
     private String slsHost;
     private String msg;
-    private Html optionLabel = new Html("<p><b>-OR-</b></p>");
+    private Html optionLabel = new Html("<p><b>-"+getTranslation("analyzeRecordView-or")+"-</b></p>");
 
     public AnalyzeRecordView() {
         setId("analyzerecordview");
@@ -66,11 +64,7 @@ public class AnalyzeRecordView extends ViewFrame {
     }
 
     private Component createViewContent() {
-        Html intro = new Html("<p>The following allows your <b>Clinical Record</b> to be analyzed  " +
-                "for possible privacy concerns.  It utilizes services based on the HL7 Security Labeling Service (SLS)  " +
-                "specification where the structured components of the record are evaluated against known  " +
-                "privacy sensitive conditions. If found, that information will be presented, enabling you to "+
-                "make an informed decision when developing your consent rules.");
+        Html intro = new Html(getTranslation("analyzeRecordView-intro"));
 
         uploadBuffer = new MemoryBuffer();
         upload = new Upload(uploadBuffer);
@@ -82,7 +76,7 @@ public class AnalyzeRecordView extends ViewFrame {
             clearButton.setEnabled(true);
         });
 
-        hieButton = new Button("Request record from your state Health Information Exchange", new Icon(VaadinIcon.HOSPITAL));
+        hieButton = new Button(getTranslation("analyzeRecordView-request_record_button_text"), new Icon(VaadinIcon.HOSPITAL));
         hieButton.addClickListener(event -> {
            //todo had handler for patientHistory request from hapi-fhir server
         });
@@ -92,12 +86,12 @@ public class AnalyzeRecordView extends ViewFrame {
         horizontalLayout.setPadding(true);
         horizontalLayout.setSpacing(true);
 
-        outcomeField = new TextField("Privacy Analysis Outcome: ");
+        outcomeField = new TextField(getTranslation("analyzeRecordView-privacy_analysis_outcome"));
         outcomeField.setReadOnly(true);
-        notesField = new TextArea("Results Detail");
+        notesField = new TextArea(getTranslation("analyzeRecordView-results_detail"));
         notesField.setReadOnly(true);
 
-        analyzeLayout = new FlexBoxLayout(createHeader(VaadinIcon.GLASSES, "Privacy Analysis"), horizontalLayout, outcomeField, notesField);
+        analyzeLayout = new FlexBoxLayout(createHeader(VaadinIcon.GLASSES, getTranslation("analyzeRecordView-privacy_analysis")), horizontalLayout, outcomeField, notesField);
         analyzeLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         analyzeLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         analyzeLayout.setHeightFull();
@@ -121,12 +115,12 @@ public class AnalyzeRecordView extends ViewFrame {
     }
 
     private Component getFooter() {
-            processFileButton = new Button("Process File", new Icon(VaadinIcon.FILE_PROCESS));
+            processFileButton = new Button(getTranslation("analyzeRecordView-process_file"), new Icon(VaadinIcon.FILE_PROCESS));
             processFileButton.setEnabled(false);
             processFileButton.addClickListener(event -> {
                 analyzeFile();
             });
-            clearButton = new Button("Clear", new Icon(VaadinIcon.FILE_REMOVE));
+            clearButton = new Button(getTranslation("analyzeRecordView-clear"), new Icon(VaadinIcon.FILE_REMOVE));
             clearButton.setEnabled(false);
             clearButton.addClickListener(event -> {
                 clearForm();
@@ -154,7 +148,7 @@ public class AnalyzeRecordView extends ViewFrame {
         SLSRequestClient sls = new SLSRequestClient(slsHost);
         //for testing
         String id = UUID.randomUUID().toString();
-        String orgin = "LEAP Consent UI";
+        String origin = getTranslation("analyzeRecordView-leap_consent_ui");
         String msgSource = "CCDA";
         String msgVersion = "v3";
         try {
@@ -182,15 +176,15 @@ public class AnalyzeRecordView extends ViewFrame {
             msgSource = "indeterminate";
             msgVersion = "unknown";
         }
-        String results = sls.requestLabelingSecured(id, orgin, msgSource, msgVersion, msg);
+        String results = sls.requestLabelingSecured(id, origin, msgSource, msgVersion, msg);
         if (results.contains("RESTRICTED") && !results.contains("NON-RESTRICTED")) {
-            outcomeField.setValue("RESTRICTED - SENSITIVE information was found in your clinical record.");
+            outcomeField.setValue( getTranslation("analyzeRecordView-restricted_msg"));
         }
         else if (results.contains("NON-RESTRICTED")){
-            outcomeField.setValue("NORMAL - No sensitivie information was found in your clinical record.");
+            outcomeField.setValue(getTranslation("analyzeRecordView-normal_msg"));
         }
         else {
-            outcomeField.setValue("ERROR - SLS was not able to process the file you provided.");
+            outcomeField.setValue(getTranslation("analyzeRecordView-error_msg"));
         }
         notesField.setValue(results);
         clearButton.setEnabled(true);
