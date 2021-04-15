@@ -245,8 +245,9 @@ public class AppBar extends Header {
 		updateTabsVisibility();
 	}
 
-	public Tab addTab(String text) {
-		Tab tab = tabs.addTab(text);
+	public Tab addTab(String text, String translation) {
+		Tab tab = tabs.addTab(translation);
+		tab.setId(text);
 		configureTab(tab);
 		return tab;
 	}

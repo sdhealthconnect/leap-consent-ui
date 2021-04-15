@@ -4,10 +4,8 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
@@ -20,12 +18,9 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import com.vaadin.flow.function.ContentTypeResolver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamResource;
-import gov.hhs.onc.leap.backend.TestData;
 import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -39,9 +34,7 @@ import gov.hhs.onc.leap.ui.layout.size.Bottom;
 import gov.hhs.onc.leap.ui.layout.size.Horizontal;
 import gov.hhs.onc.leap.ui.layout.size.Top;
 import gov.hhs.onc.leap.ui.layout.size.Vertical;
-import gov.hhs.onc.leap.ui.util.FontSize;
 import gov.hhs.onc.leap.ui.util.LumoStyles;
-import gov.hhs.onc.leap.ui.util.TextColor;
 import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.WhiteSpace;
@@ -53,11 +46,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
-import javax.swing.*;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -88,7 +78,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
     private void initAppBar() {
         AppBar appBar = MainLayout.get().getAppBar();
         for (ConsentDocument.Status status : ConsentDocument.Status.values()) {
-            appBar.addTab(status.getName());
+            appBar.addTab(status.getName(), getTranslation("consentDocumentsView-status_" + status.getName()));
         }
         appBar.addTabSelectionListener(e -> {
             filter();
@@ -125,28 +115,28 @@ public class ConsentDocumentsView extends SplitViewFrame {
         grid.addColumn(badgeRenderer)
                 .setAutoWidth(true)
                 .setFlexGrow(0)
-                .setHeader("Status");
+                .setHeader(getTranslation("consentDocumentsView-status"));
         grid.addColumn(new ComponentRenderer<>(this::createPolicyType))
-                .setHeader("Policy Type")
+                .setHeader(getTranslation("consentDocumentsView-policy_type"))
                 .setWidth("100px");
         grid.addColumn(new ComponentRenderer<>(this::createCustodian))
-                .setHeader("Custodian")
+                .setHeader(getTranslation("consentDocumentsView-custodian"))
                 .setWidth("150px");
         grid.addColumn(new ComponentRenderer<>(this::createRecipient))
-                .setHeader("Recipient")
+                .setHeader(getTranslation("consentDocumentsView-recipient"))
                 .setWidth("150px");
         grid.addColumn(TemplateRenderer.<ConsentDocument>of("[[item.startDate]]")
                 .withProperty("startDate", consentDocument -> UIUtils.formatDate(consentDocument.getStartDate())))
                 .setAutoWidth(true)
                 .setComparator(ConsentDocument::getStartDate)
                 .setFlexGrow(0)
-                .setHeader("Effective Date");
+                .setHeader(getTranslation("consentDocumentsView-effective_date"));
         grid.addColumn(TemplateRenderer.<ConsentDocument>of("[[item.endDate]]")
                 .withProperty("endDate", consentDocument -> UIUtils.formatDate(consentDocument.getEndDate())))
                 .setAutoWidth(true)
                 .setComparator(ConsentDocument::getEndDate)
                 .setFlexGrow(0)
-                .setHeader("Expires On");
+                .setHeader(getTranslation("consentDocumentsView-expires_on"));
 
         return grid;
     }
@@ -173,8 +163,8 @@ public class ConsentDocumentsView extends SplitViewFrame {
         detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
 
         // Header
-        Tab details = new Tab("Details");
-        Tab attachments = new Tab("Attachments");
+        Tab details = new Tab(getTranslation("consentDocumentsView-details"));
+        Tab attachments = new Tab(getTranslation("consentDocumentsView-attachments"));
 
 
         Tabs tabs = new Tabs(details, attachments);
@@ -197,7 +187,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
 
     private Component createDetails(ConsentDocument consentDocument) {
         ListItem status = new ListItem(consentDocument.getStatus().getIcon(),
-                consentDocument.getStatus().getName(), "Status");
+                consentDocument.getStatus().getName(), getTranslation("consentDocumentsView-status"));
 
         status.getContent().setAlignItems(FlexComponent.Alignment.BASELINE);
         status.getContent().setSpacing(Bottom.XS);
@@ -207,25 +197,25 @@ public class ConsentDocumentsView extends SplitViewFrame {
 
         ListItem policy = new ListItem(
                 UIUtils.createTertiaryIcon(VaadinIcon.UPLOAD_ALT),
-                consentDocument.getPolicyType() , "Policy Type");
+                consentDocument.getPolicyType() , getTranslation("consentDocumentsView-policy_type"));
         ListItem source = new ListItem(
                 UIUtils.createTertiaryIcon(VaadinIcon.UPLOAD_ALT),
-                consentDocument.getSource() , "Source");
+                consentDocument.getSource() , getTranslation("consentDocumentsView-source"));
         ListItem destination = new ListItem(
                 UIUtils.createTertiaryIcon(VaadinIcon.DOWNLOAD_ALT),
-                consentDocument.getDestination(), "Destination");
+                consentDocument.getDestination(),  getTranslation("consentDocumentsView-destination"));
         ListItem startDate = new ListItem(
                 UIUtils.createTertiaryIcon(VaadinIcon.CALENDAR),
-                UIUtils.formatDate(consentDocument.getStartDate()), "Start Date");
+                UIUtils.formatDate(consentDocument.getStartDate()), getTranslation("consentDocumentsView-start_date"));
         ListItem endDate = new ListItem(
                 UIUtils.createTertiaryIcon(VaadinIcon.CALENDAR),
-                UIUtils.formatDate(consentDocument.getEndDate()), "Expires On");
+                UIUtils.formatDate(consentDocument.getEndDate()), getTranslation("consentDocumentsView-expires_on"));
         ListItem sensitivity = new ListItem(
                 UIUtils.createTertiaryIcon(VaadinIcon.TAG),
-                consentDocument.getConstrainSensitivity(), "Constrain Sensitivity");
+                consentDocument.getConstrainSensitivity(), getTranslation("consentDocumentsView-constrain_sensitivity"));
         ListItem domains = new ListItem(
                 UIUtils.createTertiaryIcon(VaadinIcon.TAGS),
-                consentDocument.getConstrainDomains(), "Constrain Domains");
+                consentDocument.getConstrainDomains(),  getTranslation("consentDocumentsView-constrain_domains"));
 
 
         for (ListItem item : new ListItem[]{status, source, destination, startDate, endDate,
@@ -236,12 +226,12 @@ public class ConsentDocumentsView extends SplitViewFrame {
 
         Button consentAction = new Button("Patient Signature");
         if (consentDocument.getStatus().getName().equals("Active")) {
-            consentAction.setText("Revoke Consent");
+            consentAction.setText(getTranslation("consentDocumentsView-status_Revoke_consent"));
             consentAction.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.STOP));
             consentAction.setEnabled(true);
         }
         else if (consentDocument.getStatus().getName().equals("Revoked")) {
-            consentAction.setText("Reinstate Consent");
+            consentAction.setText(getTranslation("consentDocumentsView-reinstate_consent"));
             consentAction.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.START_COG));
             if (consentDocument.getPolicyType().contains("adr-")) {
                 consentAction.setEnabled(false);
@@ -251,19 +241,19 @@ public class ConsentDocumentsView extends SplitViewFrame {
             }
         }
         else if (consentDocument.getStatus().getName().equals("Pending")) {
-            consentAction.setText("Revoke Consent");
+            consentAction.setText(getTranslation("consentDocumentsView-status_Revoke_consent"));
             consentAction.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.STOP));
             consentAction.setEnabled(false);
         }
         else {
-            consentAction.setText("No Actions Available");
+            consentAction.setText(getTranslation("consentDocumentsView-no_actions_available"));
             consentAction.setEnabled(false);
         }
         consentAction.addClickListener(clickEvent ->{
-            if (consentAction.getText().equals("Revoke Consent")) {
+            if (consentAction.getText().equals(getTranslation("consentDocumentsView-status_Revoke_consent"))) {
                 setConsentToRevoked();
             }
-            else if (consentAction.getText().equals("Reinstate Consent")) {
+            else if (consentAction.getText().equals(getTranslation("consentDocumentsView-reinstate_consent"))) {
                 setConsentToReinstated();
             }
             else {
@@ -290,7 +280,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
         ListItem docTitle;
         ListItem docType;
         ListItem uploadAction;
-        Button viewDocument = new Button("View Document");
+        Button viewDocument = new Button(getTranslation("consentDocumentsView-view_document"));
         viewDocument.addClickListener(buttonClickEvent -> {
             createDocumentDialog();
             docDialog.open();
@@ -299,30 +289,30 @@ public class ConsentDocumentsView extends SplitViewFrame {
         if (consentDocument.getFhirConsentResource().getSourceAttachment().getTitle() != null) {
             docTitle = new ListItem(
                     UIUtils.createTertiaryIcon(VaadinIcon.FILE_TEXT),
-                    consentDocument.getFhirConsentResource().getSourceAttachment().getTitle(), "Title");
+                    consentDocument.getFhirConsentResource().getSourceAttachment().getTitle(), getTranslation("consentDocumentsView-title"));
             docType = new ListItem(
                     UIUtils.createTertiaryIcon(VaadinIcon.FILE_CODE),
-                    consentDocument.getFhirConsentResource().getSourceAttachment().getContentType(), "Content Type");
-            if (consentDocument.getStatus().getName().equals("Pending")) {
+                    consentDocument.getFhirConsentResource().getSourceAttachment().getContentType(), getTranslation("consentDocumentsView-content_type"));
+            if (consentDocument.getStatus().getName().equals(getTranslation("consentDocumentsView-status_Pending"))) {
                 uploadAction = new ListItem(UIUtils.createTertiaryIcon(VaadinIcon.UPLOAD),
-                        "To Activate Upload Notarized Copy", "User Action Required");
+                        getTranslation("consentDocumentsView-to_activate_upload_notarized_copy"), getTranslation("consentDocumentsView-user_action_required"));
                 upload.setVisible(true);
             }
             else {
                 uploadAction = new ListItem(UIUtils.createTertiaryIcon(VaadinIcon.UPLOAD),
-                        "None", "User Action Required");
+                        getTranslation("consentDocumentsView-none"), getTranslation("consentDocumentsView-user_action_required"));
                 upload.setVisible(false);
             }
         }
         else {
             docTitle = new ListItem(
                     UIUtils.createTertiaryIcon(VaadinIcon.FILE_TEXT),
-                    new String("No Document(s) attached to this Consent."), "Title");
+                    new String(getTranslation("consentDocumentsView-no_documents_attached_to_this_consent")), getTranslation("consentDocumentsView-title"));
             docType = new ListItem(
                     UIUtils.createTertiaryIcon(VaadinIcon.FILE_CODE),
-                    new String("Not Applicable"), "Content Type");
+                    new String(getTranslation("consentDocumentsView-not_applicable")), getTranslation("consentDocumentsView-content_type"));
             uploadAction = new ListItem(UIUtils.createTertiaryIcon(VaadinIcon.UPLOAD),
-                    "None", "User Action Required");
+                    getTranslation("consentDocumentsView-none"), getTranslation("consentDocumentsView-user_action_required"));
             upload.setVisible(false);
             viewDocument.setEnabled(false);
         }
@@ -342,7 +332,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
         Tab selectedTab = MainLayout.get().getAppBar().getSelectedTab();
         if (selectedTab != null)
             dataProvider.setFilterByValue(ConsentDocument::getStatus, ConsentDocument.Status
-                    .valueOf(selectedTab.getLabel().toUpperCase()));
+                    .valueOf(selectedTab.getId().get().toUpperCase()));
     }
 
     private void showDetails(ConsentDocument consentDocument) {
