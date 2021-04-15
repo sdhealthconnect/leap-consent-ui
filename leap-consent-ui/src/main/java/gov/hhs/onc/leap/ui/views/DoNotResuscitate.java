@@ -976,10 +976,10 @@ public class DoNotResuscitate extends ViewFrame {
         Html errorIntro = new Html("<p><b>The following errors were identified. You will need to correct them before saving this consent document.</b></p>");
         Html flowTypeIntro;
         if (advDirectiveFlowType.equals("Default")) {
-            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all questions, signatures, and signature information is required.</p>");
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all non-optional questions, signatures, and signature information is required.</p>");
         }
         else {
-            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all questions are required. You are expected to print a copy of this " +
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all non-optional questions are required. You are expected to print a copy of this " +
                     "consent document and acquire signatures for it in the presence of a notary.  You are then required to scan and upload this document to activate enforcement of it.</p>");
         }
 
