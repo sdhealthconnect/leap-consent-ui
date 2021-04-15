@@ -188,6 +188,7 @@ public class PDFPOLSTHandler {
 
                 if (field.getFullyQualifiedName().equals("healthcareProviderName")) field.setValue(polst.getHealthcareProviderFullName());
                 if (field.getFullyQualifiedName().equals("healthcareProviderLicenseCert")) field.setValue(polst.getHealthcareProviderLicenseOrCert());
+                if (field.getFullyQualifiedName().equals("healthcareProviderPhoneNumber")) field.setValue(polst.getHealthcareProviderPhoneNumber());
 
                 if (field.getFullyQualifiedName().equals("supervisorSignatureRequired")) {
                     if (polst.isRequiredSupervisingPhysicianSignature()) ((PDCheckbox) field).check();
@@ -269,7 +270,7 @@ public class PDFPOLSTHandler {
                 if (field.getFullyQualifiedName().equals("otherParticipantList")) field.setValue(polst.getOtherParticipantsList());
                 if (field.getFullyQualifiedName().equals("assistingHealthcareProviderFullName")) field.setValue(polst.getAssistingHealthcareProviderFullName());
                 if (field.getFullyQualifiedName().equals("healthcareProviderDateAssisted")) field.setValue(polst.getDateAssistedByHealthcareProvider());
-                if (field.getFullyQualifiedName().equals("healthcareProviderPhoneNumber")) field.setValue(polst.getAssistingHealthcareProviderPhoneNumber());
+                if (field.getFullyQualifiedName().equals("assistingHealthcareProviderPhoneNumber")) field.setValue(polst.getAssistingHealthcareProviderPhoneNumber());
 
                 if (field.getFullyQualifiedName().equals("socialWorker")) {
                     if (polst.isSocialWorker()) ((PDCheckbox) field).check();
