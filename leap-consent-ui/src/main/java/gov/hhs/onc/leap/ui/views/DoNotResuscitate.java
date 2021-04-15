@@ -404,6 +404,7 @@ public class DoNotResuscitate extends ViewFrame {
     private void createWitnessSignature() {
         Html intro8 = new Html("<p><b>SIGNATURE OF WITNESS OR NOTARY (NOT BOTH)</b></p>");
         Html intro9 = new Html("<p>I was present when this form was signed (or marked). The patient then appeared to be of sound mind and free from duress. </p>");
+        Html nextSteps = new Html("<p style=\"color:blue\">Click on the <b>\"Accept Signature\"</b> button to begin review process for this consent document.</p>");
 
         witnessSignature = new SignaturePad();
         witnessSignature.setHeight("100px");
@@ -430,7 +431,7 @@ public class DoNotResuscitate extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        witness = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro8, intro9, new BasicDivider(), witnessSignature, sigLayout);
+        witness = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro8, intro9, new BasicDivider(), witnessSignature, sigLayout, nextSteps);
         witness.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         witness.setBoxSizing(BoxSizing.BORDER_BOX);
         witness.setHeightFull();
@@ -898,8 +899,8 @@ public class DoNotResuscitate extends ViewFrame {
     private void errorCheck() {
         errorList = new ArrayList<>();
         if (advDirectiveFlowType.equals("Default")) {
-            errorCheckCommon();
             errorCheckSignature();
+            errorCheckCommon();
         }
         else if (advDirectiveFlowType.equals("Notary")) {
             errorCheckCommon();
@@ -991,13 +992,28 @@ public class DoNotResuscitate extends ViewFrame {
             evalNavigation();
         });
 
-        VerticalLayout verticalLayout = new VerticalLayout();
-        verticalLayout.setPadding(true);
-        verticalLayout.setMargin(true);
+        FlexBoxLayout verticalLayout = new FlexBoxLayout();
+
+        verticalLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        verticalLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        if (advDirectiveFlowType.equals("Default")) {
+            verticalLayout.setHeight("350px");
+        }
+        else {
+            verticalLayout.setHeight("275px");
+        }
+        verticalLayout.setBackgroundColor("white");
+        verticalLayout.setShadow(Shadow.S);
+        verticalLayout.setBorderRadius(BorderRadius.S);
+        verticalLayout.getStyle().set("margin-bottom", "10px");
+        verticalLayout.getStyle().set("margin-right", "10px");
+        verticalLayout.getStyle().set("margin-left", "10px");
+        verticalLayout.getStyle().set("overflow", "auto");
+        verticalLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         Iterator iter = errorList.iterator();
         while (iter.hasNext()) {
             QuestionnaireError q = (QuestionnaireError)iter.next();
-            verticalLayout.add(new Html("<p>"+q.getErrorMessage()+"</p>"));
+            verticalLayout.add(new Html("<p style=\"color:#259AC9\">"+q.getErrorMessage()+"</p>"));
         }
 
         errorDialog = new Dialog();
@@ -1007,6 +1023,6 @@ public class DoNotResuscitate extends ViewFrame {
         errorDialog.setCloseOnOutsideClick(false);
         errorDialog.setCloseOnEsc(false);
         errorDialog.setResizable(true);
-        errorDialog.add(errorIntro, flowTypeIntro, verticalLayout, errorBTN);
+        errorDialog.add(createHeader(VaadinIcon.WARNING, "Failed Verification"),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
     }
 }

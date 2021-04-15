@@ -1081,13 +1081,23 @@ public class SharePatientDataView extends ViewFrame {
            evalNavigation();
         });
 
-        VerticalLayout verticalLayout = new VerticalLayout();
-        verticalLayout.setPadding(true);
-        verticalLayout.setMargin(true);
+        FlexBoxLayout verticalLayout = new FlexBoxLayout();
+
+        verticalLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        verticalLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        verticalLayout.setHeight("420px");
+        verticalLayout.setBackgroundColor("white");
+        verticalLayout.setShadow(Shadow.S);
+        verticalLayout.setBorderRadius(BorderRadius.S);
+        verticalLayout.getStyle().set("margin-bottom", "10px");
+        verticalLayout.getStyle().set("margin-right", "10px");
+        verticalLayout.getStyle().set("margin-left", "10px");
+        verticalLayout.getStyle().set("overflow", "auto");
+        verticalLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         Iterator iter = errorList.iterator();
         while (iter.hasNext()) {
             QuestionnaireError q = (QuestionnaireError)iter.next();
-            verticalLayout.add(new Html("<p>"+q.getErrorMessage()+"</p>"));
+            verticalLayout.add(new Html("<p style=\"color:#259AC9\">"+q.getErrorMessage()+"</p>"));
         }
 
         errorDialog = new Dialog();
@@ -1097,7 +1107,7 @@ public class SharePatientDataView extends ViewFrame {
         errorDialog.setCloseOnOutsideClick(false);
         errorDialog.setCloseOnEsc(false);
         errorDialog.setResizable(true);
-        errorDialog.add(errorIntro, verticalLayout, errorBTN);
+        errorDialog.add(createHeader(VaadinIcon.WARNING, "Failed Verification"),errorIntro, verticalLayout, errorBTN);
     }
 
 

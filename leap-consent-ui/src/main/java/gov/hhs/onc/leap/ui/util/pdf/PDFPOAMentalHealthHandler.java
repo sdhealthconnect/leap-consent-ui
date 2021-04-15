@@ -181,12 +181,14 @@ public class PDFPOAMentalHealthHandler {
                 if (field.getFullyQualifiedName().equals("authExceptionsList2")) field.setValue(poaHealthcare.getDoNotAuthorizeActionList2());
 
                 if (field.getFullyQualifiedName().equals("hipaa_af_image")) {
-                    if (poaHealthcare.getHipaaWaiver().isUseDisclosure()) {
-                        try {
-                            insertImageInField(field, initials, doc);
+                    try {
+                        if (poaHealthcare.getHipaaWaiver().isUseDisclosure()) {
+                            try {
+                                insertImageInField(field, initials, doc);
+                            } catch (Exception ex) {}
                         }
-                        catch (Exception ex) {}
                     }
+                    catch (Exception ex) {}
                 }
 
                 //patient principle signature
