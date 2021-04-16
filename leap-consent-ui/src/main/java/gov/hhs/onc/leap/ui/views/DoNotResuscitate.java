@@ -13,15 +13,19 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
 import elemental.json.Json;
+import gov.hhs.onc.leap.adr.model.QuestionnaireError;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
@@ -54,10 +58,7 @@ import java.io.ByteArrayInputStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 @PageTitle("Do Not Resuscitate (DNR)")
@@ -121,6 +122,10 @@ public class DoNotResuscitate extends ViewFrame {
     private List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList;
 
     private Consent.ConsentState consentState;
+
+    private List<QuestionnaireError> errorList;
+    private String advDirectiveFlowType = "Default";
+    private Dialog errorDialog;
 
     @Autowired
     private FHIRConsent fhirConsentClient;
@@ -222,7 +227,7 @@ public class DoNotResuscitate extends ViewFrame {
 
     private void createHealthcarePowerOfAttorney() {
         Html intro3 = new Html("<p><b>If I am unable to communicate my wishes, and I have designated a Health Care Power of Attorney, my elected Health Care agent shall sign:</b></p>");
-        healthcarePowerOfAttorneyName = new TextField("Health Care Power of Attorney Printed Name");
+        healthcarePowerOfAttorneyName = new TextField("Health Care Power of Attorney Printed Name:");
 
         healthcarePOASignature = new SignaturePad();
         healthcarePOASignature.setHeight("100px");
@@ -264,8 +269,8 @@ public class DoNotResuscitate extends ViewFrame {
     }
 
     private void createPatientPhysicalCharacteristics() {
-        Html intro4 =  new Html("<p><b>PROVIDE THE FOLLOWING INFORMATION OR ATTACH A RECENT PHOTO</b></p>");
-
+        Html intro4 =  new Html("<p><b>PROVIDE THE FOLLOWING INFORMATION OR ATTACH A RECENT PHOTO:</b></p>");
+        Html fileTypes = new Html("<p><b>Note:</b> Supported file types are: *.jpeg, *.jpg, *.png, and *.gif. File size limit: 1Mb.</p>");
         dateOfBirthField = new TextField("Date of Birth");
         dateOfBirthField.setValue(getDateString(consentUser.getDateOfBirth()));
         genderField = new TextField("Gender");
@@ -297,6 +302,14 @@ public class DoNotResuscitate extends ViewFrame {
             }
         });
 
+        upload.getElement().addEventListener("file-remove", new DomEventListener() {
+            @Override
+            public void handleEvent(DomEvent domEvent) {
+                hImageLayout.remove(patientImage);
+            }
+        });
+
+
         patientImage = new Image();
         patientImage.setHeight("150px");
         patientImage.setWidth("200px");
@@ -307,7 +320,7 @@ public class DoNotResuscitate extends ViewFrame {
         hImageLayout.setSpacing(true);
 
         physicalCharacteristics = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro4, new BasicDivider(), dateOfBirthField,
-                genderField, raceField, eyecolorField, haircolorField, new BasicDivider(), hImageLayout);
+                genderField, raceField, eyecolorField, haircolorField, new BasicDivider(), hImageLayout, fileTypes);
         physicalCharacteristics.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         physicalCharacteristics.setBoxSizing(BoxSizing.BORDER_BOX);
         physicalCharacteristics.setHeightFull();
@@ -319,15 +332,14 @@ public class DoNotResuscitate extends ViewFrame {
         physicalCharacteristics.getStyle().set("margin-left", "10px");
         physicalCharacteristics.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         physicalCharacteristics.setVisible(false);
-
     }
 
     private void createPhysicianOrHospiceInfo() {
-        Html intro5 = new Html("<p><b>INFORMATION ABOUT MY DOCTOR AND HOSPICE</b> (if I am in Hospice)</p>");
+        Html intro5 = new Html("<p><b>INFORMATION ABOUT MY DOCTOR AND HOSPICE</b> (if I am in Hospice):</p>");
 
-        physicianNameField = new TextField("Physician");
-        physicianPhoneField = new TextField("Phone Number");
-        hospiceField = new TextField("Hospice Program, if applicable(name)");
+        physicianNameField = new TextField("Physician:");
+        physicianPhoneField = new TextField("Phone Number:");
+        hospiceField = new TextField("Hospice Program, if applicable(name):");
 
         physicianOrHospice = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro5, new BasicDivider(), physicianNameField, physicianPhoneField, hospiceField);
         physicianOrHospice.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -392,6 +404,7 @@ public class DoNotResuscitate extends ViewFrame {
     private void createWitnessSignature() {
         Html intro8 = new Html("<p><b>SIGNATURE OF WITNESS OR NOTARY (NOT BOTH)</b></p>");
         Html intro9 = new Html("<p>I was present when this form was signed (or marked). The patient then appeared to be of sound mind and free from duress. </p>");
+        Html nextSteps = new Html("<p style=\"color:blue\">Click on the <b>\"Accept Signature\"</b> button to begin review process for this consent document.</p>");
 
         witnessSignature = new SignaturePad();
         witnessSignature.setHeight("100px");
@@ -418,7 +431,7 @@ public class DoNotResuscitate extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        witness = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro8, intro9, new BasicDivider(), witnessSignature, sigLayout);
+        witness = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro8, intro9, new BasicDivider(), witnessSignature, sigLayout, nextSteps);
         witness.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         witness.setBoxSizing(BoxSizing.BORDER_BOX);
         witness.setHeightFull();
@@ -588,12 +601,20 @@ public class DoNotResuscitate extends ViewFrame {
         acceptButton.addClickListener(event -> {
             docDialog.close();
             consentState = Consent.ConsentState.ACTIVE;
-            createQuestionnaireResponse();
-            createFHIRConsent();
-            successNotification();
-            //todo test for fhir consent create success
-            resetFormAndNavigation();
-            evalNavigation();
+            advDirectiveFlowType = "Default";
+            errorCheck();
+            if (errorList.size() > 0) {
+                createErrorDialog();
+                errorDialog.open();
+            }
+            else {
+                createQuestionnaireResponse();
+                createFHIRConsent();
+                successNotification();
+                //todo test for fhir consent create success
+                resetFormAndNavigation();
+                evalNavigation();
+            }
         });
 
         Button acceptAndPrintButton = new Button("Accept and Get Notarized");
@@ -601,12 +622,20 @@ public class DoNotResuscitate extends ViewFrame {
         acceptAndPrintButton.addClickListener(event -> {
             docDialog.close();
             consentState = Consent.ConsentState.PROPOSED;
-            createQuestionnaireResponse();
-            createFHIRConsent();
-            successNotification();
-            //todo test for fhir consent create success
-            resetFormAndNavigation();
-            evalNavigation();
+            advDirectiveFlowType = "Notary";
+            errorCheck();
+            if (errorList.size() > 0) {
+                createErrorDialog();
+                errorDialog.open();
+            }
+            else {
+                createQuestionnaireResponse();
+                createFHIRConsent();
+                successNotification();
+                //todo test for fhir consent create success
+                resetFormAndNavigation();
+                evalNavigation();
+            }
         });
 
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton, acceptAndPrintButton);
@@ -665,8 +694,13 @@ public class DoNotResuscitate extends ViewFrame {
     private String getDateString(Date dt) {
         String pattern = "yyyy-MM-dd";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
-        String date = simpleDateFormat.format(dt);
+        String date = "";
+        try {
+            date = simpleDateFormat.format(dt);
+        }
+        catch (Exception ex) {
+            log.warn("Date error: "+ex.getMessage());
+        }
         return date;
     }
 
@@ -861,5 +895,134 @@ public class DoNotResuscitate extends ViewFrame {
         hImageLayout.remove(patientImage);
 
         questionPosition = 0;
+    }
+    private void errorCheck() {
+        errorList = new ArrayList<>();
+        if (advDirectiveFlowType.equals("Default")) {
+            errorCheckSignature();
+            errorCheckCommon();
+        }
+        else if (advDirectiveFlowType.equals("Notary")) {
+            errorCheckCommon();
+        }
+        else {
+            errorList.add(new QuestionnaireError("Critical Error: Unable to determine signature path.", 0));
+        }
+    }
+
+    private void errorCheckCommon() {
+        try {
+            if (physicianNameField.getValue() == null || physicianNameField.getValue().isEmpty()) {
+                errorList.add(new QuestionnaireError("Physician name can not be blank.", 3));
+            }
+        }
+        catch (Exception ex) {
+            errorList.add(new QuestionnaireError("Physician name can not be blank.", 3));
+        }
+
+        try {
+            if (physicianPhoneField.getValue() == null || physicianPhoneField.getValue().isEmpty()) {
+                errorList.add(new QuestionnaireError("Physician phone number can not be blank.", 3));
+            }
+        }
+        catch (Exception ex) {
+            errorList.add(new QuestionnaireError("Physician phone number can not be blank.", 3));
+        }
+
+    }
+
+    private void errorCheckSignature() {
+        //patient signature
+        try {
+            if (base64PatientSignature == null || base64PatientSignature.length == 0) {
+                if (base64HealthcarePOASignature == null || base64HealthcarePOASignature.length == 0) {
+                    errorList.add(new QuestionnaireError("Patient signature or signature of POA must be provided.", 0));
+                }
+                else {
+                    //check for poa name
+                    if (healthcarePowerOfAttorneyName.getValue() == null || healthcarePowerOfAttorneyName.getValue().isEmpty()) {
+                        errorList.add(new QuestionnaireError("Health care power of attorney name can not be blank.", 1));
+                    }
+                }
+            }
+        }
+        catch (Exception ex) {
+            errorList.add(new QuestionnaireError("Patient signature or signature of POA must be provided.", 0));
+            log.warn("Patient Signature check: "+ex.getMessage());
+        }
+
+        try {
+            if (base64AttestationSignature == null || base64AttestationSignature.length == 0) {
+                errorList.add(new QuestionnaireError("Physician attestation signature must be provided.", 4));
+            }
+        }
+        catch (Exception ex) {
+            errorList.add(new QuestionnaireError("Physician attestation signature must be provided.", 4));
+            log.warn("Physician attestation error: "+ ex.getMessage());
+        }
+
+        try {
+            if (base64WitnessSignature == null || base64WitnessSignature.length == 0) {
+                errorList.add(new QuestionnaireError("Witness signature must be provided.", 5));
+            }
+        }
+        catch (Exception ex) {
+            errorList.add(new QuestionnaireError("Witness signature must be provided.", 5));
+            log.warn("Witness signature error: "+ ex.getMessage());
+        }
+
+    }
+
+    private void createErrorDialog() {
+        Html errorIntro = new Html("<p><b>The following errors were identified. You will need to correct them before saving this consent document.</b></p>");
+        Html flowTypeIntro;
+        if (advDirectiveFlowType.equals("Default")) {
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all non-optional questions, signatures, and signature information is required.</p>");
+        }
+        else {
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all non-optional questions are required. You are expected to print a copy of this " +
+                    "consent document and acquire signatures for it in the presence of a notary.  You are then required to scan and upload this document to activate enforcement of it.</p>");
+        }
+
+        Button errorBTN = new Button("Correct Errors");
+        errorBTN.setWidthFull();
+        errorBTN.addClickListener(event -> {
+            questionPosition = errorList.get(0).getQuestionnaireIndex();
+            errorDialog.close();
+            evalNavigation();
+        });
+
+        FlexBoxLayout verticalLayout = new FlexBoxLayout();
+
+        verticalLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        verticalLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        if (advDirectiveFlowType.equals("Default")) {
+            verticalLayout.setHeight("350px");
+        }
+        else {
+            verticalLayout.setHeight("275px");
+        }
+        verticalLayout.setBackgroundColor("white");
+        verticalLayout.setShadow(Shadow.S);
+        verticalLayout.setBorderRadius(BorderRadius.S);
+        verticalLayout.getStyle().set("margin-bottom", "10px");
+        verticalLayout.getStyle().set("margin-right", "10px");
+        verticalLayout.getStyle().set("margin-left", "10px");
+        verticalLayout.getStyle().set("overflow", "auto");
+        verticalLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        Iterator iter = errorList.iterator();
+        while (iter.hasNext()) {
+            QuestionnaireError q = (QuestionnaireError)iter.next();
+            verticalLayout.add(new Html("<p style=\"color:#259AC9\">"+q.getErrorMessage()+"</p>"));
+        }
+
+        errorDialog = new Dialog();
+        errorDialog.setHeight("600px");
+        errorDialog.setWidth("600px");
+        errorDialog.setModal(true);
+        errorDialog.setCloseOnOutsideClick(false);
+        errorDialog.setCloseOnEsc(false);
+        errorDialog.setResizable(true);
+        errorDialog.add(createHeader(VaadinIcon.WARNING, "Failed Verification"),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
     }
 }

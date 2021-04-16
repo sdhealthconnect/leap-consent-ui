@@ -175,8 +175,8 @@ public class UserPreferencesView extends ViewFrame {
             this.phone.setValue(user.getPhone());
         }
         this.phone.setEnabled(false);
-        if (user.getZipCode()!=null) {
-            this.mobile.setValue(user.getZipCode());
+        if (user.getPhone() != null) {
+            this.mobile.setValue(user.getPhone());  //todo get this from fhir patient resource
         }
         this.mobile.setEnabled(false);
         if (user.getEmailAddress()!=null) {

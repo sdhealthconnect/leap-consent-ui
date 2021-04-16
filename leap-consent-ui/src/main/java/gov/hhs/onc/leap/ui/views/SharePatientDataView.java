@@ -27,6 +27,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import de.f0rce.signaturepad.SignaturePad;
+import gov.hhs.onc.leap.adr.model.QuestionnaireError;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIROrganization;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRPractitioner;
@@ -86,6 +87,7 @@ public class SharePatientDataView extends ViewFrame {
     private Button forwardButton;
     private Dialog dialog;
     private Dialog docDialog;
+    private Dialog errorDialog;
     private byte[] base64Signature;
     private RadioButtonGroup<String> timeSettings;
     private RadioButtonGroup<String> constrainDataClass;
@@ -97,6 +99,8 @@ public class SharePatientDataView extends ViewFrame {
     private LocalDateTime provisionStartDateTime;
     private LocalDateTime provisionEndDateTime;
     private byte[] consentPDFAsByteArray;
+    private List<QuestionnaireError> errorList;
+
     @Autowired
     private FHIROrganization fhirOrganization;
     @Autowired
@@ -106,8 +110,6 @@ public class SharePatientDataView extends ViewFrame {
     @Autowired
     private PDFSigningService pdfSigningService;
     private String fhirBase;
-
-
 
     @PostConstruct
     public void setup() {
@@ -638,93 +640,135 @@ public class SharePatientDataView extends ViewFrame {
             String sDate = "";
             String eDate = "";
             LocalDateTime defDate = LocalDateTime.now();
-            if (timeSettings.getValue().equals(getTranslation("sharePatient-use_default_option"))) {
-                if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-24_hours"))) {
-                    defDate = LocalDateTime.now().plusDays(1);
+            String dataDomainConstraintlist = getTranslation("sharePatient-deny_access_to_following");
+            String custodian = "";
+            String recipient = "";
+            String sensitivities = getTranslation("sharePatient-remove_following_sensitivity_types_if_found_in_my_record");
+            try {
+                if (timeSettings.getValue().equals(getTranslation("sharePatient-use_default_option"))) {
+                    if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-24_hours"))) {
+                        defDate = LocalDateTime.now().plusDays(1);
+                    } else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-1_year"))) {
+                        defDate = LocalDateTime.now().plusYears(1);
+                    } else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-5_years"))) {
+                        defDate = LocalDateTime.now().plusYears(5);
+                    } else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-10_years"))) {
+                        defDate = LocalDateTime.now().plusYears(10);
+                    } else {
+                        errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_default_date_selected"), 0));
+                        defDate = null;
+                    }
+                    sDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+                    eDate = defDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
+                    //for use later
+                    provisionStartDateTime = LocalDateTime.now();
+                    provisionEndDateTime = defDate;
+                } else if (timeSettings.getValue().equals(getTranslation("sharePatient-custom_date_option"))) {
+                    sDate = startDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
+                    eDate = endDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
+                    //for use later
+                    provisionStartDateTime = startDateTime.getValue();
+                    provisionEndDateTime = endDateTime.getValue();
+                    if (provisionStartDateTime == null || provisionEndDateTime == null) {
+                        errorList.add(new QuestionnaireError(getTranslation("sharePatient-custom_date_can_not_be_blank"), 0));
+                    }
+                    if (provisionEndDateTime.isBefore(provisionStartDateTime)) {
+                        errorList.add(new QuestionnaireError(getTranslation("sharePatient-custom_date_can_not_be_before_start_date"), 0));
+                    }
+                    if (provisionEndDateTime.isBefore(defDate)) {
+                        errorList.add(new QuestionnaireError(getTranslation("sharePatient-custom_date_can_not_be_before_today"), 0));
+                    }
+                } else {
+                    errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_date_range_seleccion_made"), 0));
                 }
-                else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-1_year"))) {
-                    defDate = LocalDateTime.now().plusYears(1);
-                }
-                else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-5_years"))) {
-                    defDate = LocalDateTime.now().plusYears(5);
-                }
-                else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-10_years"))) {
-                    defDate = LocalDateTime.now().plusYears(10);
-                }
-                else {
-                    defDate = null;
-                }
-                sDate = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
-                eDate = defDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
-                //for use later
-                provisionStartDateTime = LocalDateTime.now();
-                provisionEndDateTime = defDate;
             }
-            else if (timeSettings.getValue().equals(getTranslation("sharePatient-custom_date_option"))) {
-                sDate = startDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
-                eDate = endDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
-                //for use later
-                provisionStartDateTime = startDateTime.getValue();
-                provisionEndDateTime = endDateTime.getValue();
-
-            }
-            else {
-                //this is an error...
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_date_range_seleccion_made"), 0));
             }
             //get domain constraints
-            String dataDomainConstraintlist = getTranslation("sharePatient-deny_access_to_following");
-            if (constrainDataClass.getValue().equals(getTranslation("sharePatient-deny_access_to_following"))) {
-                Set<String> classList = dataClassComboBox.getSelectedItems();
-                Iterator iterClass = classList.iterator();
-                while (iterClass.hasNext()) {
-                    String s = (String)iterClass.next();
-                    dataDomainConstraintlist = dataDomainConstraintlist + s +" ";
+            try {
+                if (constrainDataClass.getValue().equals(getTranslation("sharePatient-deny_access_to_following"))) {
+                    Set<String> classList = dataClassComboBox.getSelectedItems();
+                    Iterator iterClass = classList.iterator();
+                    while (iterClass.hasNext()) {
+                        String s = (String) iterClass.next();
+                        dataDomainConstraintlist = dataDomainConstraintlist + s + " ";
+                    }
+                    if (classList.isEmpty()) {
+                        errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_data_class_exceptions_found_in_list"), 1));
+                    }
+                } else {
+                    //this is the default when none selected
+                    dataDomainConstraintlist = getTranslation("sharePatient-allow_all_types_of_data_to_be_exchanged");
                 }
             }
-            else {
-                //this is the default when none selected
-                dataDomainConstraintlist = getTranslation("sharePatient-allow_all_types_of_data_to_be_exchanged");
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_data_class_selection_made"), 1));
             }
             //set custodian
-            String custodian = "";
-            if (custodianType.getValue().equals(getTranslation("sharePatient-practitioner"))) {
-                custodian = practitionerComboBoxSource.getValue().getName().get(0).getNameAsSingleString();
+            try {
+                if (custodianType.getValue().equals(getTranslation("sharePatient-practitioner"))) {
+                    custodian = practitionerComboBoxSource.getValue().getName().get(0).getNameAsSingleString();
+                } else if (custodianType.getValue().equals(getTranslation("sharePatient-organization"))) {
+                    custodian = organizationComboBoxSource.getValue().getName();
+                } else {
+                    errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_custodian_selection_made"), 2));
+                }
+                if (custodian.equals("") || custodian.isEmpty()) {
+                    errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_custodian_selection_made"), 2));
+                }
             }
-            else if (custodianType.getValue().equals(getTranslation("sharePatient-organization"))) {
-                custodian = organizationComboBoxSource.getValue().getName();
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_custodian_selection_made"), 2));
             }
-            else {
-                custodian = getTranslation("sharePatient-error_no_custodian_value_selected");
-            }
-
             //set recipient
-            String recipient = "";
-            if (destinationType.getValue().equals(getTranslation("sharePatient-practitioner"))) {
-                recipient = practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString();
+            try {
+
+                if (destinationType.getValue().equals(getTranslation("sharePatient-practitioner"))) {
+                    recipient = practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString();
+                } else if (destinationType.getValue().equals(getTranslation("sharePatient-organization"))) {
+                    recipient = organizationComboBoxDestination.getValue().getName();
+                } else {
+                    errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_recipient_destination_selection_made"), 3));
+                }
+                if (recipient.equals("") || recipient.isEmpty()) {
+                    errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_recipient_destination_selection_made"), 3));
+                }
             }
-            else if (destinationType.getValue().equals(getTranslation("sharePatient-organization"))) {
-                recipient = organizationComboBoxDestination.getValue().getName();
-            }
-            else {
-                recipient = getTranslation("sharePatient-error_no_recipient_value_selected");
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_recipient_destination_selection_made"), 3));
             }
 
             //set sensitivity constraints
-            String sensitivities = getTranslation("sharePatient-remove_following_sensitivity_types_if_found_in_my_record");
-            if (sensConstraints.getValue().equals(getTranslation("sharePatient-remove_them"))) {
-                Set<String> sensSet = sensitivityOptions.getSelectedItems();
-                Iterator sensIter = sensSet.iterator();
-                while (sensIter.hasNext()) {
-                    String s = (String)sensIter.next();
-                    sensitivities = sensitivities + s + " ";
+            try {
+
+                if (sensConstraints.getValue().equals(getTranslation("sharePatient-remove_them"))) {
+                    Set<String> sensSet = sensitivityOptions.getSelectedItems();
+                    Iterator sensIter = sensSet.iterator();
+                    while (sensIter.hasNext()) {
+                        String s = (String) sensIter.next();
+                        sensitivities = sensitivities + s + " ";
+                    }
+                } else if (sensConstraints.getValue().equals(getTranslation("sharePatient-i_do_not_have_privacy_concerns"))) {
+                    sensitivities = getTranslation("sharePatient-i_do_not_have_privacy_concerns");
+                } else {
+                    //default if none selected
+                    errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_privacy_concern_selected"), 4));
                 }
             }
-            else if (sensConstraints.getValue().equals(getTranslation("sharePatient-i_do_not_have_privacy_concerns"))) {
-                sensitivities = getTranslation("sharePatient-i_do_not_have_privacy_concerns");
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_privacy_concern_selection_made"), 4));
             }
-            else {
-                //default if none selected
-                sensitivities = getTranslation("sharePatient-i_do_not_have_privacy_concerns");
+            try {
+                if (base64Signature.length == 0) {
+                    errorList.add(new QuestionnaireError(getTranslation("sharePatient-user_signature_can_not_be_blank"), 5));
+                }
+            }
+            catch (Exception ex) {
+                errorList.add(new QuestionnaireError(getTranslation("sharePatient-user_signature_can_not_be_blank"), 5));
+            }
+            if (errorList.size() > 0) {
+                return null;
             }
             PDFPatientPrivacyHandler pdfHandler = new PDFPatientPrivacyHandler(pdfSigningService);
             StreamResource res = pdfHandler.retrievePDFForm(sDate, eDate, dataDomainConstraintlist, custodian,
@@ -735,6 +779,9 @@ public class SharePatientDataView extends ViewFrame {
 
     private void getHumanReadable() {
         StreamResource streamResource = setFieldsCreatePDF();
+        if (streamResource == null) {
+            return;
+        }
         docDialog = new Dialog();
 
         streamResource.setContentType("application/pdf");
@@ -1033,5 +1080,46 @@ public class SharePatientDataView extends ViewFrame {
         notification.open();
     }
 
+    private void createErrorDialog() {
+        Html errorIntro = new Html(getTranslation("sharePatient-error_intro"));
+        Button errorBTN = new Button(getTranslation("sharePatient-correct_errors"));
+        errorBTN.setWidthFull();
+        errorBTN.addClickListener(event -> {
+           questionPosition = errorList.get(0).getQuestionnaireIndex();
+           errorDialog.close();
+           evalNavigation();
+        });
 
+        FlexBoxLayout verticalLayout = new FlexBoxLayout();
+
+        verticalLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        verticalLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        verticalLayout.setHeight("420px");
+        verticalLayout.setBackgroundColor("white");
+        verticalLayout.setShadow(Shadow.S);
+        verticalLayout.setBorderRadius(BorderRadius.S);
+        verticalLayout.getStyle().set("margin-bottom", "10px");
+        verticalLayout.getStyle().set("margin-right", "10px");
+        verticalLayout.getStyle().set("margin-left", "10px");
+        verticalLayout.getStyle().set("overflow", "auto");
+        verticalLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        Iterator iter = errorList.iterator();
+        while (iter.hasNext()) {
+            QuestionnaireError q = (QuestionnaireError)iter.next();
+            verticalLayout.add(new Html("<p style=\"color:#259AC9\">"+q.getErrorMessage()+"</p>"));
+        }
+
+        errorDialog = new Dialog();
+        errorDialog.setHeight("600px");
+        errorDialog.setWidth("600px");
+        errorDialog.setModal(true);
+        errorDialog.setCloseOnOutsideClick(false);
+        errorDialog.setCloseOnEsc(false);
+        errorDialog.setResizable(true);
+        errorDialog.add(createHeader(VaadinIcon.WARNING, getTranslation("sharePatient-failed_verification")),errorIntro, verticalLayout, errorBTN);
+    }
+
+    private String getA() {
+        return null;
+    }
 }

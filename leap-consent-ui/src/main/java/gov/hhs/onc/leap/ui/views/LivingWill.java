@@ -12,6 +12,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -50,12 +51,7 @@ import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-
-
+import java.util.*;
 
 
 @PageTitle("Living Will")
@@ -133,6 +129,11 @@ public class LivingWill extends ViewFrame {
     private gov.hhs.onc.leap.adr.model.LivingWill livingWill;
 
     private Consent.ConsentState consentState;
+
+    private List<QuestionnaireError> errorList;
+    private String advDirectiveFlowType = "Default";
+    private Dialog errorDialog;
+
 
     @Autowired
     private FHIRConsent fhirConsentClient;
@@ -512,6 +513,7 @@ public class LivingWill extends ViewFrame {
         Html intro14 = new Html("<p><b>SIGNATURE OF WITNESS</b></p>");
         Html intro15 = new Html("<p>I was present when this form was signed (or marked). The principal appeared to be of sound mind "+
                 "and was not forced to sign this form.");
+        Html nextSteps = new Html("<p style=\"color:blue\">Click on the <b>\"Accept Signature\"</b> button to begin review process for this consent document.</p>");
 
         witnessName = new TextField("Witness Name");
         witnessAddress = new TextField("Address");
@@ -541,7 +543,7 @@ public class LivingWill extends ViewFrame {
         sigLayout.setSpacing(true);
 
         witnessSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Living Will"), intro14, intro15, new BasicDivider(),
-                witnessName, witnessAddress, witnessSignature, sigLayout);
+                witnessName, witnessAddress, witnessSignature, sigLayout, nextSteps);
         witnessSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         witnessSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         witnessSignatureLayout.setHeightFull();
@@ -681,7 +683,7 @@ public class LivingWill extends ViewFrame {
                 break;
             case 6:
                 returnButton.setEnabled(true);
-                forwardButton.setEnabled(true);
+                forwardButton.setEnabled(false);
                 patientInitialsLayout.setVisible(false);
                 patientGeneralInfoLayout.setVisible(false);
                 instructionsLayout.setVisible(false);
@@ -741,26 +743,42 @@ public class LivingWill extends ViewFrame {
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
-            consentState = Consent.ConsentState.ACTIVE;
-            createQuestionnaireResponse();
-            createFHIRConsent();
-            successNotification();
-            //todo test for fhir consent create success
-            resetFormAndNavigation();
-            evalNavigation();
+            advDirectiveFlowType = "Default";
+            errorCheck();
+            if (errorList.size() > 0) {
+                createErrorDialog();
+                errorDialog.open();
+            }
+            else {
+                consentState = Consent.ConsentState.ACTIVE;
+                createQuestionnaireResponse();
+                createFHIRConsent();
+                successNotification();
+                //todo test for fhir consent create success
+                resetFormAndNavigation();
+                evalNavigation();
+            }
         });
 
         Button acceptAndPrintButton = new Button("Accept and Get Notarized");
         acceptAndPrintButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptAndPrintButton.addClickListener(event -> {
             docDialog.close();
-            consentState = Consent.ConsentState.PROPOSED;
-            createQuestionnaireResponse();
-            createFHIRConsent();
-            successNotification();
-            //todo test for fhir consent create success
-            resetFormAndNavigation();
-            evalNavigation();
+            advDirectiveFlowType = "Notary";
+            errorCheck();
+            if (errorList.size() > 0) {
+                createErrorDialog();
+                errorDialog.open();
+            }
+            else {
+                consentState = Consent.ConsentState.PROPOSED;
+                createQuestionnaireResponse();
+                createFHIRConsent();
+                successNotification();
+                //todo test for fhir consent create success
+                resetFormAndNavigation();
+                evalNavigation();
+            }
         });
 
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton, acceptAndPrintButton);
@@ -1044,5 +1062,138 @@ public class LivingWill extends ViewFrame {
         item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new StringType(string)));
         item.setDefinition(definition);
         return item;
+    }
+
+    private void errorCheck() {
+        errorList = new ArrayList<>();
+        if (advDirectiveFlowType.equals("Default")) {
+            errorCheckCommon();
+            errorCheckSignature();
+        }
+        else if (advDirectiveFlowType.equals("Notary")) {
+            errorCheckCommon();
+        }
+        else {
+            errorList.add(new QuestionnaireError("Critical Error: Unable to determine signature path.", 0));
+        }
+    }
+
+    private void errorCheckCommon() {
+        try {
+            if (base64PatientInitials == null || base64PatientInitials.length == 0) {
+                errorList.add(new QuestionnaireError("User initials can not be blank.", 0));
+            }
+        }
+        catch (Exception ex) {
+            errorList.add(new QuestionnaireError("User initials can not be blank.", 0));
+        }
+        if (!livingWill.isProlongLifeToGreatestExtentPossible() && !livingWill.isComfortCareOnlyButNot() && !livingWill.isComfortCareOnly() && !livingWill.isCareUntilDoctorsConcludeNoHope() && !livingWill.isPregnantSaveFetus()) {
+            errorList.add(new QuestionnaireError("No selections made in health choices.", 2));
+        }
+        if (!livingWill.isNoAdditionalInstructions() && !livingWill.isAdditionalInstructions()) {
+            errorList.add(new QuestionnaireError("No selection made in additional instructions.", 3));
+        }
+    }
+
+    private void errorCheckSignature() {
+        try {
+            if (base64PatientSignature == null || base64PatientSignature.length == 0) {
+
+                if (base64PatientUnableSignature == null || base64PatientUnableSignature.length == 0) {
+                    errorList.add(new QuestionnaireError("User signature or alternate signature required.", 4));
+                }
+                else {
+                    try {
+                        if (livingWill.getPrincipleAlternateSignature().getNameOfWitnessOrNotary() == null || livingWill.getPrincipleAlternateSignature().getNameOfWitnessOrNotary().isEmpty()) {
+                            errorList.add(new QuestionnaireError("Witness or notary as alternate name required.", 5));
+                        }
+                    }
+                    catch (Exception ex) {
+                        errorList.add(new QuestionnaireError("Witness or notary as alternate name required.", 5));
+                    }
+                }
+            }
+        }
+        catch(Exception ex) {
+            errorList.add(new QuestionnaireError("User signature or alternate signature required.", 4));
+        }
+
+        try {
+            if (base64WitnessSignature == null || base64WitnessSignature.length == 0) {
+                errorList.add(new QuestionnaireError("Witness signature can not be blank.", 6));
+            }
+        }
+        catch (Exception ex) {
+            errorList.add(new QuestionnaireError("Witness signature can not be blank.", 6));
+        }
+        try {
+            if (livingWill.getWitnessSignature().getWitnessName() == null || livingWill.getWitnessSignature().getWitnessName().isEmpty()) {
+                errorList.add(new QuestionnaireError("Witness name can not be blank.", 6));
+            }
+        }
+        catch (Exception ex) {
+            errorList.add(new QuestionnaireError("Witness name can not be blank.", 6));
+        }
+        try {
+            if (livingWill.getWitnessSignature().getWitnessAddress() == null || livingWill.getWitnessSignature().getWitnessAddress().isEmpty()) {
+                errorList.add(new QuestionnaireError("Witness address can not be blank.", 6));
+            }
+        }
+        catch (Exception ex) {
+            errorList.add(new QuestionnaireError("Witness address can not be blank.", 6));
+        }
+    }
+
+    private void createErrorDialog() {
+        Html errorIntro = new Html("<p><b>The following errors were identified. You will need to correct them before saving this consent document.</b></p>");
+        Html flowTypeIntro;
+        if (advDirectiveFlowType.equals("Default")) {
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all non-optional questions, signatures, and signature information is required.</p>");
+        }
+        else {
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all non-optional questions are required. You are expected to print a copy of this " +
+                    "consent document and acquire signatures for it in the presence of a notary.  You are then required to scan and upload this document to activate enforcement of it.</p>");
+        }
+
+        Button errorBTN = new Button("Correct Errors");
+        errorBTN.setWidthFull();
+        errorBTN.addClickListener(event -> {
+            questionPosition = errorList.get(0).getQuestionnaireIndex();
+            errorDialog.close();
+            evalNavigation();
+        });
+
+        FlexBoxLayout verticalLayout = new FlexBoxLayout();
+
+        verticalLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        verticalLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        if (advDirectiveFlowType.equals("Default")) {
+            verticalLayout.setHeight("350px");
+        }
+        else {
+            verticalLayout.setHeight("275px");
+        }
+        verticalLayout.setBackgroundColor("white");
+        verticalLayout.setShadow(Shadow.S);
+        verticalLayout.setBorderRadius(BorderRadius.S);
+        verticalLayout.getStyle().set("margin-bottom", "10px");
+        verticalLayout.getStyle().set("margin-right", "10px");
+        verticalLayout.getStyle().set("margin-left", "10px");
+        verticalLayout.getStyle().set("overflow", "auto");
+        verticalLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        Iterator iter = errorList.iterator();
+        while (iter.hasNext()) {
+            QuestionnaireError q = (QuestionnaireError)iter.next();
+            verticalLayout.add(new Html("<p style=\"color:#259AC9\">"+q.getErrorMessage()+"</p>"));
+        }
+
+        errorDialog = new Dialog();
+        errorDialog.setHeight("600px");
+        errorDialog.setWidth("600px");
+        errorDialog.setModal(true);
+        errorDialog.setCloseOnOutsideClick(false);
+        errorDialog.setCloseOnEsc(false);
+        errorDialog.setResizable(true);
+        errorDialog.add(createHeader(VaadinIcon.WARNING, "Failed Verification"),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
     }
 }

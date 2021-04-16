@@ -12,7 +12,9 @@ import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.layout.size.Horizontal;
 import gov.hhs.onc.leap.ui.layout.size.Right;
 import gov.hhs.onc.leap.ui.layout.size.Top;
+import gov.hhs.onc.leap.ui.layout.size.Uniform;
 import gov.hhs.onc.leap.ui.util.UIUtils;
+import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 
 @PageTitle("LEAP FHIR Consent - Home")

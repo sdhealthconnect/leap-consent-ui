@@ -14,6 +14,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -21,6 +22,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
+import gov.hhs.onc.leap.adr.model.QuestionnaireError;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.adr.model.POLSTPortableMedicalOrder;
 import gov.hhs.onc.leap.adr.model.PowerOfAttorneyHealthCare;
@@ -54,10 +56,7 @@ import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @PageTitle("National POLST Form - A Portable Medical Order")
 @Route(value = "portablemedicalorderview", layout = MainLayout.class)
@@ -189,6 +188,10 @@ public class PortableMedicalOrder extends ViewFrame {
 
     private POLSTPortableMedicalOrder polst;
 
+    private List<QuestionnaireError> errorList;
+    private String advDirectiveFlowType = "Default";
+    private Dialog errorDialog;
+
     @Autowired
     private FHIRConsent fhirConsentClient;
 
@@ -216,9 +219,9 @@ public class PortableMedicalOrder extends ViewFrame {
 
     private Component createViewContent() {
         Html intro = new Html("<p>Health care providers, the patient, or patient representative, should complete this form only after the "+
-                "health care provider has had conversation with their patient or the patient’s representative.  "+
+                "health care provider has had a conversation with the patient, or the patient’s representative.  "+
                 "The POLST decision-making process is for patients who are at risk for a life-threatening clinical event because they have a serious life-limiting medical "+
-                "condition, which may include advanced frailty (www.polst.org/guidance-appropriate-patients-pdf).</p>" );
+                "condition, which may include advanced frailty <a href=\"http://www.polst.org//guidance-appropriate-patients-pdf\">(www.polst.org/guidance-appropriate-patients-pdf)</a>.</p>" );
 
         createPatientGeneralInfo();
         createCardiopulmonaryResuscitationOrders();
@@ -250,7 +253,7 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createPatientGeneralInfo() {
-        Html intro2 = new Html("<p><b>This is a medical order, not an advance directive. For information about POLST and to understand this document, visit: www.polst.org/form</b></p>");
+        Html intro2 = new Html("<p><b>This is a medical order, not an advance directive. For information about POLST and to understand this document, visit:</b> <a href=\"http://www.polst.org/form\">www.polst.org/form</a></p>");
 
         patientFirstName = new TextField("Patient's First Name");
         patientPreferredName = new TextField("Preferred Name");
@@ -516,7 +519,7 @@ public class PortableMedicalOrder extends ViewFrame {
     private void createPatientOrRepresentativeSignature() {
         Html intro7 = new Html("<p>I understand this form is voluntary. I have discussed my treatment options and goals of care with my provider. If signing as the\n" +
                 "patient’s representative, the treatments are consistent with the patient’s known wishes and in their best interest.</p");
-        Html intro8 = new Html("<p><b>The most recently completed valid POLST form supersedes all" +
+        Html intro8 = new Html("<p><b>The most recently completed valid POLST form supersedes all " +
                 "previously completed POLST forms.</b></p>");
 
         patientOrRepresentativeSignature = new SignaturePad();
@@ -653,6 +656,7 @@ public class PortableMedicalOrder extends ViewFrame {
         clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearPatientSig.addClickListener(event -> {
             supervisingPhysicianSignature.clear();
+            supervisingPhysicianLicenseField.clear();
         });
         Button savePatientSig = new Button("Accept Signature");
         savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
@@ -677,6 +681,7 @@ public class PortableMedicalOrder extends ViewFrame {
                clearPatientSig.setEnabled(false);
                savePatientSig.setEnabled(false);
                supervisingPhysicianSignature.clear();
+               supervisingPhysicianLicenseField.clear();
                supervisingPhysicianSignature.setReadOnly(true);
                supervisingPhysicianLicenseField.setEnabled(false);
            }
@@ -684,11 +689,12 @@ public class PortableMedicalOrder extends ViewFrame {
                clearPatientSig.setEnabled(true);
                savePatientSig.setEnabled(true);
                supervisingPhysicianSignature.clear();
+               supervisingPhysicianLicenseField.clear();
                supervisingPhysicianSignature.setReadOnly(false);
                supervisingPhysicianLicenseField.setEnabled(true);
            }
         });
-        supervisingPhysicianLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Supervising Physicians Signature"),
+        supervisingPhysicianLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Supervising Physician Signature"),
                 intro11, new BasicDivider(),
                 supervisorSignatureChk, supervisingPhysicianSignature, supervisingPhysicianLicenseField, sigLayout);
         supervisingPhysicianLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -749,7 +755,7 @@ public class PortableMedicalOrder extends ViewFrame {
         Html intro13 = new Html("<p>Patient’s Emergency Contact. (Note: Listing a person here does <b>NOT</b> grant them authority to be a legal representative. Only an " +
                               "advance directive or state law can grant that authority.)</p>");
 
-        primaryProviderName = new TextField("Primary Provider:");
+        primaryProviderName = new TextField("Primary Care Provider Name:");
         primaryProviderPhoneNumber = new TextField("Phone #:");
         primaryProviderPhoneNumber.setPlaceholder("(###) ###-####");
 
@@ -864,7 +870,7 @@ public class PortableMedicalOrder extends ViewFrame {
                 advanceDirectiveNotAvailable.clear();
             }
         });
-        advanceDirectiveReviewLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Form Completion Info - Review(Optional)"),
+        advanceDirectiveReviewLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Form Completion Info - Review (Optional)"),
                 intro15, new BasicDivider(), livingWillReviewed, reviewedDate, livingWillConflict, advanceDirectiveNotAvailable, noAdvanceDirective);
         advanceDirectiveReviewLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         advanceDirectiveReviewLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -885,12 +891,12 @@ public class PortableMedicalOrder extends ViewFrame {
         patientParticipated = new Checkbox("Patient with decision-making capacity");
         legalOrSurrogate = new Checkbox("Legal Surrogate / Health Care Agent");
         courtAppointedGuardian = new Checkbox("Court Appointed Guardian");
-        parentOfMinor = new Checkbox("Parent of minor");
+        parentOfMinor = new Checkbox("Parent of Minor");
         otherParticipant = new Checkbox("Other:");
         otherParticipantList = new TextField("");
         otherParticipantList.setPlaceholder("List others that participated here");
 
-        participantLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Form Completion Info - Participant Types(Optional)"),
+        participantLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Form Completion Info - Participant Types (Optional)"),
                 intro16, new BasicDivider(), patientParticipated, legalOrSurrogate, courtAppointedGuardian, parentOfMinor, otherParticipant, otherParticipantList);
         participantLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         participantLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -962,7 +968,7 @@ public class PortableMedicalOrder extends ViewFrame {
                otherAssistedList.setEnabled(true);
            }
         });
-        whoAssistedLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Form Completion Info - Participants(Optional)"),
+        whoAssistedLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Form Completion Info - Participants (Optional)"),
                 intro17, new BasicDivider(), professional, whoAssistedInFormCompletionName, dateAssisted, whoAssistedPhoneNumber, new BasicDivider(), individualType, socialWorkerAssist, nurseAssisted, clergyAssisted, otherAssisted, otherAssistedList);
         whoAssistedLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         whoAssistedLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -1017,30 +1023,50 @@ public class PortableMedicalOrder extends ViewFrame {
     private String getDateString(Date dt) {
         String pattern = "MM/dd/yyyy";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
-        String date = simpleDateFormat.format(dt);
+        String date = "";
+        try {
+            date = simpleDateFormat.format(dt);
+        }
+        catch (Exception ex) {
+            log.warn("Date error: "+ex.getMessage());
+        }
         return date;
     }
 
     private String getDateYear(Date dt) {
         String pattern = "yyyy";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
-        String date = simpleDateFormat.format(dt);
+        String date = "";
+        try {
+            date = simpleDateFormat.format(dt);
+        }
+        catch (Exception ex) {
+            log.warn("Date error: "+ex.getMessage());
+        }
         return date;
     }
     private String getDateMonth(Date dt) {
         String pattern = "MM";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
-        String date = simpleDateFormat.format(dt);
+        String date = "";
+        try {
+            date = simpleDateFormat.format(dt);
+        }
+        catch (Exception ex) {
+            log.warn("Date error: "+ex.getMessage());
+        }
         return date;
     }
     private String getDateDay(Date dt) {
         String pattern = "dd";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
-        String date = simpleDateFormat.format(dt);
+        String date = "";
+        try {
+            date = simpleDateFormat.format(dt);
+        }
+        catch (Exception ex) {
+            log.warn("Date error: "+ex.getMessage());
+        }
         return date;
     }
     private void successNotification() {
@@ -1372,12 +1398,20 @@ public class PortableMedicalOrder extends ViewFrame {
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
-            createQuestionnaireResponse();
-            createFHIRConsent();
-            successNotification();
-            //todo test for fhir consent create success
-            resetFormAndNavigation();
-            evalNavigation();
+            advDirectiveFlowType = "Default";
+            errorCheck();
+            if (errorList.size() > 0) {
+                createErrorDialog();
+                errorDialog.open();
+            }
+            else {
+                createQuestionnaireResponse();
+                createFHIRConsent();
+                successNotification();
+                //todo test for fhir consent create success
+                resetFormAndNavigation();
+                evalNavigation();
+            }
         });
 
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
@@ -1436,6 +1470,7 @@ public class PortableMedicalOrder extends ViewFrame {
         polst.setSignatureDate(getDateString(healthcareProviderSignatureDate));
         polst.setHealthcareProviderPhoneNumber(healthcareProviderPhoneNumberField.getValue());
         polst.setBase64EncodedSignatureHealthcareProvider(base64HealthcareProviderSignature);
+
         //supervisor
         polst.setSupervisingPhysicianLicense(supervisingPhysicianLicenseField.getValue());
         polst.setRequiredSupervisingPhysicianSignature(supervisorSignatureChk.getValue());
@@ -1447,6 +1482,14 @@ public class PortableMedicalOrder extends ViewFrame {
         polst.setLegalSurrogateOrHealthcareAgent(legalOrSurrogate.getValue());
         polst.setEmergencyContactPhoneNumberDay(dayPhoneNumber.getValue());
         polst.setEmergencyContactPhoneNumberNight(nightPhoneNumber.getValue());
+        //primary care provider
+        polst.setPrimaryPhysicianFullName(primaryProviderName.getValue());
+        polst.setPrimaryPhysicianPhoneNumber(primaryProviderPhoneNumber.getValue());
+        //hospice
+        polst.setInHospice(inHospiceCare.getValue());
+        polst.setHospiceAgencyName(hospiceName.getValue());
+        polst.setHospiceAgencyPhoneNumber(hospicePhoneNumber.getValue());
+
 
         //advance directive review
         polst.setAdvancedDirectiveReviewed(livingWillReviewed.getValue());
@@ -1576,6 +1619,8 @@ public class PortableMedicalOrder extends ViewFrame {
         supervisingPhysicianLicenseField.clear();
         supervisorSignatureChk.clear();
         emergencyContactNameField.clear();
+        nightPhoneNumber.clear();
+        dayPhoneNumber.clear();
         legalOrSurrogate.clear();
         otherContactType.clear();
         primaryProviderPhoneNumber.clear();
@@ -1833,5 +1878,109 @@ public class PortableMedicalOrder extends ViewFrame {
         item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new StringType(string)));
         item.setDefinition(definition);
         return item;
+    }
+
+    private void errorCheck() {
+        errorList = new ArrayList<>();
+        errorCheckCommon();
+        errorCheckSignature();
+    }
+
+    private void errorCheckCommon() {
+        if (!polst.isYesCPR() && !polst.isNoCPR()) {
+            errorList.add(new QuestionnaireError("Cardiopulmonary resusciation orders no selection made.", 1));
+        }
+        if (!polst.isFullTreatments() && !polst.isSelectiveTreatments() && !polst.isComfortFocusedTreament()) {
+            errorList.add(new QuestionnaireError("Initial treatment orders no selection made.", 2));
+        }
+        if (!polst.isNutritionByArtificialMeans() && !polst.isTrialNutritionByArtificialMeans() && !polst.isNoArtificialMeans() && !polst.isNoNutritionDecisionMade()) {
+            errorList.add(new QuestionnaireError("Medically assisted nutrition no selection made.", 4));
+        }
+    }
+
+    private void errorCheckSignature() {
+        //patient or patient representative signature check
+        if (base64PatientOrRepresentativeSignature == null || base64PatientOrRepresentativeSignature.length == 0) {
+            errorList.add(new QuestionnaireError("Patient or patient's representative signature can not be blank.", 5));
+        }
+        if (polst.isRepresentativeSigning()) {
+            if (polst.getRepresentativeName() == null || polst.getRepresentativeName().isEmpty()) {
+                errorList.add(new QuestionnaireError("Patient representative name can not be blank.", 5));
+            }
+            if (polst.getRepresentativeAuthority() == null || polst.getRepresentativeAuthority().isEmpty()) {
+                errorList.add(new QuestionnaireError("Patient representative authority can not be blank.", 5));
+            }
+        }
+        //health care provider signature
+        if (base64HealthcareProviderSignature == null || base64HealthcareProviderSignature.length == 0) {
+            errorList.add(new QuestionnaireError("Health care provider signature can not be blank.", 6));
+        }
+        if (polst.getHealthcareProviderFullName() == null || polst.getHealthcareProviderFullName().isEmpty()) {
+            errorList.add(new QuestionnaireError("Health care provider name can not be blank.", 6));
+        }
+        if (polst.getHealthcareProviderPhoneNumber() == null || polst.getHealthcareProviderPhoneNumber().isEmpty()) {
+            errorList.add(new QuestionnaireError("Health care provider phone number can not be blank.", 6));
+        }
+        if (polst.getHealthcareProviderLicenseOrCert() == null || polst.getHealthcareProviderLicenseOrCert().isEmpty()) {
+            errorList.add(new QuestionnaireError("Health care provider license or Certificate number can not be blank.", 6));
+        }
+        if (polst.isRequiredSupervisingPhysicianSignature()) {
+            if (base64SupervisingPhysicianSignature == null || base64SupervisingPhysicianSignature.length == 0) {
+                errorList.add(new QuestionnaireError("Supervising physician signature is required.", 6));
+            }
+            if (polst.getSupervisingPhysicianLicense() == null || polst.getSupervisingPhysicianLicense().isEmpty()) {
+                errorList.add(new QuestionnaireError("Supervising physician license number required.", 6));
+            }
+        }
+    }
+
+    private void createErrorDialog() {
+        Html errorIntro = new Html("<p><b>The following errors were identified. You will need to correct them before saving this consent document.</b></p>");
+        Html flowTypeIntro;
+        if (advDirectiveFlowType.equals("Default")) {
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all non-optional questions, signatures, and signature information is required.</p>");
+        }
+        else {
+            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all questions are required. You are expected to print a copy of this " +
+                    "consent document and acquire signatures for it in the presence of a notary.  You are then required to scan and upload this document to activate enforcement of it.</p>");
+        }
+
+        Button errorBTN = new Button("Correct Errors");
+        errorBTN.setWidthFull();
+        errorBTN.addClickListener(event -> {
+            questionPosition = errorList.get(0).getQuestionnaireIndex();
+            errorDialog.close();
+            evalNavigation();
+        });
+
+
+        FlexBoxLayout verticalLayout = new FlexBoxLayout();
+
+        verticalLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        verticalLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        verticalLayout.setHeight("350px");
+        verticalLayout.setBackgroundColor("white");
+        verticalLayout.setShadow(Shadow.S);
+        verticalLayout.setBorderRadius(BorderRadius.S);
+        verticalLayout.getStyle().set("margin-bottom", "10px");
+        verticalLayout.getStyle().set("margin-right", "10px");
+        verticalLayout.getStyle().set("margin-left", "10px");
+        verticalLayout.getStyle().set("overflow", "auto");
+        verticalLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        Iterator iter = errorList.iterator();
+        while (iter.hasNext()) {
+            QuestionnaireError q = (QuestionnaireError)iter.next();
+            verticalLayout.add(new Html("<p style=\"color:#259AC9\">"+q.getErrorMessage()+"</p>"));
+        }
+
+
+        errorDialog = new Dialog();
+        errorDialog.setHeight("600px");
+        errorDialog.setWidth("600px");
+        errorDialog.setModal(true);
+        errorDialog.setCloseOnOutsideClick(false);
+        errorDialog.setCloseOnEsc(false);
+        errorDialog.setResizable(true);
+        errorDialog.add(createHeader(VaadinIcon.WARNING, "Failed Verification"),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
     }
 }

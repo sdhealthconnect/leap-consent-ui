@@ -53,7 +53,7 @@ public class NaviDrawer extends Div
 		initMainContent();
 
 		initHeader();
-		initSearch();
+		//initSearch();
 
 		initMenu();
 
