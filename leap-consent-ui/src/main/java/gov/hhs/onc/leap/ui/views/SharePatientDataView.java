@@ -118,12 +118,7 @@ public class SharePatientDataView extends ViewFrame {
 
 
     private Component createViewContent() {
-        Html intro = new Html("<p>The following allows you, the <b>Patient</b>, to create rules to control " +
-                "what, when, and to whom your <b>Personal Healthcare Information</b> can be exchanged with.  " +
-                "That exchange may be between your Primary Physician, Regional Hospital, Health Information Exchange, and others. " +
-                "You may choose not to share information that could be sensitive in nature, or choose not to constrain the exchange at all. "+
-                "If you have privacy concerns use the <b>Analyze My Data</b> option to determine if sensitive information exists in your "+
-                "clinical record.");
+        Html intro = new Html(getTranslation("sharePatient-intro"));
 
         createDateRequirements();
         createDataClassRequirements();
@@ -146,19 +141,19 @@ public class SharePatientDataView extends ViewFrame {
 
     private void createDateRequirements() {
         timeSettings = new RadioButtonGroup<>();
-        timeSettings.setLabel("Set the dates this consent will be in force.");
-        timeSettings.setItems("Use Default Option", "Custom Date Option");
+        timeSettings.setLabel(getTranslation("sharePatient-set_the_dates"));
+        timeSettings.setItems(getTranslation("sharePatient-use_default_option"), getTranslation("sharePatient-custom_date_option"));
         timeSettings.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         timeSettings.addValueChangeListener(event -> {
             if (event.getValue() == null) {
                 //do nothing
             } else {
-                if (event.getValue().equals("Use Default Option")) {
+                if (event.getValue().equals(getTranslation("sharePatient-use_default_option"))) {
                     consentDefaultPeriod.setVisible(true);
                     startDateTime.setVisible(false);
                     endDateTime.setVisible(false);
                 }
-                else if (event.getValue().equals("Custom Date Option")) {
+                else if (event.getValue().equals(getTranslation("sharePatient-custom_date_option"))) {
                     consentDefaultPeriod.setVisible(false);
                     startDateTime.setVisible(true);
                     endDateTime.setVisible(true);
@@ -172,24 +167,24 @@ public class SharePatientDataView extends ViewFrame {
         });
 
         consentDefaultPeriod = new RadioButtonGroup<>();
-        consentDefaultPeriod.setLabel("Default date options, beginning today for:");
-        consentDefaultPeriod.setItems("24 hours", "1 year", "5 years", "10 years");
+        consentDefaultPeriod.setLabel(getTranslation("sharePatient-default_date_options"));
+        consentDefaultPeriod.setItems(getTranslation("sharePatient-24_hours"), getTranslation("sharePatient-1_year"), getTranslation("sharePatient-5_years"), getTranslation("sharePatient-10_years"));
         consentDefaultPeriod.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         consentDefaultPeriod.setVisible(false);
 
         startDateTime = new DateTimePicker();
-        startDateTime.setLabel("Begin enforcing this consent on:");
-        startDateTime.setDatePlaceholder("Date");
-        startDateTime.setTimePlaceholder("Time");
+        startDateTime.setLabel(getTranslation("sharePatient-begin_enforcing"));
+        startDateTime.setDatePlaceholder(getTranslation("sharePatient-date"));
+        startDateTime.setTimePlaceholder(getTranslation("sharePatient-time"));
         startDateTime.setVisible(false);
 
         endDateTime = new DateTimePicker();
-        endDateTime.setLabel("This consent will no longer be valid on:");
-        endDateTime.setDatePlaceholder("Date");
-        endDateTime.setTimePlaceholder("Time");
+        endDateTime.setLabel(getTranslation("sharePatient-this_consent_will_no_longer_be_valid"));
+        endDateTime.setDatePlaceholder(getTranslation("sharePatient-date"));
+        endDateTime.setTimePlaceholder(getTranslation("sharePatient-time"));
         endDateTime.setVisible(false);
 
-        dateRequirements = new FlexBoxLayout(createHeader(VaadinIcon.CALENDAR, "Date Requirements"),timeSettings, new BasicDivider(), consentDefaultPeriod, startDateTime, endDateTime);
+        dateRequirements = new FlexBoxLayout(createHeader(VaadinIcon.CALENDAR, getTranslation("sharePatient-date_requirements")),timeSettings, new BasicDivider(), consentDefaultPeriod, startDateTime, endDateTime);
         dateRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         dateRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
         dateRequirements.setHeightFull();
@@ -204,15 +199,15 @@ public class SharePatientDataView extends ViewFrame {
 
     private void createDataClassRequirements() {
         constrainDataClass = new RadioButtonGroup<>();
-        constrainDataClass.setLabel("Control what types of clinical information are exchanged.");
-        constrainDataClass.setItems("Deny access to following:", "Allow all types of data to be exchanged.");
+        constrainDataClass.setLabel(getTranslation("sharePatient-control_what_types_of_clinical_info_are_exchanged"));
+        constrainDataClass.setItems(getTranslation("sharePatient-deny_access_to_following"), getTranslation("sharePatient-allow_all_types_of_data_to_be_exchanged"));
         constrainDataClass.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         constrainDataClass.addValueChangeListener(event -> {
             if (event.getValue() == null) {
                 //do nothing
             }
             else {
-                if (event.getValue().equals("Deny access to following:")) {
+                if (event.getValue().equals(getTranslation("sharePatient-deny_access_to_following"))) {
                     dataClassComboBox.setVisible(true);
                 }
                 else {
@@ -224,11 +219,30 @@ public class SharePatientDataView extends ViewFrame {
         // todo dataClassComboBox make this a multiselect combo
         dataClassComboBox = new MultiSelectListBox<>();
 
-        dataClassComboBox.setItems("AdverseEvent","AllergyIntolerance", "Appointment", "BodyStructure",
-                "CarePlan", "Condition", "Coverage", "DiagnosticReport", "Encounter", "EpisodeOfCare",
-                "FamilyMemberHistory", "Goal", "ImagingStudy", "Immunization", "InsurancePlan", "MeasureReport",
-                "MedicationStatement","Observation", "Patient", "RelatedPerson", "ResearchSubject", "RiskAssessment",
-                "ServiceRequest", "Specimen");
+        dataClassComboBox.setItems(getTranslation("sharePatient-adverseEvent"),
+                getTranslation("sharePatient-allergyIntolerance"),
+                getTranslation("sharePatient-appointment"),
+                getTranslation("sharePatient-bodyStructure"),
+                getTranslation("sharePatient-carePlan"),
+                getTranslation("sharePatient-condition"),
+                getTranslation("sharePatient-coverage"),
+                getTranslation("sharePatient-diagnosticReport"),
+                getTranslation("sharePatient-encounter"),
+                getTranslation("sharePatient-episodeOfCare"),
+                getTranslation("sharePatient-familyMemberHistory"),
+                getTranslation("sharePatient-goal"),
+                getTranslation("sharePatient-imagingStudy"),
+                getTranslation("sharePatient-immunization"),
+                getTranslation("sharePatient-insurancePlan"),
+                getTranslation("sharePatient-measureReport"),
+                getTranslation("sharePatient-medicationStatement"),
+                getTranslation("sharePatient-observation"),
+                getTranslation("sharePatient-patient"),
+                getTranslation("sharePatient-relatedPerson"),
+                getTranslation("sharePatient-researchSubject"),
+                getTranslation("sharePatient-riskAssessment"),
+                getTranslation("sharePatient-serviceRequest"),
+                getTranslation("sharePatient-specimen"));
         WebBrowser browser = VaadinSession.getCurrent().getBrowser();
         if (browser.isAndroid() || browser.isIPhone() || browser.isWindowsPhone()) {
             dataClassComboBox.setHeight("150px");
@@ -238,7 +252,7 @@ public class SharePatientDataView extends ViewFrame {
         }
         dataClassComboBox.setVisible(false);
 
-        dataClassRequirements = new FlexBoxLayout(createHeader(VaadinIcon.RECORDS, "Data Class Requirements"), constrainDataClass, new BasicDivider(), dataClassComboBox);
+        dataClassRequirements = new FlexBoxLayout(createHeader(VaadinIcon.RECORDS, getTranslation("sharePatient-data_class_requirements")), constrainDataClass, new BasicDivider(), dataClassComboBox);
         dataClassRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         dataClassRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
         dataClassRequirements.setHeightFull();
@@ -253,23 +267,23 @@ public class SharePatientDataView extends ViewFrame {
     }
 
     private void createDataSourceRequirements() {
-        Html practitionerLimitation = new Html("<p><b>Note:</b> Selection of practitioner has been disabled due to limitations of FHIR R4 Consent.  Please select an organization instead.</p>");
+        Html practitionerLimitation = new Html(getTranslation("sharePatient-practitionerLimitation"));
         custodianType = new RadioButtonGroup<>();
-        custodianType.setLabel("The source of information being exchanged.");
-        custodianType.setItems("Practitioner", "Organization");
+        custodianType.setLabel(getTranslation("sharePatient-the_source_of_info_being_exchanged"));
+        custodianType.setItems(getTranslation("sharePatient-practitioner"), getTranslation("sharePatient-organization"));
         custodianType.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         custodianType.addValueChangeListener(event -> {
             if (event.getValue() == null) {
                 //do nothing
             }
             else {
-                if (event.getValue().equals("Practitioner")) {
+                if (event.getValue().equals(getTranslation("sharePatient-practitioner"))) {
                     practitionerComboBoxSource.setVisible(true);
                     practitionerComboBoxSource.setEnabled(false);
                     practitionerLimitation.setVisible(true);
                     organizationComboBoxSource.setVisible(false);
                 }
-                else if (event.getValue().equals("Organization")) {
+                else if (event.getValue().equals(getTranslation("sharePatient-organization"))) {
                     practitionerComboBoxSource.setVisible(false);
                     practitionerComboBoxSource.setEnabled(false);
                     practitionerLimitation.setVisible(false);
@@ -288,20 +302,20 @@ public class SharePatientDataView extends ViewFrame {
         organizationListDataProvider = DataProvider.ofCollection(getOrganizations());
 
         practitionerComboBoxSource = new ComboBox<>();
-        practitionerComboBoxSource.setLabel("Practitioner - Custodian");
+        practitionerComboBoxSource.setLabel(getTranslation("sharePatient-practitioner_custodian"));
         practitionerComboBoxSource.setItemLabelGenerator(practitioner -> practitioner.getName().get(0).getNameAsSingleString());
         practitionerComboBoxSource.setItems(practitionerListDataProvider);
         practitionerComboBoxSource.setVisible(false);
 
         organizationComboBoxSource = new ComboBox<>();
-        organizationComboBoxSource.setLabel("Organization - Custodian");
+        organizationComboBoxSource.setLabel(getTranslation("sharePatient-organization_custodian"));
         organizationComboBoxSource.setItemLabelGenerator(organization -> organization.getName());
         organizationComboBoxSource.setItems(organizationListDataProvider);
         organizationComboBoxSource.setVisible(false);
 
         practitionerLimitation.setVisible(false);
 
-        sourceRequirements = new FlexBoxLayout(createHeader(VaadinIcon.DOCTOR, "Data Source - Custodian"),custodianType, new BasicDivider(), practitionerComboBoxSource, organizationComboBoxSource, practitionerLimitation);
+        sourceRequirements = new FlexBoxLayout(createHeader(VaadinIcon.DOCTOR, getTranslation("sharePatient-data_source_custodian")),custodianType, new BasicDivider(), practitionerComboBoxSource, organizationComboBoxSource, practitionerLimitation);
         sourceRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         sourceRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
         sourceRequirements.setHeightFull();
@@ -317,7 +331,7 @@ public class SharePatientDataView extends ViewFrame {
 
     private void createDataDestinationRequirements() {
         destinationType = new RadioButtonGroup<>();
-        destinationType.setLabel("The Person, or Organization, requesting your information.");
+        destinationType.setLabel(getTranslation("sharePatient-the_person_or_org_requesting_your_info"));
         destinationType.setItems("Practitioner", "Organization");
         destinationType.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         destinationType.addValueChangeListener(event -> {
@@ -325,11 +339,11 @@ public class SharePatientDataView extends ViewFrame {
                 //do nothing
             }
             else {
-                if (event.getValue().equals("Practitioner")) {
+                if (event.getValue().equals(getTranslation("sharePatient-practitioner"))) {
                     practitionerComboBoxDestination.setVisible(true);
                     organizationComboBoxDestination.setVisible(false);
                 }
-                else if (event.getValue().equals("Organization")) {
+                else if (event.getValue().equals(getTranslation("sharePatient-organization"))) {
                     practitionerComboBoxDestination.setVisible(false);
                     organizationComboBoxDestination.setVisible(true);
                 }
@@ -341,18 +355,18 @@ public class SharePatientDataView extends ViewFrame {
         });
 
         practitionerComboBoxDestination = new ComboBox<>();
-        practitionerComboBoxDestination.setLabel("Practitioner - Recipient");
+        practitionerComboBoxDestination.setLabel(getTranslation("sharePatient-practitioner_recipient"));
         practitionerComboBoxDestination.setItemLabelGenerator(practitioner -> practitioner.getName().get(0).getNameAsSingleString());
         practitionerComboBoxDestination.setItems(practitionerListDataProvider);
         practitionerComboBoxDestination.setVisible(false);
 
         organizationComboBoxDestination = new ComboBox<>();
-        organizationComboBoxDestination.setLabel("Organization - Recipient");
+        organizationComboBoxDestination.setLabel(getTranslation("sharePatient-organization_recipient"));
         organizationComboBoxDestination.setItemLabelGenerator(organization -> organization.getName());
         organizationComboBoxDestination.setItems(organizationListDataProvider);
         organizationComboBoxDestination.setVisible(false);
 
-        destinationRequirements = new FlexBoxLayout(createHeader(VaadinIcon.HOSPITAL, "Destination - Recipient"),destinationType, new BasicDivider(), practitionerComboBoxDestination, organizationComboBoxDestination);
+        destinationRequirements = new FlexBoxLayout(createHeader(VaadinIcon.HOSPITAL, getTranslation("sharePatient-destination_recipient")),destinationType, new BasicDivider(), practitionerComboBoxDestination, organizationComboBoxDestination);
         destinationRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         destinationRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
         destinationRequirements.setHeightFull();
@@ -367,22 +381,22 @@ public class SharePatientDataView extends ViewFrame {
     }
 
     private void createPrivacyRequirements() {
-        Html enforceLimitation = new Html("<p><b>Note:</b> Current enforcement is limited to security labels where confidentialy is \"R\" for Restricted or above.  Defaulting selection to \"All\".</p>");
+        Html enforceLimitation = new Html(getTranslation("sharePatient-enforceLimitation"));
         sensConstraints = new RadioButtonGroup<>();
-        sensConstraints.setLabel("If portions of my clinical record are privacy sensitive, I would like to:");
-        sensConstraints.setItems("Remove them", "I do not have privacy concerns");
+        sensConstraints.setLabel(getTranslation("sharePatient-sensConstraints"));
+        sensConstraints.setItems(getTranslation("sharePatient-remove_them"), getTranslation("sharePatient-i_do_not_have_privacy_concerns"));
         sensConstraints.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         sensConstraints.addValueChangeListener(event -> {
             if (event.getValue() == null) {
                 //nothing
             }
             else {
-                if (event.getValue().equals("Remove them")) {
+                if (event.getValue().equals(getTranslation("sharePatient-remove_them"))) {
                     allSensitivityOptions.setVisible(true);
                     sensitivityOptions.setVisible(true);
                     enforceLimitation.setVisible(true);
                 }
-                else if(event.getValue().equals("I do not have privacy concerns")){
+                else if(event.getValue().equals(getTranslation("sharePatient-i_do_not_have_privacy_concerns"))){
                     allSensitivityOptions.setVisible(false);
                     sensitivityOptions.setVisible(false);
                     enforceLimitation.setVisible(false);
@@ -396,10 +410,13 @@ public class SharePatientDataView extends ViewFrame {
         });
 
         allSensitivityOptions = new Checkbox();
-        allSensitivityOptions.setLabel("Select \"All\" - this will remove all information flagged as confidential");
+        allSensitivityOptions.setLabel(getTranslation("sharePatient-sensitivity_options"));
         Set<String> items = new LinkedHashSet<>(
-                Arrays.asList("ETH-Substance Abuse", "HIV-HIV/AIDS", "PSY-Psychiatry Disorder",
-                        "SICKLE-Sickle Cell Anemia", "STD-Sexually Transmitted Disease"));
+                Arrays.asList(getTranslation("sharePatient-eth"),
+                        getTranslation("sharePatient-hiv"),
+                        getTranslation("sharePatient-psy"),
+                        getTranslation("sharePatient-sickle"),
+                        getTranslation("sharePatient-std")));
         sensitivityOptions = new CheckboxGroup<>();
         sensitivityOptions.setItems(items);
         sensitivityOptions.addThemeVariants(CheckboxGroupVariant.LUMO_HELPER_ABOVE_FIELD);
@@ -429,7 +446,7 @@ public class SharePatientDataView extends ViewFrame {
         allSensitivityOptions.setEnabled(false);
         sensitivityOptions.setEnabled(false);
 
-        privacyRequirements = new FlexBoxLayout(createHeader(VaadinIcon.GLASSES, "Privacy Concerns"),sensConstraints, new BasicDivider(), allSensitivityOptions, sensitivityOptions, enforceLimitation);
+        privacyRequirements = new FlexBoxLayout(createHeader(VaadinIcon.GLASSES, getTranslation("sharePatient-privacy_concerns")),sensConstraints, new BasicDivider(), allSensitivityOptions, sensitivityOptions, enforceLimitation);
         privacyRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         privacyRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
         privacyRequirements.setHeightFull();
@@ -444,14 +461,14 @@ public class SharePatientDataView extends ViewFrame {
     }
 
     private void createSignatureRequirements() {
-        Html eSignLabel = new Html("<p>This last step will capture your signature and create a <b>human readable pdf</b> of this consent.</p>");
-        Button eSignButton = new Button("eSign Consent and Submit");
+        Html eSignLabel = new Html(getTranslation("sharePatient-eSignLabel"));
+        Button eSignButton = new Button(getTranslation("sharePatient-eSign_consent_and_submit"));
         eSignButton.addClickListener(event -> {
             dialog = createSignatureDialog();
             dialog.open();
         });
 
-        signatureRequirements = new FlexBoxLayout(createHeader(VaadinIcon.PENCIL, "Signature"), eSignLabel, eSignButton, new BasicDivider());
+        signatureRequirements = new FlexBoxLayout(createHeader(VaadinIcon.PENCIL, getTranslation("sharePatient-signature")), eSignLabel, eSignButton, new BasicDivider());
         signatureRequirements.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         signatureRequirements.setBoxSizing(BoxSizing.BORDER_BOX);
         signatureRequirements.setHeightFull();
@@ -478,13 +495,13 @@ public class SharePatientDataView extends ViewFrame {
     }
 
     private Component getFooter() {
-        returnButton = new Button("Back", new Icon(VaadinIcon.BACKWARDS));
+        returnButton = new Button(getTranslation("sharePatient-back"), new Icon(VaadinIcon.BACKWARDS));
         returnButton.setEnabled(false);
         returnButton.addClickListener(event -> {
             questionPosition--;
             evalNavigation();
         });
-        forwardButton = new Button("Next", new Icon(VaadinIcon.FORWARD));
+        forwardButton = new Button(getTranslation("sharePatient-next"), new Icon(VaadinIcon.FORWARD));
         forwardButton.setIconAfterText(true);
         forwardButton.addClickListener(event -> {
            questionPosition++;
@@ -582,7 +599,7 @@ public class SharePatientDataView extends ViewFrame {
         signature.setWidth("400px");
         signature.setPenColor("#2874A6");
 
-        Button saveSig = new Button("Done");
+        Button saveSig = new Button(getTranslation("sharePatient-done"));
         saveSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         saveSig.addClickListener(event -> {
             base64Signature = signature.getImageBase64();
@@ -592,12 +609,12 @@ public class SharePatientDataView extends ViewFrame {
             docDialog.open();
 
         });
-        Button cancelSign = new Button("Cancel");
+        Button cancelSign = new Button(getTranslation("sharePatient-cancel"));
         cancelSign.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CLOSE));
         cancelSign.addClickListener(event -> {
             dialog.close();
         });
-        Html signHere = new Html("<p><b>Sign Here</b></p>");
+        Html signHere = new Html(getTranslation("sharePatient-sign_here"));
         HorizontalLayout hLayout = new HorizontalLayout();
         hLayout.add(cancelSign, saveSig);
         hLayout.setAlignItems(FlexComponent.Alignment.END);
@@ -621,17 +638,17 @@ public class SharePatientDataView extends ViewFrame {
             String sDate = "";
             String eDate = "";
             LocalDateTime defDate = LocalDateTime.now();
-            if (timeSettings.getValue().equals("Use Default Option")) {
-                if (consentDefaultPeriod.equals("24 Hours")) {
+            if (timeSettings.getValue().equals(getTranslation("sharePatient-use_default_option"))) {
+                if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-24_hours"))) {
                     defDate = LocalDateTime.now().plusDays(1);
                 }
-                else if (consentDefaultPeriod.getValue().equals("1 year")) {
+                else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-1_year"))) {
                     defDate = LocalDateTime.now().plusYears(1);
                 }
-                else if (consentDefaultPeriod.getValue().equals("5 years")) {
+                else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-5_years"))) {
                     defDate = LocalDateTime.now().plusYears(5);
                 }
-                else if (consentDefaultPeriod.getValue().equals("10 years")) {
+                else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-10_years"))) {
                     defDate = LocalDateTime.now().plusYears(10);
                 }
                 else {
@@ -643,7 +660,7 @@ public class SharePatientDataView extends ViewFrame {
                 provisionStartDateTime = LocalDateTime.now();
                 provisionEndDateTime = defDate;
             }
-            else if (timeSettings.getValue().equals("Custom Date Option")) {
+            else if (timeSettings.getValue().equals(getTranslation("sharePatient-custom_date_option"))) {
                 sDate = startDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
                 eDate = endDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
                 //for use later
@@ -655,8 +672,8 @@ public class SharePatientDataView extends ViewFrame {
                 //this is an error...
             }
             //get domain constraints
-            String dataDomainConstraintlist = "Deny access to following: ";
-            if (constrainDataClass.getValue().equals("Deny access to following:")) {
+            String dataDomainConstraintlist = getTranslation("sharePatient-deny_access_to_following");
+            if (constrainDataClass.getValue().equals(getTranslation("sharePatient-deny_access_to_following"))) {
                 Set<String> classList = dataClassComboBox.getSelectedItems();
                 Iterator iterClass = classList.iterator();
                 while (iterClass.hasNext()) {
@@ -666,35 +683,35 @@ public class SharePatientDataView extends ViewFrame {
             }
             else {
                 //this is the default when none selected
-                dataDomainConstraintlist = "Allow all types of data to be exchanged";
+                dataDomainConstraintlist = getTranslation("sharePatient-allow_all_types_of_data_to_be_exchanged");
             }
             //set custodian
             String custodian = "";
-            if (custodianType.getValue().equals("Practitioner")) {
+            if (custodianType.getValue().equals(getTranslation("sharePatient-practitioner"))) {
                 custodian = practitionerComboBoxSource.getValue().getName().get(0).getNameAsSingleString();
             }
-            else if (custodianType.getValue().equals("Organization")) {
+            else if (custodianType.getValue().equals(getTranslation("sharePatient-organization"))) {
                 custodian = organizationComboBoxSource.getValue().getName();
             }
             else {
-                custodian = "ERROR! - No custodian value selected from list";
+                custodian = getTranslation("sharePatient-error_no_custodian_value_selected");
             }
 
             //set recipient
             String recipient = "";
-            if (destinationType.getValue().equals("Practitioner")) {
+            if (destinationType.getValue().equals(getTranslation("sharePatient-practitioner"))) {
                 recipient = practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString();
             }
-            else if (destinationType.getValue().equals("Organization")) {
+            else if (destinationType.getValue().equals(getTranslation("sharePatient-organization"))) {
                 recipient = organizationComboBoxDestination.getValue().getName();
             }
             else {
-                recipient = "ERROR! - No recipient value selected from list";
+                recipient = getTranslation("sharePatient-error_no_recipient_value_selected");
             }
 
             //set sensitivity constraints
-            String sensitivities = "Remove following sensitivity types if found in my record; ";
-            if (sensConstraints.getValue().equals("Remove them")) {
+            String sensitivities = getTranslation("sharePatient-remove_following_sensitivity_types_if_found_in_my_record");
+            if (sensConstraints.getValue().equals(getTranslation("sharePatient-remove_them"))) {
                 Set<String> sensSet = sensitivityOptions.getSelectedItems();
                 Iterator sensIter = sensSet.iterator();
                 while (sensIter.hasNext()) {
@@ -702,12 +719,12 @@ public class SharePatientDataView extends ViewFrame {
                     sensitivities = sensitivities + s + " ";
                 }
             }
-            else if (sensConstraints.getValue().equals("I do not have privacy concerns")) {
-                sensitivities = "I do not have privacy concerns";
+            else if (sensConstraints.getValue().equals(getTranslation("sharePatient-i_do_not_have_privacy_concerns"))) {
+                sensitivities = getTranslation("sharePatient-i_do_not_have_privacy_concerns");
             }
             else {
                 //default if none selected
-                sensitivities = "I do not have privacy concerns";
+                sensitivities = getTranslation("sharePatient-i_do_not_have_privacy_concerns");
             }
             PDFPatientPrivacyHandler pdfHandler = new PDFPatientPrivacyHandler(pdfSigningService);
             StreamResource res = pdfHandler.retrievePDFForm(sDate, eDate, dataDomainConstraintlist, custodian,
@@ -727,10 +744,10 @@ public class SharePatientDataView extends ViewFrame {
         viewer.setWidth("840px");
 
 
-        Button closeButton = new Button("Cancel", e -> docDialog.close());
+        Button closeButton = new Button(getTranslation("sharePatient-cancel"), e -> docDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
-        Button acceptButton = new Button("Accept and Submit");
+        Button acceptButton = new Button(getTranslation("sharePatient-accept_and_submit"));
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
@@ -794,11 +811,11 @@ public class SharePatientDataView extends ViewFrame {
         //set custodian of this consent
         String custodian = "";
         String custodianRef = "";
-        if (custodianType.getValue().equals("Practitioner")) {
+        if (custodianType.getValue().equals(getTranslation("sharePatient-practitioner"))) {
             custodian = practitionerComboBoxSource.getValue().getName().get(0).getNameAsSingleString();
             custodianRef = practitionerComboBoxSource.getValue().getId().replace(fhirBase, "");
         }
-        else if (custodianType.getValue().equals("Organization")) {
+        else if (custodianType.getValue().equals(getTranslation("sharePatient-organization"))) {
             custodian = organizationComboBoxSource.getValue().getName();
             custodianRef = organizationComboBoxSource.getValue().getId().replace(fhirBase, "");
         }
@@ -830,7 +847,7 @@ public class SharePatientDataView extends ViewFrame {
 
 
         //create provisions for classes
-        if (constrainDataClass.getValue().equals("Deny access to following;")) {
+        if (constrainDataClass.getValue().equals(getTranslation("sharePatient-deny_access_to_following"))) {
             Consent.provisionComponent dataClassProvision = new Consent.provisionComponent();
             dataClassProvision.setType(Consent.ConsentProvisionType.DENY);
             String dataClassSystem = "http://hl7.org/fhir/resource-types";
@@ -856,11 +873,11 @@ public class SharePatientDataView extends ViewFrame {
             actor.setRole(roleConcept);
 
             Reference actorRef = new Reference();
-            if (destinationType.getValue().equals("Practitioner")) {
+            if (destinationType.getValue().equals(getTranslation("sharePatient-practitioner"))) {
                 actorRef.setReference(practitionerComboBoxDestination.getValue().getId().replace(fhirBase, ""));
                 actorRef.setDisplay(practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString());
             }
-            else if (destinationType.getValue().equals("Organization")) {
+            else if (destinationType.getValue().equals(getTranslation("sharePatient-organization"))) {
                 actorRef.setReference(organizationComboBoxDestination.getValue().getId().replace(fhirBase, ""));
                 actorRef.setDisplay(organizationComboBoxDestination.getValue().getName());
             }
@@ -894,7 +911,7 @@ public class SharePatientDataView extends ViewFrame {
         }
 
         //create provision for sensitivity
-        if (sensConstraints.getValue().equals("Remove them")) {
+        if (sensConstraints.getValue().equals(getTranslation("sharePatient-remove_them"))) {
             Consent.provisionComponent sensitivityProvision = new Consent.provisionComponent();
             sensitivityProvision.setType(Consent.ConsentProvisionType.DENY);
 
@@ -914,11 +931,11 @@ public class SharePatientDataView extends ViewFrame {
             sensActor.setRole(sensRoleConcept);
 
             Reference sensActorRef = new Reference();
-            if (destinationType.getValue().equals("Practitioner")) {
+            if (destinationType.getValue().equals(getTranslation("sharePatient-practitioner"))) {
                 sensActorRef.setReference(practitionerComboBoxDestination.getValue().getId().replace(fhirBase, ""));
                 sensActorRef.setDisplay(practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString());
             }
-            else if (destinationType.getValue().equals("Organization")) {
+            else if (destinationType.getValue().equals(getTranslation("sharePatient-organization"))) {
                 sensActorRef.setReference(organizationComboBoxDestination.getValue().getId().replace(fhirBase, ""));
                 sensActorRef.setDisplay(organizationComboBoxDestination.getValue().getName());
             }
@@ -955,7 +972,7 @@ public class SharePatientDataView extends ViewFrame {
         Attachment attachment = new Attachment();
         attachment.setContentType("application/pdf");
         attachment.setCreation(new Date());
-        attachment.setTitle("patient-privacy");
+        attachment.setTitle(getTranslation("sharePatient-patient_privacy"));
 
         ByteArrayInputStream bais = null;
         byte[] bArray = null;
@@ -1006,7 +1023,7 @@ public class SharePatientDataView extends ViewFrame {
     }
 
     private void successNotification() {
-        Span content = new Span("FHIR patient-privacy consent successfully created!");
+        Span content = new Span(getTranslation("sharePatient-fhir_patient_privacy_consent_successfully_created"));
 
         Notification notification = new Notification(content);
         notification.setDuration(3000);

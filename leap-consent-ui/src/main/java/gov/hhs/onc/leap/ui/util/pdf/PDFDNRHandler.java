@@ -102,7 +102,8 @@ public class PDFDNRHandler {
         String patientState = consentSession.getPrimaryState();
         String languagePreference = consentSession.getLanguagePreference();
 
-        //extract languagePreference from locale?
+        //TODO: extract languagePreference from locale? PDF Handling
+
         String fullFormPath = "/advanced_directives/"+patientState+"/DNR/"+languagePreference+"/DNR.pdf";
         byte[] bArray = null;
         PDDocument pdfdocument = null;
