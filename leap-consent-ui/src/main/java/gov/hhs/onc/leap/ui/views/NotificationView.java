@@ -1,42 +1,61 @@
 package gov.hhs.onc.leap.ui.views;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
+import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.ConsentNotification;
 import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRMedicationRequest;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRServiceRequest;
+import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.Badge;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.components.ListItem;
+import gov.hhs.onc.leap.ui.components.navigation.BasicDivider;
 import gov.hhs.onc.leap.ui.layout.size.Horizontal;
+import gov.hhs.onc.leap.ui.layout.size.Right;
 import gov.hhs.onc.leap.ui.layout.size.Top;
 import gov.hhs.onc.leap.ui.layout.size.Vertical;
+import gov.hhs.onc.leap.ui.util.IconSize;
+import gov.hhs.onc.leap.ui.util.TextColor;
 import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
+import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
+import gov.hhs.onc.leap.ui.util.pdf.PDFInformedConsentHandler;
 import org.hl7.fhir.r4.model.Consent;
 import org.hl7.fhir.r4.model.MedicationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.vaadin.alejandro.PdfBrowserViewer;
 
 import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
@@ -64,17 +83,35 @@ public class NotificationView extends ViewFrame {
     private Grid<ConsentNotification> medRequestGrid;
     private ListDataProvider<ConsentNotification> medRequestDataProvider;
 
-    private Grid<ConsentNotification> serviceRequestGrid;
-    private ListDataProvider<ConsentNotification> serviceRequestDataProvider;
-
     private Tabs notificationTabs;
     private Tab policyTab;
     private Tab medicationRequestTab;
-    private Tab serviceRequestTab;
 
     private FlexBoxLayout policyLayout;
+
     private FlexBoxLayout medicationRequestLayout;
-    private FlexBoxLayout serviceRequestLayout;
+    private FlexBoxLayout reviewInformedConsentLayout;
+    private ConsentNotification selectedConsentNotification;
+    private Dialog infoDialog;
+    private FlexBoxLayout patientSignatureLayout;
+    private FlexBoxLayout physicianSignatureLayout;
+    private TextField physicianName;
+    private TextField medicationName;
+    private SignaturePad patientSignature;
+    private Date patientSignatureDate;
+    private Checkbox treatmentAccepted;
+    private Checkbox treatmentDeclined;
+    private byte[] base64PatientSignature;
+    private boolean patientConsents = false;
+    private boolean patientDeclines = false;
+
+    private SignaturePad physcianSignature;
+    private byte[] base64PhysicianSignature;
+    private TextField attestationDRName;
+    private TextField attestationPatientName;
+    private TextField attestationDate;
+
+    private ConsentUser consentUser;
 
     @Autowired
     private FHIRConsent fhirConsentClient;
@@ -95,6 +132,7 @@ public class NotificationView extends ViewFrame {
     public void setup() {
         setId("notificationview");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
+        this.consentUser = consentSession.getConsentUser();
         setViewContent(getViewContent());
     }
 
@@ -102,8 +140,10 @@ public class NotificationView extends ViewFrame {
         createTabs();
         createPolicyLayout();
         createMedicationRequestLayout();
-        createServiceRequestLayout();
-        FlexBoxLayout content = new FlexBoxLayout(notificationTabs,policyLayout, medicationRequestLayout, serviceRequestLayout);
+        createInformedConsentLayout();
+        createPatientSignatureLayout();
+        createPhysicianSignatureLayout();
+        FlexBoxLayout content = new FlexBoxLayout(notificationTabs,policyLayout, medicationRequestLayout, reviewInformedConsentLayout, patientSignatureLayout, physicianSignatureLayout);
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -116,24 +156,22 @@ public class NotificationView extends ViewFrame {
         notificationTabs.setOrientation(Tabs.Orientation.HORIZONTAL);
         policyTab = new Tab("Policy");
         medicationRequestTab = new Tab("Medication Requests");
-        serviceRequestTab = new Tab("Service Requests");
-        notificationTabs.add(policyTab, medicationRequestTab, serviceRequestTab);
+        notificationTabs.add(policyTab, medicationRequestTab);
         notificationTabs.addSelectedChangeListener(event -> {
             String selectedTabName = notificationTabs.getSelectedTab().getLabel();
             if (selectedTabName.equals("Policy")) {
                 policyLayout.setVisible(true);
                 medicationRequestLayout.setVisible(false);
-                serviceRequestLayout.setVisible(false);
+                reviewInformedConsentLayout.setVisible(false);
+                patientSignatureLayout.setVisible(false);
+                physicianSignatureLayout.setVisible(false);
             }
             else if (selectedTabName.equals("Medication Requests")) {
                 policyLayout.setVisible(false);
                 medicationRequestLayout.setVisible(true);
-                serviceRequestLayout.setVisible(false);
-            }
-            else if (selectedTabName.equals("Service Requests")) {
-                policyLayout.setVisible(false);
-                medicationRequestLayout.setVisible(false);
-                serviceRequestLayout.setVisible(true);
+                reviewInformedConsentLayout.setVisible(false);
+                patientSignatureLayout.setVisible(false);
+                physicianSignatureLayout.setVisible(false);
             }
             else {
                 //nothing here
@@ -189,6 +227,24 @@ public class NotificationView extends ViewFrame {
     }
 
     private void createMedicationRequestLayout() {
+        createMedicationRequestGrid();
+
+
+        medicationRequestLayout = new FlexBoxLayout(medRequestGrid);
+        medicationRequestLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        medicationRequestLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        medicationRequestLayout.setHeightFull();
+        medicationRequestLayout.setBackgroundColor("white");
+        medicationRequestLayout.setShadow(Shadow.S);
+        medicationRequestLayout.setBorderRadius(BorderRadius.S);
+        medicationRequestLayout.getStyle().set("margin-bottom", "10px");
+        medicationRequestLayout.getStyle().set("margin-right", "10px");
+        medicationRequestLayout.getStyle().set("margin-left", "10px");
+        medicationRequestLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        medicationRequestLayout.setVisible(false);
+    }
+
+    private void createMedicationRequestGrid() {
         medRequestDataProvider = DataProvider.ofCollection(createMedicationRequestsArray());
 
         medRequestGrid = new Grid<>();
@@ -206,7 +262,7 @@ public class NotificationView extends ViewFrame {
                     return badge;
                 }
         );
-        medRequestGrid.addColumn(new ComponentRenderer<>(this::createDateAuthored))
+        medRequestGrid.addColumn(ConsentNotification::getNotificationDate)
                 .setHeader("Date Authored")
                 .setSortable(true)
                 .setAutoWidth(true);
@@ -215,7 +271,6 @@ public class NotificationView extends ViewFrame {
                 .setAutoWidth(true);
         medRequestGrid.addColumn(badgeRenderer)
                 .setAutoWidth(true)
-                .setSortable(true)
                 .setHeader("Current Status");
         medRequestGrid.addColumn(new ComponentRenderer<>(this::createShortName))
                 .setHeader("Medication")
@@ -227,33 +282,151 @@ public class NotificationView extends ViewFrame {
                 .setHeader("Take Me There")
                 .setAutoWidth(true);
 
-        medicationRequestLayout = new FlexBoxLayout(medRequestGrid);
-        medicationRequestLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
-        medicationRequestLayout.setBoxSizing(BoxSizing.BORDER_BOX);
-        medicationRequestLayout.setHeightFull();
-        medicationRequestLayout.setBackgroundColor("white");
-        medicationRequestLayout.setShadow(Shadow.S);
-        medicationRequestLayout.setBorderRadius(BorderRadius.S);
-        medicationRequestLayout.getStyle().set("margin-bottom", "10px");
-        medicationRequestLayout.getStyle().set("margin-right", "10px");
-        medicationRequestLayout.getStyle().set("margin-left", "10px");
-        medicationRequestLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
-        medicationRequestLayout.setVisible(false);
     }
 
-    private void createServiceRequestLayout() {
-        serviceRequestLayout = new FlexBoxLayout();
-        serviceRequestLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
-        serviceRequestLayout.setBoxSizing(BoxSizing.BORDER_BOX);
-        serviceRequestLayout.setHeightFull();
-        serviceRequestLayout.setBackgroundColor("white");
-        serviceRequestLayout.setShadow(Shadow.S);
-        serviceRequestLayout.setBorderRadius(BorderRadius.S);
-        serviceRequestLayout.getStyle().set("margin-bottom", "10px");
-        serviceRequestLayout.getStyle().set("margin-right", "10px");
-        serviceRequestLayout.getStyle().set("margin-left", "10px");
-        serviceRequestLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
-        serviceRequestLayout.setVisible(false);
+    private void createInformedConsentLayout() {
+        Html intro = new Html("<p>Completion of the form is voluntary.  If not completed, this medication can not be administered.  This consent will be maintained " +
+                "in your records and will accessible to authorized users.</p>");
+        physicianName = new TextField("Your Physician:");
+        Html medIntro = new Html("<p>Wishes to prescribe the following medication for you.</p>");
+        medicationName = new TextField("Medication Name:");
+        Html medIntro2 = new Html("<p>This medication can not be administered without your consent.  The first step in that process you, and your physician, will review some " +
+                "information regarding this medication.  Such as its use, risks, side-effects, and other important information.  To begin that process click on the <b>Get Informed</b> button.</p>");
+        Button getInformedBtn = new Button("Get Informed");
+        getInformedBtn.addClickListener(event -> {
+            infoDialog = createInfoDialog();
+            infoDialog.open();
+        });
+
+        reviewInformedConsentLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request"), intro, new BasicDivider(),
+                physicianName, medIntro, medicationName, medIntro2, getInformedBtn);
+        reviewInformedConsentLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        reviewInformedConsentLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        reviewInformedConsentLayout.setHeightFull();
+        reviewInformedConsentLayout.setBackgroundColor("white");
+        reviewInformedConsentLayout.setShadow(Shadow.S);
+        reviewInformedConsentLayout.setBorderRadius(BorderRadius.S);
+        reviewInformedConsentLayout.getStyle().set("margin-bottom", "10px");
+        reviewInformedConsentLayout.getStyle().set("margin-right", "10px");
+        reviewInformedConsentLayout.getStyle().set("margin-left", "10px");
+        reviewInformedConsentLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        reviewInformedConsentLayout.setVisible(false);
+    }
+
+    private void createPatientSignatureLayout() {
+        Html intro = new Html("<p>This next step in the process is for you the patient to consent to the treatment, or decline, and provide your signature.</p>");
+
+        treatmentAccepted = new Checkbox("I consent to this treatment");
+        treatmentAccepted.addClickListener(event -> {
+           if (treatmentAccepted.getValue()) {
+               treatmentDeclined.setValue(false);
+           }
+        });
+        treatmentDeclined = new Checkbox("I decline this treatment");
+        treatmentDeclined.addClickListener(event -> {
+            if (treatmentDeclined.getValue()) {
+                treatmentAccepted.setValue(false);
+            }
+        });
+
+        patientSignature = new SignaturePad();
+        patientSignature.setHeight("100px");
+        patientSignature.setWidth("400px");
+        patientSignature.setPenColor("#2874A6");
+
+        Button backButton = new Button("Back");
+        backButton.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.FAST_BACKWARD));
+        backButton.addClickListener(event -> {
+           patientSignatureLayout.setVisible(false);
+           reviewInformedConsentLayout.setVisible(true);
+        });
+        Button clearWitnessSig = new Button("Clear Signature");
+        clearWitnessSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
+        clearWitnessSig.addClickListener(event -> {
+            patientSignature.clear();
+        });
+        Button saveWitnessSig = new Button("Accept Signature");
+        saveWitnessSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
+        saveWitnessSig.addClickListener(event -> {
+            base64PatientSignature = patientSignature.getImageBase64();
+            patientSignatureDate = new Date();
+            patientSignatureLayout.setVisible(false);
+            physicianSignatureLayout.setVisible(true);
+        });
+
+        HorizontalLayout sigLayout = new HorizontalLayout(backButton, clearWitnessSig, saveWitnessSig);
+        sigLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        sigLayout.setPadding(true);
+        sigLayout.setSpacing(true);
+        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request"), intro, new BasicDivider(),
+                treatmentAccepted, treatmentDeclined, patientSignature, sigLayout);
+        patientSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        patientSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        patientSignatureLayout.setHeightFull();
+        patientSignatureLayout.setBackgroundColor("white");
+        patientSignatureLayout.setShadow(Shadow.S);
+        patientSignatureLayout.setBorderRadius(BorderRadius.S);
+        patientSignatureLayout.getStyle().set("margin-bottom", "10px");
+        patientSignatureLayout.getStyle().set("margin-right", "10px");
+        patientSignatureLayout.getStyle().set("margin-left", "10px");
+        patientSignatureLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        patientSignatureLayout.setVisible(false);
+    }
+
+    private void createPhysicianSignatureLayout() {
+        Html para1 = new Html("<p>I, Dr.</p>");
+        attestationDRName = new TextField("Physician's Name");
+        Html para2 = new Html("<p>have reviewed this document and have discussed with</p>");
+        attestationPatientName = new TextField("Patient's Name");
+        attestationPatientName.setValue(consentUser.getFirstName()+" "+consentUser.getMiddleName()+" "+consentUser.getLastName());
+        Html para3 = new Html("<p>any questions regarding the probable medical consequences of the treatment choices provided above. "+
+                "This discussion with the patient occurred on this day.</p>");
+        attestationDate = new TextField("Date");
+        attestationDate.setValue(getDateStringForDisplay(new Date()));
+        Html para4 = new Html("<p>I have agreed to comply with the provisions of this directive.</p>");
+
+        physcianSignature = new SignaturePad();
+        physcianSignature.setHeight("100px");
+        physcianSignature.setWidth("400px");
+        physcianSignature.setPenColor("#2874A6");
+
+        Button backButton = new Button("Back");
+        backButton.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.FAST_BACKWARD));
+        backButton.addClickListener(event -> {
+            physicianSignatureLayout.setVisible(false);
+            patientSignatureLayout.setVisible(true);
+        });
+        Button clearPatientSig = new Button("Clear Signature");
+        clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
+        clearPatientSig.addClickListener(event -> {
+            physcianSignature.clear();
+        });
+        Button savePatientSig = new Button("Accept Signature");
+        savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
+        savePatientSig.addClickListener(event -> {
+            base64PhysicianSignature = physcianSignature.getImageBase64();
+            //todo check values create consent update medication request
+        });
+
+        HorizontalLayout sigLayout = new HorizontalLayout(backButton, clearPatientSig, savePatientSig);
+        sigLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        sigLayout.setPadding(true);
+        sigLayout.setSpacing(true);
+
+        Html intro = new Html("<p>Physician's attestation.</p>");
+        physicianSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request"), intro, new BasicDivider(),
+                para1, attestationDRName, para2, attestationPatientName, para3, attestationDate, physcianSignature, sigLayout);
+        physicianSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        physicianSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        physicianSignatureLayout.setHeightFull();
+        physicianSignatureLayout.setBackgroundColor("white");
+        physicianSignatureLayout.setShadow(Shadow.S);
+        physicianSignatureLayout.setBorderRadius(BorderRadius.S);
+        physicianSignatureLayout.getStyle().set("margin-bottom", "10px");
+        physicianSignatureLayout.getStyle().set("margin-right", "10px");
+        physicianSignatureLayout.getStyle().set("margin-left", "10px");
+        physicianSignatureLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        physicianSignatureLayout.setVisible(false);
     }
 
     private Component createActionRequirement(ConsentNotification consentNotification) {
@@ -278,6 +451,28 @@ public class NotificationView extends ViewFrame {
         btn.addClickListener(event -> {
             if (consentNotification.getStatus().equals(ConsentNotification.Status.PENDING)) {
                 UI.getCurrent().navigate("consentdocumentview");
+            }
+            else if (consentNotification.getStatus().equals(ConsentNotification.Status.ONHOLD)) {
+                selectedConsentNotification = medRequestGrid.getSelectionModel().getFirstSelectedItem().get();
+                ConsentNotification.Status selectedStatus = selectedConsentNotification.getStatus();
+
+                if (!selectedStatus.equals(ConsentNotification.Status.ONHOLD)) {
+                    Span content = new Span("You must select/highlight this row for this request to function.");
+
+                    Notification notification = new Notification(content);
+                    notification.setDuration(5000);
+
+                    notification.setPosition(Notification.Position.MIDDLE);
+                    notification.setThemeName("error");
+
+                    notification.open();
+                    return;
+                }
+                physicianName.setValue(((MedicationRequest)selectedConsentNotification.getFhirResource()).getRequester().getDisplay());
+                medicationName.setValue(((MedicationRequest)selectedConsentNotification.getFhirResource()).getMedicationCodeableConcept().getCoding().get(0).getDisplay());
+                attestationDRName.setValue(((MedicationRequest)selectedConsentNotification.getFhirResource()).getRequester().getDisplay());
+                medicationRequestLayout.setVisible(false);
+                reviewInformedConsentLayout.setVisible(true);
             }
             else {
                 UI.getCurrent().navigate(consentNotification.getDestinationView());
@@ -487,4 +682,48 @@ public class NotificationView extends ViewFrame {
         return reqList;
     }
 
+    private FlexBoxLayout createHeader(VaadinIcon icon, String title) {
+        FlexBoxLayout header = new FlexBoxLayout(
+                UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, icon),
+                UIUtils.createH3Label(title));
+        header.getStyle().set("background-color", "#5F9EA0");
+        header.setAlignItems(FlexComponent.Alignment.CENTER);
+        header.setSpacing(Right.L);
+        return header;
+    }
+
+    private Dialog createInfoDialog() {
+        PDFInformedConsentHandler pdfHandler = new PDFInformedConsentHandler();
+        StreamResource streamResource = pdfHandler.retrievePDFForm("antidepressants");
+
+        Dialog infoDialog = new Dialog();
+
+        streamResource.setContentType("application/pdf");
+
+        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
+        viewer.setHeight("800px");
+        viewer.setWidth("840px");
+
+        Button closeButton = new Button("Close");
+        closeButton.addClickListener(event -> {
+            infoDialog.close();
+            reviewInformedConsentLayout.setVisible(false);
+            patientSignatureLayout.setVisible(true);
+        });
+        closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
+
+        FlexBoxLayout content = new FlexBoxLayout(viewer, closeButton);
+        content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        content.setBoxSizing(BoxSizing.BORDER_BOX);
+        content.setHeightFull();
+        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+
+        infoDialog.add(content);
+
+        infoDialog.setModal(false);
+        infoDialog.setResizable(true);
+        infoDialog.setDraggable(true);
+
+        return infoDialog;
+    }
 }
