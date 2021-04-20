@@ -325,4 +325,24 @@ public class HapiFhirServer {
                 .execute();
         return bundle;
     }
+
+    public Bundle getMedicationRequests(final String patientId) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(MedicationRequest.class)
+                .where(new ReferenceClientParam("patient").hasId(patientId))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
+
+    public Bundle getServiceRequests(final String patientId) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(ServiceRequest.class)
+                .where(new ReferenceClientParam("patient").hasId(patientId))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
 }
