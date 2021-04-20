@@ -32,6 +32,7 @@ import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRMedicationRequest;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRServiceRequest;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
+import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.Badge;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
@@ -49,8 +50,8 @@ import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFInformedConsentHandler;
-import org.hl7.fhir.r4.model.Consent;
-import org.hl7.fhir.r4.model.MedicationRequest;
+import gov.hhs.onc.leap.ui.util.pdf.PDFPOAHealthcareHandler;
+import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,8 @@ import org.vaadin.alejandro.PdfBrowserViewer;
 
 import javax.annotation.PostConstruct;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @PageTitle("Notifications")
@@ -111,6 +114,10 @@ public class NotificationView extends ViewFrame {
     private TextField attestationPatientName;
     private TextField attestationDate;
 
+    private byte[] consentPDFAsByteArray;
+
+    private Dialog docDialog;
+
     private ConsentUser consentUser;
 
     @Autowired
@@ -120,7 +127,7 @@ public class NotificationView extends ViewFrame {
     private FHIRMedicationRequest fhirMedicationRequestClient;
 
     @Autowired
-    private FHIRServiceRequest fhirServiceRequestClient;
+    private PDFSigningService pdfSigningService;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -298,7 +305,7 @@ public class NotificationView extends ViewFrame {
             infoDialog.open();
         });
 
-        reviewInformedConsentLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request"), intro, new BasicDivider(),
+        reviewInformedConsentLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request (Experimental)"), intro, new BasicDivider(),
                 physicianName, medIntro, medicationName, medIntro2, getInformedBtn);
         reviewInformedConsentLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         reviewInformedConsentLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -314,7 +321,10 @@ public class NotificationView extends ViewFrame {
     }
 
     private void createPatientSignatureLayout() {
-        Html intro = new Html("<p>This next step in the process is for you the patient to consent to the treatment, or decline, and provide your signature.</p>");
+        Html intro = new Html("<p>I have been counseled about potential side effects of the medication, " +
+                "when they may occur, and when and where I should seek treatment.  I have read, or have had read to me, the informed consent " +
+                "provided for the medication to be administered. I have had the opportunity to ask questions, and all " +
+                "my questions have been answered to my satisfaction. I understand the benefits and risks of this medication.</p>");
 
         treatmentAccepted = new Checkbox("I consent to this treatment");
         treatmentAccepted.addClickListener(event -> {
@@ -358,7 +368,7 @@ public class NotificationView extends ViewFrame {
         sigLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
-        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request"), intro, new BasicDivider(),
+        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request (Experimental)"), intro, new BasicDivider(),
                 treatmentAccepted, treatmentDeclined, patientSignature, sigLayout);
         patientSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -379,11 +389,10 @@ public class NotificationView extends ViewFrame {
         Html para2 = new Html("<p>have reviewed this document and have discussed with</p>");
         attestationPatientName = new TextField("Patient's Name");
         attestationPatientName.setValue(consentUser.getFirstName()+" "+consentUser.getMiddleName()+" "+consentUser.getLastName());
-        Html para3 = new Html("<p>any questions regarding the probable medical consequences of the treatment choices provided above. "+
+        Html para3 = new Html("<p>any questions regarding the probable medical consequences of the treatment choices provided. "+
                 "This discussion with the patient occurred on this day.</p>");
         attestationDate = new TextField("Date");
         attestationDate.setValue(getDateStringForDisplay(new Date()));
-        Html para4 = new Html("<p>I have agreed to comply with the provisions of this directive.</p>");
 
         physcianSignature = new SignaturePad();
         physcianSignature.setHeight("100px");
@@ -405,7 +414,8 @@ public class NotificationView extends ViewFrame {
         savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         savePatientSig.addClickListener(event -> {
             base64PhysicianSignature = physcianSignature.getImageBase64();
-            //todo check values create consent update medication request
+            createHumanReadable();
+            docDialog.open();
         });
 
         HorizontalLayout sigLayout = new HorizontalLayout(backButton, clearPatientSig, savePatientSig);
@@ -414,7 +424,7 @@ public class NotificationView extends ViewFrame {
         sigLayout.setSpacing(true);
 
         Html intro = new Html("<p>Physician's attestation.</p>");
-        physicianSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request"), intro, new BasicDivider(),
+        physicianSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request (Experimental)"), intro, new BasicDivider(),
                 para1, attestationDRName, para2, attestationPatientName, para3, attestationDate, physcianSignature, sigLayout);
         physicianSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         physicianSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -693,7 +703,7 @@ public class NotificationView extends ViewFrame {
     }
 
     private Dialog createInfoDialog() {
-        PDFInformedConsentHandler pdfHandler = new PDFInformedConsentHandler();
+        PDFInformedConsentHandler pdfHandler = new PDFInformedConsentHandler(pdfSigningService);
         StreamResource streamResource = pdfHandler.retrievePDFForm("antidepressants");
 
         Dialog infoDialog = new Dialog();
@@ -725,5 +735,258 @@ public class NotificationView extends ViewFrame {
         infoDialog.setDraggable(true);
 
         return infoDialog;
+    }
+
+    private void createHumanReadable() {
+        StreamResource streamResource = setFieldsCreatePDF();
+        docDialog = new Dialog();
+
+        streamResource.setContentType("application/pdf");
+
+        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
+        viewer.setHeight("800px");
+        viewer.setWidth("840px");
+
+
+        Button closeButton = new Button("Cancel", e -> docDialog.close());
+        closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
+
+        Button acceptButton = new Button("Accept and Submit");
+        acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
+        acceptButton.addClickListener(event -> {
+            docDialog.close();
+            createFHIRConsent();
+            updateMedicationRequestStatus();
+            successNotification();
+            resetFormAndNavigation();
+
+        });
+
+        HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
+
+
+        FlexBoxLayout content = new FlexBoxLayout(viewer, hLayout);
+        content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        content.setBoxSizing(BoxSizing.BORDER_BOX);
+        content.setHeightFull();
+        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+
+        docDialog.add(content);
+
+        docDialog.setModal(false);
+        docDialog.setResizable(true);
+        docDialog.setDraggable(true);
+    }
+
+    private StreamResource setFieldsCreatePDF() {
+        String rxnormPreferredLabel = medicationName.getValue();
+        String medicationRequestID = ((MedicationRequest)selectedConsentNotification.getFhirResource()).getIdElement().getIdPart();
+        patientConsents = false;
+        patientDeclines = false;
+        //consider null
+        try { patientConsents = treatmentAccepted.getValue(); } catch (Exception ex) {}
+        try { patientDeclines = treatmentDeclined.getValue(); } catch (Exception ex) {}
+        String patientName = attestationPatientName.getValue();
+        String physicianName = attestationDRName.getValue();
+        String signatureDate = getDateStringForDisplay(new Date());
+
+
+        PDFInformedConsentHandler pdfHandler = new PDFInformedConsentHandler(pdfSigningService);
+        StreamResource res = pdfHandler.updateAndRetrievePDFForm("antidepressants", rxnormPreferredLabel, medicationRequestID, patientConsents, patientDeclines,
+                base64PatientSignature, patientName, signatureDate, base64PhysicianSignature, physicianName, signatureDate);
+
+        consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
+        return res;
+    }
+
+    private void createFHIRConsent() {
+        Patient patient = consentSession.getFhirPatient();
+        String medicationRequestID = ((MedicationRequest)selectedConsentNotification.getFhirResource()).getIdElement().getIdPart();
+
+        Consent informedConsent = new Consent();
+
+        informedConsent.setId("MedicationRequest-"+medicationRequestID+"-"+consentSession.getFhirPatientId());
+        boolean consentGranted = false;
+        boolean consentDeclined = false;
+        try { consentGranted = treatmentAccepted.getValue(); } catch (Exception ex) {}
+        try { consentDeclined = treatmentDeclined.getValue(); } catch (Exception ex) {}
+        if (consentGranted) informedConsent.setStatus(Consent.ConsentState.ACTIVE);
+        if (consentDeclined) informedConsent.setStatus(Consent.ConsentState.REJECTED);
+        CodeableConcept cConcept = new CodeableConcept();
+        Coding coding = new Coding();
+        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
+        coding.setCode("treatment");
+        cConcept.addCoding(coding);
+        informedConsent.setScope(cConcept);
+        List<CodeableConcept> cList = new ArrayList<>();
+        CodeableConcept cConceptCat = new CodeableConcept();
+        Coding codingCat = new Coding();
+        codingCat.setSystem("http://loinc.org");
+        codingCat.setCode("59284-6");
+        cConceptCat.addCoding(codingCat);
+        cList.add(cConceptCat);
+        informedConsent.setCategory(cList);
+        Reference patientRef = new Reference();
+        patientRef.setReference("Patient/"+consentSession.getFhirPatientId());
+        patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
+        informedConsent.setPatient(patientRef);
+        List<Reference> refList = new ArrayList<>();
+        Reference orgRef = new Reference();
+        //todo - this is the deployment and custodian organization for advanced directives and should be valid in fhir consent repository
+        orgRef.setReference(orgReference);
+        orgRef.setDisplay(orgDisplay);
+        refList.add(orgRef);
+        informedConsent.setOrganization(refList);
+        Attachment attachment = new Attachment();
+        attachment.setContentType("application/pdf");
+        attachment.setCreation(new Date());
+        attachment.setTitle("InformedConsent");
+
+
+        String encodedString = Base64.getEncoder().encodeToString(consentPDFAsByteArray);
+        attachment.setSize(encodedString.length());
+        attachment.setData(encodedString.getBytes());
+
+        informedConsent.setSource(attachment);
+
+        //set rule
+        CodeableConcept policyCode = new CodeableConcept();
+        Coding codes = new Coding();
+        codes.setCode("OPTOUT");
+        codes.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode");
+        policyCode.addCoding(codes);
+        informedConsent.setPolicyRule(policyCode);
+
+        Consent.provisionComponent provision = new Consent.provisionComponent();
+        Period period = new Period();
+        LocalDate sDate = LocalDate.now();
+        LocalDate eDate = LocalDate.now().plusYears(10);
+        if (consentGranted) {
+            sDate = LocalDate.now();
+            eDate = LocalDate.now().plusYears(1);
+        }
+        if (consentDeclined) {
+            sDate = LocalDate.now();
+            eDate = LocalDate.now();
+        }
+        Date startDate = Date.from(sDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(eDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        period.setStart(startDate);
+        period.setEnd(endDate);
+
+        provision.setPeriod(period);
+
+        Consent.provisionComponent purpose = new Consent.provisionComponent();
+
+
+        if (consentGranted) {
+            Consent.provisionComponent requestorProvision = new Consent.provisionComponent();
+            requestorProvision.setType(Consent.ConsentProvisionType.PERMIT);
+            List<Coding> purposeList = new ArrayList<>();
+            Coding purposeCoding = new Coding();
+            purposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
+            purposeCoding.setCode("TREAT");
+            purposeList.add(purposeCoding);
+            requestorProvision.setPurpose(purposeList);
+
+            //actor
+            Consent.provisionActorComponent actor = new Consent.provisionActorComponent();
+            CodeableConcept sensRoleConcept = new CodeableConcept();
+            Coding sensRolecoding = new Coding();
+            sensRolecoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ParticipationType");
+            sensRolecoding.setCode("IRCP");
+            sensRoleConcept.addCoding(sensRolecoding);
+            actor.setRole(sensRoleConcept);
+
+            String medRequestRequestorRef = ((MedicationRequest) selectedConsentNotification.getFhirResource()).getRequester().getReference();
+            String medRequestRequestorName = ((MedicationRequest) selectedConsentNotification.getFhirResource()).getRequester().getDisplay();
+            Reference actorRef = new Reference();
+            actorRef.setReference(medRequestRequestorRef);
+            actorRef.setDisplay(medRequestRequestorName);
+
+            actor.setReference(actorRef);
+
+            List<Consent.provisionActorComponent> sensActorList = new ArrayList<>();
+            sensActorList.add(actor);
+
+            requestorProvision.setActor(sensActorList);
+
+            Coding sensactioncoding = new Coding();
+            sensactioncoding.setSystem("http://terminology.hl7.org/CodeSystem/consentaction");
+            sensactioncoding.setCode("access");
+
+            Coding sensactioncodingcorrect = new Coding();
+            sensactioncodingcorrect.setSystem("http://terminology.hl7.org/CodeSystem/consentaction");
+            sensactioncodingcorrect.setCode("correct");
+
+            List<CodeableConcept> sensActionCodeList = new ArrayList<>();
+            CodeableConcept sensActionConcept = new CodeableConcept();
+            sensActionConcept.addCoding(sensactioncoding);
+            sensActionConcept.addCoding(sensactioncodingcorrect);
+            sensActionCodeList.add(sensActionConcept);
+
+            requestorProvision.setAction(sensActionCodeList);
+
+            provision.addProvision(requestorProvision);
+        }
+
+
+
+        informedConsent.setProvision(provision);
+
+        Extension extension = createMedicationRequestExtension();
+        informedConsent.getExtension().add(extension);
+
+        fhirConsentClient.createConsent(informedConsent);
+    }
+
+    private Extension createMedicationRequestExtension() {
+        String medicationRequestFullPath = selectedConsentNotification.getFhirResource().getId();
+        Extension extension = new Extension();
+        extension.setUrl("http://sdhealthconnect.org/leap/treatment/informedconsent");
+        extension.setValue(new StringType(medicationRequestFullPath));
+        return extension;
+    }
+
+    private void successNotification() {
+        Span content = new Span("FHIR Informed Consent - MedicationRequest successfully created!");
+
+        Notification notification = new Notification(content);
+        notification.setDuration(3000);
+
+        notification.setPosition(Notification.Position.MIDDLE);
+
+        notification.open();
+    }
+
+    private void resetFormAndNavigation() {
+        //clear fields
+        medicationName.clear();
+        physicianName.clear();
+        treatmentAccepted.clear();
+        treatmentDeclined.clear();
+        patientSignature.clear();
+        attestationDRName.clear();
+        attestationDate.clear();
+        attestationPatientName.clear();
+        physcianSignature.clear();
+        reviewInformedConsentLayout.setVisible(false);
+        patientSignatureLayout.setVisible(false);
+        physicianSignatureLayout.setVisible(false);
+        medRequestDataProvider = DataProvider.ofCollection(createMedicationRequestsArray());
+        grid.setDataProvider(medRequestDataProvider);
+        grid.getDataProvider().refreshAll();
+        medicationRequestLayout.setVisible(true);
+    }
+
+    private void updateMedicationRequestStatus() {
+        MedicationRequest medicationRequest = (MedicationRequest)selectedConsentNotification.getFhirResource();
+        if (patientConsents) {
+            fhirMedicationRequestClient.consentGranted(medicationRequest);
+        }
+        if (patientDeclines) {
+            fhirMedicationRequestClient.consentDeclined(medicationRequest);
+        }
     }
 }
