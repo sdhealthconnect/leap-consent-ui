@@ -12,7 +12,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -21,9 +20,9 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.adr.model.*;
-import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
+import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -161,13 +160,7 @@ public class LivingWill extends ViewFrame {
     }
 
     private Component createViewContent() {
-        Html intro = new Html("<p><b>GENERAL INSTRUCTIONS:</b> Use this form to make decisions now about your medical care if you are " +
-                "ever in a terminal condition, a persistent vegetative state or an irreversible coma. You should talk to " +
-                "your doctor about what these terms mean. The Living Will is your written directions to your health care power of attorney, "+
-                "also referred to as your <b>agent</b>, your family, your physician, and any other person who might make medical care decisions for " +
-                "you if you are unable to communicate yourself. It is a good idea to talk to your doctor and loved ones if you have questions about "+
-                "the type of care you do or do not want.</p>" );
-
+        Html intro = new Html(getTranslation("livingWill-intro"));
 
         createPatientsInitials();
         createPatientGeneralInfo();
@@ -192,20 +185,19 @@ public class LivingWill extends ViewFrame {
     }
 
     private void createPatientsInitials() {
-        Html intro2 = new Html("<p>Before you begin with the <b>Living Will</b> questionnaire we need to capture" +
-                " your initials.  Your initials will be applied to your state's form based on your responses.</p>");
+        Html intro2 = new Html(getTranslation("livingWill-intro2"));
 
         patientInitials = new SignaturePad();
         patientInitials.setHeight("100px");
         patientInitials.setWidth("150px");
         patientInitials.setPenColor("#2874A6");
 
-        Button clearPatientInitials = new Button("Clear Initials");
+        Button clearPatientInitials = new Button(getTranslation("livingWill-clear_initials"));
         clearPatientInitials.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearPatientInitials.addClickListener(event -> {
             patientInitials.clear();
         });
-        Button savePatientInitials = new Button("Accept Initials");
+        Button savePatientInitials = new Button(getTranslation("livingWill-accept_initials"));
         savePatientInitials.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         savePatientInitials.addClickListener(event -> {
             base64PatientInitials = patientInitials.getImageBase64();
@@ -218,7 +210,7 @@ public class LivingWill extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        patientInitialsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Living Will"),intro2, new BasicDivider(), patientInitials, sigLayout);
+        patientInitialsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("livingWill-living_will")),intro2, new BasicDivider(), patientInitials, sigLayout);
         patientInitialsLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientInitialsLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         patientInitialsLayout.setHeightFull();
@@ -232,14 +224,13 @@ public class LivingWill extends ViewFrame {
     }
 
     private void createPatientGeneralInfo() {
-        Html intro3 = new Html("<p><b>My Information(I am the \"Principal\")</b></p>");
-
-        patientFullNameField = new TextField("Name");
-        patientAddress1Field = new TextField("Address");
+        Html intro3 = new Html(getTranslation("livingWill-intro3"));
+        patientFullNameField = new TextField(getTranslation("livingWill-name"));
+        patientAddress1Field = new TextField(getTranslation("livingWill-address"));
         patientAddress2Field = new TextField("");
-        patientDateOfBirthField = new TextField("Date of Birth");
-        patientPhoneNumberField = new TextField("Phone");
-        patientEmailAddressField = new TextField("Email");
+        patientDateOfBirthField = new TextField(getTranslation("livingWill-date_of_birth"));
+        patientPhoneNumberField = new TextField(getTranslation("livingWill-phone"));
+        patientEmailAddressField = new TextField(getTranslation("livingWill-email"));
 
         //set values
         patientFullNameField.setValue(consentUser.getFirstName()+" "+consentUser.getMiddleName()+" "+consentUser.getLastName());
@@ -256,7 +247,7 @@ public class LivingWill extends ViewFrame {
         patientDateOfBirthField.setValue(getDateString(consentUser.getDateOfBirth()));
         patientEmailAddressField.setValue(consentUser.getEmailAddress());
 
-        patientGeneralInfoLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Living Will"),intro3, new BasicDivider(),
+        patientGeneralInfoLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("livingWill-living_will")),intro3, new BasicDivider(),
                 patientFullNameField, patientAddress1Field, patientAddress2Field, patientDateOfBirthField, patientPhoneNumberField, patientEmailAddressField);
         patientGeneralInfoLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientGeneralInfoLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -272,30 +263,20 @@ public class LivingWill extends ViewFrame {
     }
 
     private void createHealthcareChoices() {
-        Html intro4 = new Html("<p>Some general statements about your health care choices are listed below. If you agree with one of " +
-                "the statements, you should select that statement. Read all of these statements carefully BEFORE you " +
-                "select your preferred statement. You can also write your own statement concerning life-sustaining " +
-                "treatment and other matters relating to your health care. You may select any combination of " +
-                "items 1, 2, 3 and 4, BUT if you 'select' item 5 the others will not be selected.</p>");
+        Html intro4 = new Html(getTranslation("livingWill-intro4"));
 
         comfortCareOnly = new Checkbox();
-        comfortCareOnly.setLabel("1. If I have a terminal condition I do not want my life to be prolonged, and I do not want life-sustaining " +
-                "treatment, beyond comfort care, that would serve only to artificially delay the " +
-                "moment of my death.");
+        comfortCareOnly.setLabel(getTranslation("livingWill-comfort_care_only"));
         comfortCareOnly.addValueChangeListener(event -> {
             Boolean b = (Boolean)event.getValue();
             if (b) {
                 prolongLifeToGreatestExtentPossible.clear();
             }
         });
-        Html intro5 = new Html("<p><b>**Comfort care</b> is treatment given in an attempt to protect and enhance the " +
-                "quality of life without artificially prolonging life.</p>");
+        Html intro5 = new Html(getTranslation("livingWill-intro5"));
 
         comfortCareOnlyButNo = new Checkbox();
-        comfortCareOnlyButNo.setLabel("2. If I am in a terminal condition or an irreversible coma or a persistent vegetative state that my " +
-                "doctors reasonably feel to be irreversible or incurable, I do want the medical treatment " +
-                "necessary to provide care that would keep me comfortable, but I DO NOT want the " +
-                "following:");
+        comfortCareOnlyButNo.setLabel(getTranslation("livingWill-comfort_care_only_but_no"));
         comfortCareOnlyButNo.addValueChangeListener(event -> {
            Boolean s = (Boolean)event.getValue();
            if (s) {
@@ -308,17 +289,15 @@ public class LivingWill extends ViewFrame {
         });
 
         noCardioPulmonaryRecusitation = new Checkbox();
-        noCardioPulmonaryRecusitation.setLabel("a. Cardiopulmonary resuscitation (CPR). For example: the use of drugs, electric " +
-                "shock and artificial breathing.");
+        noCardioPulmonaryRecusitation.setLabel(getTranslation("livingWill-no_cardio_pulmonary_recusitation"));
 
 
         noArtificialFluidsOrFood = new Checkbox();
-        noArtificialFluidsOrFood.setLabel("b. Artificially administered food and fluids.");
+        noArtificialFluidsOrFood.setLabel(getTranslation("livingWill-no_artificial_fluids_or_food"));
 
 
         avoidTakingToHospital = new Checkbox();
-        avoidTakingToHospital.setLabel("c. To be taken to a hospital if at all avoidable.");
-
+        avoidTakingToHospital.setLabel(getTranslation("livingWill-avoid_taking_to_hospital"));
 
         notWantedTreatmentsLayout = new FlexBoxLayout(noCardioPulmonaryRecusitation, noArtificialFluidsOrFood, avoidTakingToHospital);
         notWantedTreatmentsLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -334,11 +313,8 @@ public class LivingWill extends ViewFrame {
         notWantedTreatmentsLayout.setVisible(false);
 
         ifPregnantSaveFetus = new Checkbox();
-        ifPregnantSaveFetus.setLabel("3. Regardless of any other directions I have given in this Living Will, if I am known to be " +
-                "pregnant, I do not want life-sustaining treatment withheld or withdrawn if it is possible that " +
-                "the embryo/fetus will develop to the point of live birth with the continued application of life-sustaining " +
-                "treatment.");
-        if (consentSession.getConsentUser().getGender().equals("Male")) {
+        ifPregnantSaveFetus.setLabel(getTranslation("livingWill-if_pregnant_save_fetus"));
+        if (consentSession.getConsentUser().getGender().equals(getTranslation("livingWill-male"))) {
             ifPregnantSaveFetus.setEnabled(false);
         }
         ifPregnantSaveFetus.addValueChangeListener(event -> {
@@ -348,9 +324,7 @@ public class LivingWill extends ViewFrame {
            }
         });
         careUntilDoctorConcludesNoHope = new Checkbox();
-        careUntilDoctorConcludesNoHope.setLabel("4. Regardless of any other directions I have given in this Living Will, I do want the use of all " +
-                "medical care necessary to treat my condition until my doctors reasonably conclude that my " +
-                "condition is terminal or is irreversible and incurable or I am in a persistent vegetative state.");
+        careUntilDoctorConcludesNoHope.setLabel(getTranslation("livingWill-care_until_doctor_concludes_no_hope"));
         careUntilDoctorConcludesNoHope.addValueChangeListener(event -> {
             Boolean b = (Boolean)event.getValue();
             if (b) {
@@ -358,8 +332,7 @@ public class LivingWill extends ViewFrame {
             }
         });
         prolongLifeToGreatestExtentPossible = new Checkbox();
-        prolongLifeToGreatestExtentPossible.setLabel("5. I want my life to be prolonged to the greatest extent possible (If you select here, all others " +
-                "will be unselected).");
+        prolongLifeToGreatestExtentPossible.setLabel(getTranslation("livingWill-prolong_life_to_greatest_extent_possible"));
         prolongLifeToGreatestExtentPossible.addValueChangeListener(event -> {
             Boolean s = (Boolean)event.getValue();
             if (s) {
@@ -379,7 +352,7 @@ public class LivingWill extends ViewFrame {
                 }
             }
         });
-        instructionsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Living Will"),intro4, new BasicDivider(),
+        instructionsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("livingWill-living_will")),intro4, new BasicDivider(),
                 comfortCareOnly, intro5, comfortCareOnlyButNo, notWantedTreatmentsLayout,
                 ifPregnantSaveFetus, careUntilDoctorConcludesNoHope, prolongLifeToGreatestExtentPossible);
         instructionsLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -396,16 +369,15 @@ public class LivingWill extends ViewFrame {
     }
 
     private void createAdditionalInstructions() {
-        Html intro6 = new Html("<p><b>PLEASE NOTE:</b> You can attach additional instructions on your medical care wishes that have not "+
-                "been included in this Living Will form. Select A or B below. Be sure to include the attachment if you check B.</p>");
+        Html intro6 = new Html(getTranslation("livingWill-intro6"));
 
         additionalInstructionsButtonGroup = new RadioButtonGroup();
-        additionalInstructionsButtonGroup.setItems("A. I HAVE NOT attached additional special instructions about End of Life Care I want.",
-                "B. I HAVE attached additional special provisions or limitations about End of Life Care I want.");
+        additionalInstructionsButtonGroup.setItems(getTranslation("livingWill-additional_instructions_button_group_item1"),
+                getTranslation("livingWill-additional_instructions_button_group_item2"));
 
         //todo create issue and task to attach additional instructions to the pdf that is generated either during this process or after
 
-        additionalInstructionsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Living Will"),intro6, new BasicDivider(),
+        additionalInstructionsLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("livingWill-living_will")),intro6, new BasicDivider(),
                 additionalInstructionsButtonGroup);
         additionalInstructionsLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         additionalInstructionsLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -421,19 +393,18 @@ public class LivingWill extends ViewFrame {
     }
 
     private void createPatientSignature() {
-        Html intro11 = new Html("<p><b>MY SIGNATURE VERIFICATION FOR LIVING WILL</b></p>");
-
+        Html intro11 = new Html(getTranslation("livingWill-intro11"));
         patientSignature = new SignaturePad();
         patientSignature.setHeight("100px");
         patientSignature.setWidth("400px");
         patientSignature.setPenColor("#2874A6");
 
-        Button clearPatientSig = new Button("Clear Signature");
+        Button clearPatientSig = new Button(getTranslation("livingWill-clear_signature"));
         clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearPatientSig.addClickListener(event -> {
             patientSignature.clear();
         });
-        Button savePatientSig = new Button("Accept Signature");
+        Button savePatientSig = new Button(getTranslation("livingWill-accept_signature"));
         savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         savePatientSig.addClickListener(event -> {
             base64PatientSignature = patientSignature.getImageBase64();
@@ -447,7 +418,7 @@ public class LivingWill extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Living Will"), intro11, new BasicDivider(),
+        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("livingWill-living_will")), intro11, new BasicDivider(),
                 patientSignature, sigLayout);
         patientSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -463,24 +434,22 @@ public class LivingWill extends ViewFrame {
     }
 
     private void createPatientUnableSignature() {
-        Html intro12 = new Html("<p><b>If you are unable to physically sign this document, "+
-                "your witness/notary may sign and initial for you. If applicable have your witness/notary sign below.</b></p>");
-        Html intro13 = new Html("<p>Witness/Notary Verification: The principal of this document directly indicated to me "+
-                "that this Living Will expresses their wishes and that they intend to adopt it at this time.</p>");
+        Html intro12 = new Html(getTranslation("livingWill-intro12"));
+        Html intro13 = new Html(getTranslation("livingWill-intro13"));
 
-        patientUnableSignatureNameField = new TextField("Name");
+        patientUnableSignatureNameField = new TextField(getTranslation("livingWill-name"));
 
         patientUnableSignature = new SignaturePad();
         patientUnableSignature.setHeight("100px");
         patientUnableSignature.setWidth("400px");
         patientUnableSignature.setPenColor("#2874A6");
 
-        Button clearPatientUnableSig = new Button("Clear Signature");
+        Button clearPatientUnableSig = new Button(getTranslation("livingWill-clear_signature"));
         clearPatientUnableSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearPatientUnableSig.addClickListener(event -> {
             patientUnableSignature.clear();
         });
-        Button savePatientUnableSig = new Button("Accept Signature");
+        Button savePatientUnableSig = new Button(getTranslation("livingWill-accept_signature"));
         savePatientUnableSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         savePatientUnableSig.addClickListener(event -> {
             base64PatientUnableSignature = patientUnableSignature.getImageBase64();
@@ -494,7 +463,7 @@ public class LivingWill extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        patientUnableSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Living Will"), intro12, intro13, new BasicDivider(),
+        patientUnableSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("livingWill-living_will")), intro12, intro13, new BasicDivider(),
                 patientUnableSignatureNameField, patientUnableSignature, sigLayout);
         patientUnableSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientUnableSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -510,25 +479,24 @@ public class LivingWill extends ViewFrame {
     }
 
     private void createWitnessSignature() {
-        Html intro14 = new Html("<p><b>SIGNATURE OF WITNESS</b></p>");
-        Html intro15 = new Html("<p>I was present when this form was signed (or marked). The principal appeared to be of sound mind "+
-                "and was not forced to sign this form.");
-        Html nextSteps = new Html("<p style=\"color:blue\">Click on the <b>\"Accept Signature\"</b> button to begin review process for this consent document.</p>");
+        Html intro14 = new Html(getTranslation("livingWill-intro14"));
+        Html intro15 = new Html(getTranslation("livingWill-intro15"));
+        Html nextSteps = new Html(getTranslation("livingWill-next_steps"));
 
-        witnessName = new TextField("Witness Name");
-        witnessAddress = new TextField("Address");
+        witnessName = new TextField(getTranslation("livingWill-witness_name"));
+        witnessAddress = new TextField(getTranslation("livingWill-address"));
 
         witnessSignature = new SignaturePad();
         witnessSignature.setHeight("100px");
         witnessSignature.setWidth("400px");
         witnessSignature.setPenColor("#2874A6");
 
-        Button clearWitnessSig = new Button("Clear Signature");
+        Button clearWitnessSig = new Button(getTranslation("livingWill-clear_signature"));
         clearWitnessSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearWitnessSig.addClickListener(event -> {
             witnessSignature.clear();
         });
-        Button saveWitnessSig = new Button("Accept Signature");
+        Button saveWitnessSig = new Button(getTranslation("livingWill-accept_signature"));
         saveWitnessSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         saveWitnessSig.addClickListener(event -> {
             base64WitnessSignature = witnessSignature.getImageBase64();
@@ -542,7 +510,7 @@ public class LivingWill extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        witnessSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Living Will"), intro14, intro15, new BasicDivider(),
+        witnessSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("livingWill-living_will")), intro14, intro15, new BasicDivider(),
                 witnessName, witnessAddress, witnessSignature, sigLayout, nextSteps);
         witnessSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         witnessSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -557,19 +525,19 @@ public class LivingWill extends ViewFrame {
         witnessSignatureLayout.setVisible(false);
     }
     private Component getFooter() {
-        returnButton = new Button("Back", new Icon(VaadinIcon.BACKWARDS));
+        returnButton = new Button(getTranslation("livingWill-back"), new Icon(VaadinIcon.BACKWARDS));
         returnButton.setEnabled(false);
         returnButton.addClickListener(event -> {
             questionPosition--;
             evalNavigation();
         });
-        forwardButton = new Button("Next", new Icon(VaadinIcon.FORWARD));
+        forwardButton = new Button(getTranslation("livingWill-next"), new Icon(VaadinIcon.FORWARD));
         forwardButton.setIconAfterText(true);
         forwardButton.addClickListener(event -> {
             questionPosition++;
             evalNavigation();
         });
-        viewStateForm = new Button("View your states Living Will instructions");
+        viewStateForm = new Button(getTranslation("livingWill-view_state"));
         viewStateForm.setIconAfterText(true);
         viewStateForm.addClickListener(event -> {
             Dialog d = createInfoDialog();
@@ -603,7 +571,7 @@ public class LivingWill extends ViewFrame {
     }
 
     private void successNotification() {
-        Span content = new Span("FHIR advanced directive - Living Will successfully created!");
+        Span content = new Span(getTranslation("livingWill-success_notification"));
 
         Notification notification = new Notification(content);
         notification.setDuration(3000);
@@ -708,7 +676,7 @@ public class LivingWill extends ViewFrame {
         viewer.setHeight("800px");
         viewer.setWidth("840px");
 
-        Button closeButton = new Button("Close", e -> infoDialog.close());
+        Button closeButton = new Button(getTranslation("livingWill-close"), e -> infoDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
         FlexBoxLayout content = new FlexBoxLayout(viewer, closeButton);
@@ -736,10 +704,10 @@ public class LivingWill extends ViewFrame {
         viewer.setWidth("840px");
 
 
-        Button closeButton = new Button("Cancel", e -> docDialog.close());
+        Button closeButton = new Button(getTranslation("livingWill-cancel"), e -> docDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
-        Button acceptButton = new Button("Accept and Submit");
+        Button acceptButton = new Button(getTranslation("livingWill-accept_and_submit"));
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
@@ -760,7 +728,7 @@ public class LivingWill extends ViewFrame {
             }
         });
 
-        Button acceptAndPrintButton = new Button("Accept and Get Notarized");
+        Button acceptAndPrintButton = new Button(getTranslation("livingWill-accept_and_get_notarized"));
         acceptAndPrintButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptAndPrintButton.addClickListener(event -> {
             docDialog.close();
@@ -839,10 +807,10 @@ public class LivingWill extends ViewFrame {
 
         //additional instructions
         String addlInstructions = (String)additionalInstructionsButtonGroup.getValue();
-        if (addlInstructions != null &&  addlInstructions.contains("I HAVE NOT attached")) {
+        if (addlInstructions != null &&  addlInstructions.contains(getTranslation("livingWill-i_have_not_attached"))) {
             livingWill.setNoAdditionalInstructions(true);
         }
-        else if (addlInstructions != null && addlInstructions.contains("I HAVE attached")) {
+        else if (addlInstructions != null && addlInstructions.contains(getTranslation("livingWill-i_have_attached"))) {
             livingWill.setAdditionalInstructions(true);
         }
         else {
@@ -986,45 +954,37 @@ public class LivingWill extends ViewFrame {
     private void lifeSustainingDecisionsResponse() {
         //general statements and selections
         if (!livingWill.isProlongLifeToGreatestExtentPossible()) {
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", "If I have a terminal condition I do not want my life to be prolonged, and I do not " +
-                    "want lifesustaining treatment, beyond comfort care, that would serve only to artificially delay the moment of my death.", livingWill.isComfortCareOnly());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", getTranslation("livingWill-item1_1"), livingWill.isComfortCareOnly());
             responseList.add(item1_1);
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2 = createItemBooleanType("1.2", "If I am in a terminal condition or an irreversible coma or a persistent vegetative " +
-                    "state that my doctors reasonably feel to be irreversible or incurable, I do want the medical treatment necessary to provide care that would keep me comfortable, but I DO NOT want the following:", livingWill.isComfortCareOnlyButNot());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2 = createItemBooleanType("1.2", getTranslation("livingWill-item1_2"), livingWill.isComfortCareOnlyButNot());
             responseList.add(item1_2);
             if (livingWill.isComfortCareOnlyButNot()) {
-                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_1 = createItemBooleanType("1.3.1", "Cardiopulmonary resuscitation (CPR). For example: the use of drugs, electric " +
-                        "shock and artificial breathing.", livingWill.isNoCardioPulmonaryRecusitation());
+                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_1 = createItemBooleanType("1.3.1", getTranslation("livingWill-item1_3_1"), livingWill.isNoCardioPulmonaryRecusitation());
                 responseList.add(item1_3_1);
-                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_2 = createItemBooleanType("1.3.2", "Artificially administered food and fluids.", livingWill.isNoArtificalFluidsFoods());
+                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_2 = createItemBooleanType("1.3.2",  getTranslation("livingWill-item1_3_2"), livingWill.isNoArtificalFluidsFoods());
                 responseList.add(item1_3_2);
-                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_3 = createItemBooleanType("1.3.3", "To be taken to a hospital if at all avoidable.", livingWill.isAvoidTakingToHospital());
+                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_3 = createItemBooleanType("1.3.3",  getTranslation("livingWill-item1_3_3"), livingWill.isAvoidTakingToHospital());
                 responseList.add(item1_3_3);
             }
             if (consentSession.getConsentUser().getGender().equals("F")) {
-                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_4 = createItemBooleanType("1.4", "Regardless of any other directions I have given in this Living Will, " +
-                        "if I am known to be pregnant, I do not want life-sustaining treatment withheld or withdrawn if it is possible that the embryo/fetus will develop to the point of live birth" +
-                        " with the continued application of lifesustaining treatment.", livingWill.isPregnantSaveFetus());
+                QuestionnaireResponse.QuestionnaireResponseItemComponent item1_4 = createItemBooleanType("1.4",  getTranslation("livingWill-item1_4"), livingWill.isPregnantSaveFetus());
                 responseList.add(item1_4);
             }
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_5 = createItemBooleanType("1.5", "Regardless of any other directions I have given in this Living Will, I do want" +
-                    " the use of all medical care necessary to treat my condition until my doctors reasonably conclude that my condition is terminal or is irreversible and incurable or I am in a " +
-                    "persistent vegetative state.", livingWill.isCareUntilDoctorsConcludeNoHope());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_5 = createItemBooleanType("1.5",  getTranslation("livingWill-item1_5"), livingWill.isCareUntilDoctorsConcludeNoHope());
             responseList.add(item1_5);
         }
         else {
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_6 = createItemBooleanType("1.6", "I want my life to be prolonged to the greatest extent possible (If you select +" +
-                    "here, all others should be unselected).", livingWill.isProlongLifeToGreatestExtentPossible());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item1_6 = createItemBooleanType("1.6",  getTranslation("livingWill-item1_6"), livingWill.isProlongLifeToGreatestExtentPossible());
             responseList.add(item1_6);
         }
     }
 
     private void additionalInstructionsResponse() {
         //attachements additional instructions
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemBooleanType("2.1", "I HAVE NOT attached additional special instructions about End of Life Care I want.",
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemBooleanType("2.1", getTranslation("livingWill-item2_1"),
                 livingWill.isNoAdditionalInstructions());
         responseList.add(item2_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", "I HAVE attached additional special provisions or limitations about End of Life Care I want.",
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", getTranslation("livingWill-item2_2"),
                 livingWill.isAdditionalInstructions());
         responseList.add(item2_2);
     }
@@ -1033,17 +993,17 @@ public class LivingWill extends ViewFrame {
         //signature requirements
         boolean patientSignatureBool = false;
         if (livingWill.getPrincipleSignature().getBase64EncodeSignature() != null && livingWill.getPrincipleSignature().getBase64EncodeSignature().length > 0) patientSignatureBool = true;
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1 = createItemBooleanType("3.1", "Patient signature acquired",
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1 = createItemBooleanType("3.1", getTranslation("livingWill-item3_1"),
                 patientSignatureBool);
         responseList.add(item3_1);
         boolean patientAlternateSignatureBool = false;
         if (livingWill.getPrincipleAlternateSignature().getBase64EncodedSignature() != null && livingWill.getPrincipleAlternateSignature().getBase64EncodedSignature().length > 0) patientAlternateSignatureBool = true;
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2 = createItemBooleanType("3.2", "Patient Unable to Sign, Alternate's Signature Acquired.",
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2 = createItemBooleanType("3.2", getTranslation("livingWill-item3_2"),
                 patientAlternateSignatureBool);
         responseList.add(item3_2);
         boolean witnessSignatureBool = false;
         if (livingWill.getWitnessSignature().getBase64EncodedSignature() != null && livingWill.getWitnessSignature().getBase64EncodedSignature().length > 0) witnessSignatureBool = true;
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3 = createItemBooleanType("3.3", "Witness Signature Acquired.",
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3 = createItemBooleanType("3.3", getTranslation("livingWill-item3_3"),
                 witnessSignatureBool);
         responseList.add(item3_3);
     }
@@ -1074,24 +1034,24 @@ public class LivingWill extends ViewFrame {
             errorCheckCommon();
         }
         else {
-            errorList.add(new QuestionnaireError("Critical Error: Unable to determine signature path.", 0));
+            errorList.add(new QuestionnaireError(getTranslation("livingWill-questionnaire_error"), 0));
         }
     }
 
     private void errorCheckCommon() {
         try {
             if (base64PatientInitials == null || base64PatientInitials.length == 0) {
-                errorList.add(new QuestionnaireError("User initials can not be blank.", 0));
+                errorList.add(new QuestionnaireError(getTranslation("livingWill-user_initial_can_not_be_blank"), 0));
             }
         }
         catch (Exception ex) {
-            errorList.add(new QuestionnaireError("User initials can not be blank.", 0));
+            errorList.add(new QuestionnaireError(getTranslation("livingWill-user_initial_can_not_be_blank"), 0));
         }
         if (!livingWill.isProlongLifeToGreatestExtentPossible() && !livingWill.isComfortCareOnlyButNot() && !livingWill.isComfortCareOnly() && !livingWill.isCareUntilDoctorsConcludeNoHope() && !livingWill.isPregnantSaveFetus()) {
-            errorList.add(new QuestionnaireError("No selections made in health choices.", 2));
+            errorList.add(new QuestionnaireError(getTranslation("livingWill-no_selections_made_in_health_choices"), 2));
         }
         if (!livingWill.isNoAdditionalInstructions() && !livingWill.isAdditionalInstructions()) {
-            errorList.add(new QuestionnaireError("No selection made in additional instructions.", 3));
+            errorList.add(new QuestionnaireError(getTranslation("livingWill-no_selections_made_in_additional_instructions"), 3));
         }
     }
 
@@ -1100,62 +1060,61 @@ public class LivingWill extends ViewFrame {
             if (base64PatientSignature == null || base64PatientSignature.length == 0) {
 
                 if (base64PatientUnableSignature == null || base64PatientUnableSignature.length == 0) {
-                    errorList.add(new QuestionnaireError("User signature or alternate signature required.", 4));
+                    errorList.add(new QuestionnaireError(getTranslation("livingWill-user_signature_or_alternate_signature_required"), 4));
                 }
                 else {
                     try {
                         if (livingWill.getPrincipleAlternateSignature().getNameOfWitnessOrNotary() == null || livingWill.getPrincipleAlternateSignature().getNameOfWitnessOrNotary().isEmpty()) {
-                            errorList.add(new QuestionnaireError("Witness or notary as alternate name required.", 5));
+                            errorList.add(new QuestionnaireError(getTranslation("livingWill-witness_or_notary_as_alternate_name_required"), 5));
                         }
                     }
                     catch (Exception ex) {
-                        errorList.add(new QuestionnaireError("Witness or notary as alternate name required.", 5));
+                        errorList.add(new QuestionnaireError(getTranslation("livingWill-witness_or_notary_as_alternate_name_required"), 5));
                     }
                 }
             }
         }
         catch(Exception ex) {
-            errorList.add(new QuestionnaireError("User signature or alternate signature required.", 4));
+            errorList.add(new QuestionnaireError(getTranslation("livingWill-user_signature_or_alternate_signature_required"), 4));
         }
 
         try {
             if (base64WitnessSignature == null || base64WitnessSignature.length == 0) {
-                errorList.add(new QuestionnaireError("Witness signature can not be blank.", 6));
+                errorList.add(new QuestionnaireError(getTranslation("livingWill-witness_signature_can_not_be_blank"), 6));
             }
         }
         catch (Exception ex) {
-            errorList.add(new QuestionnaireError("Witness signature can not be blank.", 6));
+            errorList.add(new QuestionnaireError(getTranslation("livingWill-witness_signature_can_not_be_blank"), 6));
         }
         try {
             if (livingWill.getWitnessSignature().getWitnessName() == null || livingWill.getWitnessSignature().getWitnessName().isEmpty()) {
-                errorList.add(new QuestionnaireError("Witness name can not be blank.", 6));
+                errorList.add(new QuestionnaireError(getTranslation("livingWill-witness_name_can_not_be_blank"), 6));
             }
         }
         catch (Exception ex) {
-            errorList.add(new QuestionnaireError("Witness name can not be blank.", 6));
+            errorList.add(new QuestionnaireError(getTranslation("livingWill-witness_name_can_not_be_blank"), 6));
         }
         try {
             if (livingWill.getWitnessSignature().getWitnessAddress() == null || livingWill.getWitnessSignature().getWitnessAddress().isEmpty()) {
-                errorList.add(new QuestionnaireError("Witness address can not be blank.", 6));
+                errorList.add(new QuestionnaireError(getTranslation("livingWill-witness_address_can_not_be_blank"), 6));
             }
         }
         catch (Exception ex) {
-            errorList.add(new QuestionnaireError("Witness address can not be blank.", 6));
+            errorList.add(new QuestionnaireError(getTranslation("livingWill-witness_address_can_not_be_blank"), 6));
         }
     }
 
     private void createErrorDialog() {
-        Html errorIntro = new Html("<p><b>The following errors were identified. You will need to correct them before saving this consent document.</b></p>");
+        Html errorIntro = new Html(getTranslation("livingWill-errorIntro"));
         Html flowTypeIntro;
         if (advDirectiveFlowType.equals("Default")) {
-            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all non-optional questions, signatures, and signature information is required.</p>");
+            flowTypeIntro = new Html(getTranslation("livingWill-low_type_intro1"));
         }
         else {
-            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all non-optional questions are required. You are expected to print a copy of this " +
-                    "consent document and acquire signatures for it in the presence of a notary.  You are then required to scan and upload this document to activate enforcement of it.</p>");
+            flowTypeIntro = new Html(getTranslation("livingWill-low_type_intro2"));
         }
 
-        Button errorBTN = new Button("Correct Errors");
+        Button errorBTN = new Button(getTranslation("livingWill-correct_errors"));
         errorBTN.setWidthFull();
         errorBTN.addClickListener(event -> {
             questionPosition = errorList.get(0).getQuestionnaireIndex();
@@ -1194,6 +1153,6 @@ public class LivingWill extends ViewFrame {
         errorDialog.setCloseOnOutsideClick(false);
         errorDialog.setCloseOnEsc(false);
         errorDialog.setResizable(true);
-        errorDialog.add(createHeader(VaadinIcon.WARNING, "Failed Verification"),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
+        errorDialog.add(createHeader(VaadinIcon.WARNING, getTranslation("livingWill-failed_verification")),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
     }
 }
