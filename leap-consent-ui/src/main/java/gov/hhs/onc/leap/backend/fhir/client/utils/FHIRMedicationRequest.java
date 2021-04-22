@@ -4,6 +4,7 @@ import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.backend.fhir.client.HapiFhirServer;
 import gov.hhs.onc.leap.session.ConsentSession;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Consent;
 import org.hl7.fhir.r4.model.MedicationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,5 +33,19 @@ public class FHIRMedicationRequest {
             medicationRequestCollection.add(c);
         }
         return medicationRequestCollection;
+    }
+
+    public boolean consentDeclined(MedicationRequest medRequest) {
+        boolean res = false;
+        medRequest.setStatus(MedicationRequest.MedicationRequestStatus.CANCELLED);
+        Bundle bundle = hapiFhirServer.createAndExecuteBundle(medRequest);
+        return res;
+    }
+
+    public boolean consentGranted(MedicationRequest medRequest) {
+        boolean res = false;
+        medRequest.setStatus(MedicationRequest.MedicationRequestStatus.ACTIVE);
+        Bundle bundle = hapiFhirServer.createAndExecuteBundle(medRequest);
+        return res;
     }
 }
