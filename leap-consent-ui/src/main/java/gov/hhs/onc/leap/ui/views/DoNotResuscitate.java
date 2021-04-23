@@ -13,7 +13,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
@@ -26,9 +25,9 @@ import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
 import elemental.json.Json;
 import gov.hhs.onc.leap.adr.model.QuestionnaireError;
-import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
+import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -156,11 +155,7 @@ public class DoNotResuscitate extends ViewFrame {
     }
 
     private Component createViewContent() {
-        Html intro = new Html("<p><b>GENERAL INFORMATION AND INSTRUCTIONS:</b> A Prehospital Medical Care Directive is a document "+
-                "signed by you and your doctor that informs emergency medical technicians (EMTs) or hospital emergency personnel not "+
-                "to resuscitate you. Sometimes this is called a DNR – Do Not Resuscitate. If you have this form, EMTs and other emergency "+
-                "personnel will not use equipment, drugs, or devices to restart your heart or breathing, but they will not withhold medical "+
-                "interventions that are necessary to provide comfort care or to alleviate pain. </p>");
+        Html intro = new Html(getTranslation("DoNotResuscitate-intro"));
 
         createPreHospitalMedicalDirective();
         createHealthcarePowerOfAttorney();
@@ -181,10 +176,8 @@ public class DoNotResuscitate extends ViewFrame {
     }
 
     private void createPreHospitalMedicalDirective() {
-        Html intro2 = new Html("<p>In the event of cardiac or respiratory arrest, I refuse any resuscitation measures including "+
-                "cardiac compression, endotracheal intubation and other advanced airway management, artificial ventilation, defibrillation, "+
-                "administration of advanced cardiac life support drugs and related emergency medical procedures. </p>");
-        patientFullNameField = new TextField("Patient's Full Name:");
+        Html intro2 = new Html(getTranslation("DoNotResuscitate-intro2"));
+        patientFullNameField = new TextField(getTranslation("DoNotResuscitate-patient_full_name"));
         patientFullName = consentUser.getFirstName() +" "+consentUser.getMiddleName()+" "+consentUser.getLastName();
         patientFullNameField.setValue(patientFullName);
 
@@ -193,12 +186,12 @@ public class DoNotResuscitate extends ViewFrame {
         patientSignature.setWidth("400px");
         patientSignature.setPenColor("#2874A6");
 
-        Button clearPatientSig = new Button("Clear Signature");
+        Button clearPatientSig = new Button(getTranslation("DoNotResuscitate-clear_signature"));
         clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearPatientSig.addClickListener(event -> {
             patientSignature.clear();
         });
-        Button savePatientSig = new Button("Accept Signature");
+        Button savePatientSig = new Button(getTranslation("DoNotResuscitate-accept_signature"));
         savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         savePatientSig.addClickListener(event -> {
             base64PatientSignature = patientSignature.getImageBase64();
@@ -212,7 +205,7 @@ public class DoNotResuscitate extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro2, new BasicDivider(), patientFullNameField, patientSignature, sigLayout);
+        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("DoNotResuscitate-prehospital_medical_care_directive")),intro2, new BasicDivider(), patientFullNameField, patientSignature, sigLayout);
         patientSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         patientSignatureLayout.setHeightFull();
@@ -226,21 +219,21 @@ public class DoNotResuscitate extends ViewFrame {
     }
 
     private void createHealthcarePowerOfAttorney() {
-        Html intro3 = new Html("<p><b>If I am unable to communicate my wishes, and I have designated a Health Care Power of Attorney, my elected Health Care agent shall sign:</b></p>");
-        healthcarePowerOfAttorneyName = new TextField("Health Care Power of Attorney Printed Name:");
+        Html intro3 = new Html(getTranslation("DoNotResuscitate-intro3"));
+        healthcarePowerOfAttorneyName = new TextField(getTranslation("DoNotResuscitate-healthcare_POA_name"));
 
         healthcarePOASignature = new SignaturePad();
         healthcarePOASignature.setHeight("100px");
         healthcarePOASignature.setWidth("400px");
         healthcarePOASignature.setPenColor("#2874A6");
 
-        Button clearPOASign = new Button("Clear Signature");
+        Button clearPOASign = new Button(getTranslation("DoNotResuscitate-clear_signature"));
         clearPOASign.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearPOASign.addClickListener(event -> {
            healthcarePOASignature.clear();
         });
 
-        Button savePOASig = new Button("Accept Signature");
+        Button savePOASig = new Button(getTranslation("DoNotResuscitate-accept_signature"));
         savePOASig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         savePOASig.addClickListener(event -> {
             base64HealthcarePOASignature = healthcarePOASignature.getImageBase64();
@@ -254,7 +247,7 @@ public class DoNotResuscitate extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        healthcarePowerOfAttorney = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro3, new BasicDivider(), healthcarePowerOfAttorneyName, healthcarePOASignature, sigLayout);
+        healthcarePowerOfAttorney = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("DoNotResuscitate-prehospital_medical_care_directive")),intro3, new BasicDivider(), healthcarePowerOfAttorneyName, healthcarePOASignature, sigLayout);
         healthcarePowerOfAttorney.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         healthcarePowerOfAttorney.setBoxSizing(BoxSizing.BORDER_BOX);
         healthcarePowerOfAttorney.setHeightFull();
@@ -269,17 +262,17 @@ public class DoNotResuscitate extends ViewFrame {
     }
 
     private void createPatientPhysicalCharacteristics() {
-        Html intro4 =  new Html("<p><b>PROVIDE THE FOLLOWING INFORMATION OR ATTACH A RECENT PHOTO:</b></p>");
-        Html fileTypes = new Html("<p><b>Note:</b> Supported file types are: *.jpeg, *.jpg, *.png, and *.gif. File size limit: 1Mb.</p>");
-        dateOfBirthField = new TextField("Date of Birth");
+        Html intro4 =  new Html(getTranslation("DoNotResuscitate-intro4"));
+        Html fileTypes = new Html(getTranslation("DoNotResuscitate-file_types"));
+        dateOfBirthField = new TextField(getTranslation("DoNotResuscitate-dob"));
         dateOfBirthField.setValue(getDateString(consentUser.getDateOfBirth()));
-        genderField = new TextField("Gender");
+        genderField = new TextField(getTranslation("DoNotResuscitate-gender"));
         genderField.setValue(consentUser.getGender());
-        raceField = new TextField("Race");
+        raceField = new TextField(getTranslation("DoNotResuscitate-race"));
         raceField.setValue(consentUser.getEthnicity());
-        eyecolorField = new TextField("Eye Color");
+        eyecolorField = new TextField(getTranslation("DoNotResuscitate-eye_color"));
         eyecolorField.setValue(consentUser.getEyeColor());
-        haircolorField = new TextField("Hair Color");
+        haircolorField = new TextField(getTranslation("DoNotResuscitate-hair_color"));
         haircolorField.setValue(consentUser.getHairColor());
 
         uploadBuffer = new MemoryBuffer();
@@ -319,7 +312,7 @@ public class DoNotResuscitate extends ViewFrame {
         hImageLayout.setPadding(true);
         hImageLayout.setSpacing(true);
 
-        physicalCharacteristics = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro4, new BasicDivider(), dateOfBirthField,
+        physicalCharacteristics = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("DoNotResuscitate-prehospital_medical_care_directive")),intro4, new BasicDivider(), dateOfBirthField,
                 genderField, raceField, eyecolorField, haircolorField, new BasicDivider(), hImageLayout, fileTypes);
         physicalCharacteristics.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         physicalCharacteristics.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -335,13 +328,13 @@ public class DoNotResuscitate extends ViewFrame {
     }
 
     private void createPhysicianOrHospiceInfo() {
-        Html intro5 = new Html("<p><b>INFORMATION ABOUT MY DOCTOR AND HOSPICE</b> (if I am in Hospice):</p>");
+        Html intro5 = new Html(getTranslation("DoNotResuscitate-intro5"));
 
-        physicianNameField = new TextField("Physician:");
-        physicianPhoneField = new TextField("Phone Number:");
-        hospiceField = new TextField("Hospice Program, if applicable(name):");
+        physicianNameField = new TextField(getTranslation("DoNotResuscitate-physician"));
+        physicianPhoneField = new TextField(getTranslation("DoNotResuscitate-phone"));
+        hospiceField = new TextField(getTranslation("DoNotResuscitate-hospice"));
 
-        physicianOrHospice = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro5, new BasicDivider(), physicianNameField, physicianPhoneField, hospiceField);
+        physicianOrHospice = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("DoNotResuscitate-prehospital_medical_care_directive")),intro5, new BasicDivider(), physicianNameField, physicianPhoneField, hospiceField);
         physicianOrHospice.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         physicianOrHospice.setBoxSizing(BoxSizing.BORDER_BOX);
         physicianOrHospice.setHeightFull();
@@ -357,22 +350,21 @@ public class DoNotResuscitate extends ViewFrame {
     }
 
     private void createAttestation() {
-        Html intro6 = new Html("<p><b>SIGNATURE OF DOCTOR OR OTHER HEALTH CARE PROVIDER</b></p>");
-        Html intro7 = new Html("<p>I have explained this form and its consequences to the signer and obtained assurance that the signer understands that "+
-                "death may result from any refused care listed above. </p>");
+        Html intro6 = new Html(getTranslation("DoNotResuscitate-intro6"));
+        Html intro7 = new Html(getTranslation("DoNotResuscitate-intro7"));
 
         attestationSignature = new SignaturePad();
         attestationSignature.setHeight("100px");
         attestationSignature.setWidth("400px");
         attestationSignature.setPenColor("#2874A6");
 
-        Button clearAttestationSig = new Button("Clear Signature");
+        Button clearAttestationSig = new Button(getTranslation("DoNotResuscitate-clear_signature"));
         clearAttestationSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearAttestationSig.addClickListener(event -> {
            attestationSignature.clear();
         });
 
-        Button saveAttestationSig = new Button("Accept Signature");
+        Button saveAttestationSig = new Button(getTranslation("DoNotResuscitate-accept_signature"));
         saveAttestationSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         saveAttestationSig.addClickListener(event -> {
             base64AttestationSignature = attestationSignature.getImageBase64();
@@ -386,7 +378,7 @@ public class DoNotResuscitate extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        attestation = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro6, intro7, new BasicDivider(), attestationSignature, sigLayout);
+        attestation = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("DoNotResuscitate-prehospital_medical_care_directive")),intro6, intro7, new BasicDivider(), attestationSignature, sigLayout);
         attestation.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         attestation.setBoxSizing(BoxSizing.BORDER_BOX);
         attestation.setHeightFull();
@@ -402,22 +394,22 @@ public class DoNotResuscitate extends ViewFrame {
     }
 
     private void createWitnessSignature() {
-        Html intro8 = new Html("<p><b>SIGNATURE OF WITNESS OR NOTARY (NOT BOTH)</b></p>");
-        Html intro9 = new Html("<p>I was present when this form was signed (or marked). The patient then appeared to be of sound mind and free from duress. </p>");
-        Html nextSteps = new Html("<p style=\"color:blue\">Click on the <b>\"Accept Signature\"</b> button to begin review process for this consent document.</p>");
+        Html intro8 = new Html(getTranslation("DoNotResuscitate-intro8"));
+        Html intro9 = new Html(getTranslation("DoNotResuscitate-intro9"));
+        Html nextSteps = new Html(getTranslation("DoNotResuscitate-next_steps"));
 
         witnessSignature = new SignaturePad();
         witnessSignature.setHeight("100px");
         witnessSignature.setWidth("400px");
         witnessSignature.setPenColor("#2874A6");
 
-        Button clearWitnessSig = new Button("Clear Signature");
+        Button clearWitnessSig = new Button(getTranslation("DoNotResuscitate-clear_signature"));
         clearWitnessSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearWitnessSig.addClickListener(event -> {
             witnessSignature.clear();
         });
 
-        Button savewitnessSig = new Button("Accept Signature");
+        Button savewitnessSig = new Button(getTranslation("DoNotResuscitate-accept_signature"));
         savewitnessSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         savewitnessSig.addClickListener(event -> {
             base64WitnessSignature = witnessSignature.getImageBase64();
@@ -431,7 +423,7 @@ public class DoNotResuscitate extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        witness = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "PREHOSPITAL MEDICAL CARE DIRECTIVE"),intro8, intro9, new BasicDivider(), witnessSignature, sigLayout, nextSteps);
+        witness = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("DoNotResuscitate-prehospital_medical_care_directive")),intro8, intro9, new BasicDivider(), witnessSignature, sigLayout, nextSteps);
         witness.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         witness.setBoxSizing(BoxSizing.BORDER_BOX);
         witness.setHeightFull();
@@ -514,19 +506,19 @@ public class DoNotResuscitate extends ViewFrame {
 
 
     private Component getFooter() {
-        returnButton = new Button("Back", new Icon(VaadinIcon.BACKWARDS));
+        returnButton = new Button(getTranslation("DoNotResuscitate-back"), new Icon(VaadinIcon.BACKWARDS));
         returnButton.setEnabled(false);
         returnButton.addClickListener(event -> {
             questionPosition--;
             evalNavigation();
         });
-        forwardButton = new Button("Next", new Icon(VaadinIcon.FORWARD));
+        forwardButton = new Button(getTranslation("DoNotResuscitate-next"), new Icon(VaadinIcon.FORWARD));
         forwardButton.setIconAfterText(true);
         forwardButton.addClickListener(event -> {
             questionPosition++;
             evalNavigation();
         });
-        viewStateForm = new Button("View your state's DNR instructions");
+        viewStateForm = new Button(getTranslation("DoNotResuscitate-view_your_State_dnr_instructions"));
         viewStateForm.setIconAfterText(true);
         viewStateForm.addClickListener(event -> {
             Dialog d = createInfoDialog();
@@ -564,7 +556,7 @@ public class DoNotResuscitate extends ViewFrame {
         viewer.setHeight("800px");
         viewer.setWidth("840px");
 
-        Button closeButton = new Button("Close", e -> infoDialog.close());
+        Button closeButton = new Button(getTranslation(getTranslation("DoNotResuscitate-close")), e -> infoDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
         FlexBoxLayout content = new FlexBoxLayout(viewer, closeButton);
@@ -593,10 +585,10 @@ public class DoNotResuscitate extends ViewFrame {
         viewer.setWidth("840px");
 
 
-        Button closeButton = new Button("Cancel", e -> docDialog.close());
+        Button closeButton = new Button(getTranslation("DoNotResuscitate-cancel"), e -> docDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
-        Button acceptButton = new Button("Accept and Submit");
+        Button acceptButton = new Button(getTranslation("DoNotResuscitate-accept_and_submit"));
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
@@ -617,7 +609,7 @@ public class DoNotResuscitate extends ViewFrame {
             }
         });
 
-        Button acceptAndPrintButton = new Button("Accept and Get Notarized");
+        Button acceptAndPrintButton = new Button(getTranslation("DoNotResuscitate-accept_and_get_notarized"));
         acceptAndPrintButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptAndPrintButton.addClickListener(event -> {
             docDialog.close();
@@ -775,7 +767,7 @@ public class DoNotResuscitate extends ViewFrame {
     }
 
     private void successNotification() {
-        Span content = new Span("FHIR advanced directive - DNR successfully created!");
+        Span content = new Span(getTranslation("DoNotResuscitate-fhir_advanced_directive_ndr_successfully_created"));
 
         Notification notification = new Notification(content);
         notification.setDuration(3000);
@@ -815,35 +807,35 @@ public class DoNotResuscitate extends ViewFrame {
         //patient signature represents response of true
         boolean patientSignatureBool = false;
         if (base64PatientSignature != null && base64PatientSignature.length > 0) patientSignatureBool = true;
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", "In the event of cardiac or respiratory arrest, I refuse any resuscitation measures including cardiac compression, endotracheal intubation and other advanced airway management, artificial ventilation, defibrillation, administration of advanced cardiac life support drugs and related emergency medical procedures. ", patientSignatureBool);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", getTranslation("DoNotResuscitate-questionnaire_response_item1_1"), patientSignatureBool);
         responseList.add(item1_1);
     }
 
     private void powerOfAttorneySignatureResponse() {
         //name of power of attorney if patient unable to sign
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemStringType("2.1", "Healthcare Power of Attorney or Agent Name", healthcarePowerOfAttorneyName.getValue());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemStringType("2.1", getTranslation("DoNotResuscitate-questionnaire_response_item2_1"), healthcarePowerOfAttorneyName.getValue());
         responseList.add(item2_1);
 
         //signature of power of attorney acquired
         boolean poaSignature = false;
         if (base64HealthcarePOASignature != null && base64HealthcarePOASignature.length > 0) poaSignature = true;
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", "Healthcare Power of Attorney or Agent Signature Acquired", poaSignature);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", getTranslation("DoNotResuscitate-questionnaire_response_item2_2"), poaSignature);
         responseList.add(item2_2);
     }
 
     private void physicianInfoResponse() {
         //name of physician
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1 = createItemStringType("3.1", "Physician Name", physicianNameField.getValue());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1 = createItemStringType("3.1", getTranslation("DoNotResuscitate-questionnaire_response_item3_1"), physicianNameField.getValue());
         responseList.add(item3_1);
 
         //Physician Phone Number
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2 = createItemStringType("3.2", "Phone Number", physicianPhoneField.getValue());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2 = createItemStringType("3.2", getTranslation("DoNotResuscitate-questionnaire_response_item3_2"), physicianPhoneField.getValue());
         responseList.add(item3_2);
     }
 
     private void hospiceResponse() {
         //Hospice Name
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3 = createItemStringType("3.3", "Hospice program, if applicable(name)", hospiceField.getValue());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_3 = createItemStringType("3.3", getTranslation("DoNotResuscitate-questionnaire_response_item3_3"), hospiceField.getValue());
         responseList.add(item3_3);
     }
 
@@ -851,10 +843,10 @@ public class DoNotResuscitate extends ViewFrame {
         //attestation based on Healthcare Provider signature
         boolean attestation = false;
         if ( base64AttestationSignature != null &&  base64AttestationSignature.length > 0) attestation = true;
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = createItemBooleanType("4.1", "I have explained this form and its consequences to the signer and obtained assurance that the signer understands that death may result from any refused care listed above.", attestation);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = createItemBooleanType("4.1", getTranslation("DoNotResuscitate-questionnaire_response_item4_1"), attestation);
         responseList.add(item4_1);
 
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", "Signature of Physician or Healthcare provider acquired", attestation);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", getTranslation("DoNotResuscitate-questionnaire_response_item4_2"), attestation);
         responseList.add(item4_2);
     }
 
@@ -862,7 +854,7 @@ public class DoNotResuscitate extends ViewFrame {
         //signature of witness or notary
         boolean witness = false;
         if (base64WitnessSignature != null && base64WitnessSignature.length > 0) witness = true;
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1 = createItemBooleanType("5.1", "I was present when this form was signed (or marked). The patient then appeared to be of sound mind and free from duress.", witness);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1 = createItemBooleanType("5.1", getTranslation("DoNotResuscitate-questionnaire_response_item5_1"), witness);
         responseList.add(item5_1);
     }
 
@@ -906,27 +898,27 @@ public class DoNotResuscitate extends ViewFrame {
             errorCheckCommon();
         }
         else {
-            errorList.add(new QuestionnaireError("Critical Error: Unable to determine signature path.", 0));
+            errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-critical_error_unable_to_determine_signature_path"), 0));
         }
     }
 
     private void errorCheckCommon() {
         try {
             if (physicianNameField.getValue() == null || physicianNameField.getValue().isEmpty()) {
-                errorList.add(new QuestionnaireError("Physician name can not be blank.", 3));
+                errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-physician_name_can_not_be_blank"), 3));
             }
         }
         catch (Exception ex) {
-            errorList.add(new QuestionnaireError("Physician name can not be blank.", 3));
+            errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-physician_name_can_not_be_blank"), 3));
         }
 
         try {
             if (physicianPhoneField.getValue() == null || physicianPhoneField.getValue().isEmpty()) {
-                errorList.add(new QuestionnaireError("Physician phone number can not be blank.", 3));
+                errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-physician_phone_number_can_not_be_blank"), 3));
             }
         }
         catch (Exception ex) {
-            errorList.add(new QuestionnaireError("Physician phone number can not be blank.", 3));
+            errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-physician_phone_number_can_not_be_blank"), 3));
         }
 
     }
@@ -936,55 +928,54 @@ public class DoNotResuscitate extends ViewFrame {
         try {
             if (base64PatientSignature == null || base64PatientSignature.length == 0) {
                 if (base64HealthcarePOASignature == null || base64HealthcarePOASignature.length == 0) {
-                    errorList.add(new QuestionnaireError("Patient signature or signature of POA must be provided.", 0));
+                    errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-patient_signature_or_signature_of_POA_must_be_provided"), 0));
                 }
                 else {
                     //check for poa name
                     if (healthcarePowerOfAttorneyName.getValue() == null || healthcarePowerOfAttorneyName.getValue().isEmpty()) {
-                        errorList.add(new QuestionnaireError("Health care power of attorney name can not be blank.", 1));
+                        errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-health_care_power_of_attoney_name_can_not_be_blank"), 1));
                     }
                 }
             }
         }
         catch (Exception ex) {
-            errorList.add(new QuestionnaireError("Patient signature or signature of POA must be provided.", 0));
+            errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-patient_signature_or_signature_of_POA_must_be_provided"), 0));
             log.warn("Patient Signature check: "+ex.getMessage());
         }
 
         try {
             if (base64AttestationSignature == null || base64AttestationSignature.length == 0) {
-                errorList.add(new QuestionnaireError("Physician attestation signature must be provided.", 4));
+                errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-physician_attestation_signature_must_be_provided"), 4));
             }
         }
         catch (Exception ex) {
-            errorList.add(new QuestionnaireError("Physician attestation signature must be provided.", 4));
+            errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-physician_attestation_signature_must_be_provided"), 4));
             log.warn("Physician attestation error: "+ ex.getMessage());
         }
 
         try {
             if (base64WitnessSignature == null || base64WitnessSignature.length == 0) {
-                errorList.add(new QuestionnaireError("Witness signature must be provided.", 5));
+                errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-witness_signature_must_be_provided"), 5));
             }
         }
         catch (Exception ex) {
-            errorList.add(new QuestionnaireError("Witness signature must be provided.", 5));
+            errorList.add(new QuestionnaireError(getTranslation("DoNotResuscitate-witness_signature_must_be_provided"), 5));
             log.warn("Witness signature error: "+ ex.getMessage());
         }
 
     }
 
     private void createErrorDialog() {
-        Html errorIntro = new Html("<p><b>The following errors were identified. You will need to correct them before saving this consent document.</b></p>");
+        Html errorIntro = new Html(getTranslation("DoNotResuscitate-error_intro"));
         Html flowTypeIntro;
         if (advDirectiveFlowType.equals("Default")) {
-            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all non-optional questions, signatures, and signature information is required.</p>");
+            flowTypeIntro = new Html(getTranslation("DoNotResuscitate-flow_type_intro1"));
         }
         else {
-            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all non-optional questions are required. You are expected to print a copy of this " +
-                    "consent document and acquire signatures for it in the presence of a notary.  You are then required to scan and upload this document to activate enforcement of it.</p>");
+            flowTypeIntro = new Html(getTranslation("DoNotResuscitate-flow_type_intro2"));
         }
 
-        Button errorBTN = new Button("Correct Errors");
+        Button errorBTN = new Button(getTranslation("DoNotResuscitate-correct_errors"));
         errorBTN.setWidthFull();
         errorBTN.addClickListener(event -> {
             questionPosition = errorList.get(0).getQuestionnaireIndex();
@@ -1023,6 +1014,6 @@ public class DoNotResuscitate extends ViewFrame {
         errorDialog.setCloseOnOutsideClick(false);
         errorDialog.setCloseOnEsc(false);
         errorDialog.setResizable(true);
-        errorDialog.add(createHeader(VaadinIcon.WARNING, "Failed Verification"),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
+        errorDialog.add(createHeader(VaadinIcon.WARNING, getTranslation("DoNotResuscitate-failed_verification")),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
     }
 }
