@@ -685,8 +685,11 @@ public class NotificationView extends ViewFrame {
             String shortName = mReq.getMedicationCodeableConcept().getCoding().get(0).getDisplay();
             String requestor = mReq.getRequester().getDisplay();
             String destination = "unknownview";
-            ConsentNotification res = new ConsentNotification(reqDate, actionRequired, status, shortName, requestor, destination, mReq);
-            reqList.add(res);
+            //filter for ones we care about
+            if (status.equals(ConsentNotification.Status.ACTIVE) || status.equals(ConsentNotification.Status.ONHOLD) || status.equals(ConsentNotification.Status.CANCELLED)) {
+                ConsentNotification res = new ConsentNotification(reqDate, actionRequired, status, shortName, requestor, destination, mReq);
+                reqList.add(res);
+            }
         }
 
         return reqList;
@@ -880,7 +883,7 @@ public class NotificationView extends ViewFrame {
         Consent.provisionComponent purpose = new Consent.provisionComponent();
 
 
-        if (consentGranted) {
+
             Consent.provisionComponent requestorProvision = new Consent.provisionComponent();
             requestorProvision.setType(Consent.ConsentProvisionType.PERMIT);
             List<Coding> purposeList = new ArrayList<>();
@@ -929,7 +932,7 @@ public class NotificationView extends ViewFrame {
             requestorProvision.setAction(sensActionCodeList);
 
             provision.addProvision(requestorProvision);
-        }
+
 
 
 
@@ -978,6 +981,7 @@ public class NotificationView extends ViewFrame {
         grid.setDataProvider(medRequestDataProvider);
         grid.getDataProvider().refreshAll();
         medicationRequestLayout.setVisible(true);
+        UI.getCurrent().navigate("consentdocumentview");
     }
 
     private void updateMedicationRequestStatus() {
@@ -989,4 +993,5 @@ public class NotificationView extends ViewFrame {
             fhirMedicationRequestClient.consentDeclined(medicationRequest);
         }
     }
+
 }

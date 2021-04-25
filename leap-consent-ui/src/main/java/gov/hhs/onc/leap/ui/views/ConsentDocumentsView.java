@@ -28,6 +28,7 @@ import com.vaadin.flow.server.StreamResource;
 import gov.hhs.onc.leap.backend.TestData;
 import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRMedicationRequest;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.Badge;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
@@ -48,6 +49,7 @@ import gov.hhs.onc.leap.ui.util.css.WhiteSpace;
 import org.apache.commons.io.IOUtils;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Consent;
+import org.hl7.fhir.r4.model.MedicationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +76,10 @@ public class ConsentDocumentsView extends SplitViewFrame {
 
     @Autowired
     private FHIRConsent fhirConsentClient;
+
+    @Autowired
+    private FHIRMedicationRequest fhirMedicationRequest;
+
     private Dialog docDialog;
 
    @Override
@@ -438,6 +444,18 @@ public class ConsentDocumentsView extends SplitViewFrame {
         ConsentDocument cd = ocd.get();
         Consent consent = cd.getFhirConsentResource();
         fhirConsentClient.revokeConsent(consent);
+        if (consent.getScope().getCoding().get(0).getCode().equals("treatment")) {
+            String extensionValue = consent.getExtension().get(0).getValue().toString();
+            if (extensionValue.contains("MedicationRequest")) {
+                revokeAndStopMedicationRequest(extensionValue);
+            }
+            else if (extensionValue.contains("ServiceRequest")) {
+                //not implemented at this time
+            }
+            else {
+                log.error("Unable to determine treatment type to be revoked.");
+            }
+        }
         dataProvider = DataProvider.ofCollection(getAllPatientConsents());
         grid.setDataProvider(dataProvider);
         grid.getDataProvider().refreshAll();
@@ -531,4 +549,15 @@ public class ConsentDocumentsView extends SplitViewFrame {
         docDialog.setDraggable(true);
     }
 
+    private boolean revokeAndStopMedicationRequest(String url) {
+       boolean res = false;
+       try {
+           MedicationRequest medRequest = fhirMedicationRequest.getMedicationRequestByID(url);
+           fhirMedicationRequest.consentRevoked(medRequest);
+       }
+       catch (Exception ex) {
+           log.error("Failed revoke action for Medication request. "+ex.getMessage());
+       }
+       return res;
+    }
 }

@@ -230,6 +230,16 @@ public class HapiFhirServer {
         return bundle;
     }
 
+    public Bundle getMedicationRequestById(String id) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(MedicationRequest.class)
+                .where(Resource.RES_ID.exactly().code(id))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
+
     public Bundle getAllConsentsForPatient(String id) {
         log.warn("ID from session: " + id);
         Bundle bundle = hapiClient
