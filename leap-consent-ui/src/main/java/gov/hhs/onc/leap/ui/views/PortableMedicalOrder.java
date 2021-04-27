@@ -14,7 +14,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -22,12 +21,11 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
-import gov.hhs.onc.leap.adr.model.QuestionnaireError;
-import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.adr.model.POLSTPortableMedicalOrder;
-import gov.hhs.onc.leap.adr.model.PowerOfAttorneyHealthCare;
+import gov.hhs.onc.leap.adr.model.QuestionnaireError;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
+import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -43,7 +41,6 @@ import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
-import gov.hhs.onc.leap.ui.util.pdf.PDFPOAHealthcareHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPOLSTHandler;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
@@ -218,10 +215,7 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private Component createViewContent() {
-        Html intro = new Html("<p>Health care providers, the patient, or patient representative, should complete this form only after the "+
-                "health care provider has had a conversation with the patient, or the patient’s representative.  "+
-                "The POLST decision-making process is for patients who are at risk for a life-threatening clinical event because they have a serious life-limiting medical "+
-                "condition, which may include advanced frailty <a href=\"http://www.polst.org//guidance-appropriate-patients-pdf\">(www.polst.org/guidance-appropriate-patients-pdf)</a>.</p>" );
+        Html intro = new Html(getTranslation("PortableMedicalOrder-intro"));
 
         createPatientGeneralInfo();
         createCardiopulmonaryResuscitationOrders();
@@ -253,15 +247,15 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createPatientGeneralInfo() {
-        Html intro2 = new Html("<p><b>This is a medical order, not an advance directive. For information about POLST and to understand this document, visit:</b> <a href=\"http://www.polst.org/form\">www.polst.org/form</a></p>");
+        Html intro2 = new Html(getTranslation("PortableMedicalOrder-intro2"));
 
-        patientFirstName = new TextField("Patient's First Name");
-        patientPreferredName = new TextField("Preferred Name");
-        patientMiddleName = new TextField("Middle Name/Initials");
-        patientLastName = new TextField("Last Name");
-        patientNameSuffix = new TextField("Suffix(Sr,Jr,etc)");
+        patientFirstName = new TextField(getTranslation("PortableMedicalOrder-patient_first_name"));
+        patientPreferredName = new TextField(getTranslation("PortableMedicalOrder-patient_preferred_name"));
+        patientMiddleName = new TextField(getTranslation("PortableMedicalOrder-patient_middle_name"));
+        patientLastName = new TextField(getTranslation("PortableMedicalOrder-patien_last_name"));
+        patientNameSuffix = new TextField(getTranslation("PortableMedicalOrder-patient_name_suffix"));
 
-        Label dobLabel = new Label("DOB (mm/dd/yyyy");
+        Label dobLabel = new Label(getTranslation("PortableMedicalOrder-dob"));
         Label dobSeparator1 = new Label("/");
         Label dobSeparator = new Label("/");
         patientDobYear = new TextField("");
@@ -270,7 +264,7 @@ public class PortableMedicalOrder extends ViewFrame {
         patientDobMonth.setWidth("50px");
         patientDobDay = new TextField("");
         patientDobDay.setWidth("50px");
-        Label stateOfCompletion = new Label("State where form was completed: "+consentSession.getPrimaryState());
+        Label stateOfCompletion = new Label(getTranslation("PortableMedicalOrder-state_where_form_was_completed") + consentSession.getPrimaryState());
         patientDobLayout = new HorizontalLayout();
         patientDobLayout.add(dobLabel, patientDobMonth, dobSeparator1, patientDobDay, dobSeparator, patientDobYear, stateOfCompletion);
         patientDobLayout.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -302,10 +296,10 @@ public class PortableMedicalOrder extends ViewFrame {
                 patientGenderM.clear();
             }
         });
-        Label genderLabel = new Label("Gender");
+        Label genderLabel = new Label(getTranslation("PortableMedicalOrder-gender"));
 
 
-        Label ssnLabel = new Label("Social Security Number’s last 4 digits (optional): xxx-xx-");
+        Label ssnLabel = new Label(getTranslation("PortableMedicalOrder-social_security_number_last_4_digits"));
         last4ssn1 = new TextField();
         last4ssn1.setWidth("50px");
         last4ssn2 = new TextField();
@@ -337,7 +331,7 @@ public class PortableMedicalOrder extends ViewFrame {
             patientGenderX.setValue(true);
         }
 
-        patientGeneralInfoLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Patient Information"),intro2, new BasicDivider(),
+        patientGeneralInfoLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-patient_information")),intro2, new BasicDivider(),
                 patientFirstName, patientPreferredName, patientMiddleName, patientLastName, patientDobLayout, ssnLayout);
         patientGeneralInfoLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientGeneralInfoLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -353,22 +347,22 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createCardiopulmonaryResuscitationOrders() {
-        Html intro3 = new Html("<p><b>Follow these orders if patient has no pulse and is not breathing.</b></p>");
+        Html intro3 = new Html(getTranslation("PortableMedicalOrder-intro3"));
 
         yesCPR = new Checkbox();
-        yesCPR.setLabelAsHtml("<p><b>YES CPR: Attempt Resuscitation, including mechanical ventilation, defibrillation and cardioversion.</b> (Requires choosing Full Treatments in Section B)</p>");
+        yesCPR.setLabelAsHtml(getTranslation("PortableMedicalOrder-yes_CPR"));
         yesCPR.addValueChangeListener(event -> {
            Boolean b = (Boolean)event.getValue();
            if (b) noCPR.clear();
         });
         noCPR = new Checkbox();
-        noCPR.setLabelAsHtml("<p><b>NO CPR: Do Not Attempt Resuscitation.</b> (May choose any option in Section B)</p>");
+        noCPR.setLabelAsHtml(getTranslation("PortableMedicalOrder-no_CPR"));
         noCPR.addValueChangeListener(event -> {
            Boolean b = (Boolean)event.getValue();
            if (b) yesCPR.clear();
         });
 
-        cardiopulmonaryResuscitationOrdersLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "A. Cardiopulmonary Resuscitation Orders"),intro3, new BasicDivider(),
+        cardiopulmonaryResuscitationOrdersLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-cariopulmonary_resuscitation_orders")),intro3, new BasicDivider(),
                 yesCPR, noCPR);
         cardiopulmonaryResuscitationOrdersLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         cardiopulmonaryResuscitationOrdersLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -384,12 +378,10 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createInitialTreatmentOrders() {
-        Html intro4 = new Html("<p><b>Follow these orders if patient has a pulse and/or is breathing.</b</p>");
+        Html intro4 = new Html(getTranslation("PortableMedicalOrder-intro4"));
 
         fullTreatments = new Checkbox();
-        fullTreatments.setLabelAsHtml("<p><b>Full Treatments (required if choose CPR in Section A).</b> Goal: Attempt to sustain life by all "+
-                        "medically effective means. Provide appropriate medical and surgical treatments as indicated to attempt to prolong life, "+
-                        "including intensive care.</p>");
+        fullTreatments.setLabelAsHtml(getTranslation("PortableMedicalOrder-full_treatments"));
         fullTreatments.addValueChangeListener(event -> {
            Boolean b = (Boolean)event.getValue();
            if (b) {
@@ -398,9 +390,7 @@ public class PortableMedicalOrder extends ViewFrame {
            }
         });
         selectiveTreatments = new Checkbox();
-        selectiveTreatments.setLabelAsHtml("<p><b>Selective Treatments.</b> Goal: Attempt to restore function while avoiding intensive care and "+
-                "resuscitation efforts (ventilator, defibrillation and cardioversion). May use non-invasive positive airway pressure, antibiotics "+
-                "and IV fluids as indicated. Avoid intensive care. Transfer to hospital if treatment needs cannot be met in current location.</p>");
+        selectiveTreatments.setLabelAsHtml(getTranslation("PortableMedicalOrder-selective_treatments"));
         selectiveTreatments.addValueChangeListener(event -> {
            Boolean b = (Boolean)event.getValue();
            if (b) {
@@ -409,9 +399,7 @@ public class PortableMedicalOrder extends ViewFrame {
            }
         });
         comfortTreatments = new Checkbox();
-        comfortTreatments.setLabelAsHtml("<p><b>Comfort-focused Treatments.</b> Goal: Maximize comfort through symptom management; allow natural death. Use oxygen, "+
-                "suction and manual treatment of airway obstruction as needed for comfort. Avoid treatments listed in full or select treatments unless consistent with "+
-                "comfort goal. Transfer to hospital <b>only</b> if comfort cannot be achieved in current setting. </p>");
+        comfortTreatments.setLabelAsHtml(getTranslation("PortableMedicalOrder-comfort_treatments"));
         comfortTreatments.addValueChangeListener(event -> {
            Boolean b = (Boolean)event.getValue();
            if (b) {
@@ -420,7 +408,7 @@ public class PortableMedicalOrder extends ViewFrame {
            }
         });
 
-        initialTreatmentOrders = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "B. Initial Treatment Orders"),intro4, new BasicDivider(),
+        initialTreatmentOrders = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-initial_treatment_orders")),intro4, new BasicDivider(),
                 fullTreatments, selectiveTreatments, comfortTreatments);
         initialTreatmentOrders.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         initialTreatmentOrders.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -437,12 +425,11 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createAdditionalOrders() {
-        Html intro5 = new Html("<p>These orders are in addition to those in section B (e.g., blood products, dialysis).  [EMS protocols may "+
-                "limit emergency responder ability to act on orders in this section.]</p>");
+        Html intro5 = new Html(getTranslation("PortableMedicalOrder-intro5"));
 
         additionalOrdersInstructions = new TextArea();
 
-        additionalOrdersLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "C. Additional Orders or Instructions"),intro5, new BasicDivider(),
+        additionalOrdersLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-additional_orders_or_instructions")),intro5, new BasicDivider(),
                 additionalOrdersInstructions);
         additionalOrdersLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         additionalOrdersLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -458,10 +445,10 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createMedicallyAssistedNutrition() {
-        Html intro6 = new Html("<p>(Offer food by mouth if desired by patient, safe and tolerated)</p>");
+        Html intro6 = new Html(getTranslation("PortableMedicalOrder-intro6"));
 
         provideFeeding = new Checkbox();
-        provideFeeding.setLabelAsHtml("<p>Provide feeding through new or existing surgically-placed tubes</p>");
+        provideFeeding.setLabelAsHtml(getTranslation("PortableMedicalOrder-provide_feeding"));
         provideFeeding.addValueChangeListener(event -> {
            Boolean b = (Boolean)event.getValue();
            if (b) {
@@ -471,7 +458,7 @@ public class PortableMedicalOrder extends ViewFrame {
            }
         });
         trialPeriodFeeding = new Checkbox();
-        trialPeriodFeeding.setLabelAsHtml("<p>Trial period for artificial nutrition but no surgically-placed tubes</p>");
+        trialPeriodFeeding.setLabelAsHtml(getTranslation("PortableMedicalOrder-trial_period_feeding"));
         trialPeriodFeeding.addValueChangeListener(event -> {
             Boolean b = (Boolean)event.getValue();
             if (b) {
@@ -481,7 +468,7 @@ public class PortableMedicalOrder extends ViewFrame {
             }
         });
         noArtificialMeans = new Checkbox();
-        noArtificialMeans.setLabelAsHtml("<p>No artificial means of nutrition desired</p>");
+        noArtificialMeans.setLabelAsHtml(getTranslation("PortableMedicalOrder-no_artificial_means"));
         noArtificialMeans.addValueChangeListener(event -> {
             Boolean b = (Boolean)event.getValue();
             if (b) {
@@ -491,7 +478,7 @@ public class PortableMedicalOrder extends ViewFrame {
             }
         });
         discussedNoDecision = new Checkbox();
-        discussedNoDecision.setLabelAsHtml("<p>Discussed but no decision made (standard of care provided)</p>");
+        discussedNoDecision.setLabelAsHtml(getTranslation("PortableMedicalOrder-discussed_no_decision"));
         discussedNoDecision.addValueChangeListener(event -> {
             Boolean b = (Boolean)event.getValue();
             if (b) {
@@ -501,7 +488,7 @@ public class PortableMedicalOrder extends ViewFrame {
             }
         });
 
-        medicallyAssistedNutrition = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "D. Medically Assisted Nutrition"),intro6, new BasicDivider(),
+        medicallyAssistedNutrition = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-medically_assisted_nutrition")),intro6, new BasicDivider(),
                 provideFeeding, trialPeriodFeeding, noArtificialMeans, discussedNoDecision);
         medicallyAssistedNutrition.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         medicallyAssistedNutrition.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -517,22 +504,20 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createPatientOrRepresentativeSignature() {
-        Html intro7 = new Html("<p>I understand this form is voluntary. I have discussed my treatment options and goals of care with my provider. If signing as the\n" +
-                "patient’s representative, the treatments are consistent with the patient’s known wishes and in their best interest.</p");
-        Html intro8 = new Html("<p><b>The most recently completed valid POLST form supersedes all " +
-                "previously completed POLST forms.</b></p>");
+        Html intro7 = new Html(getTranslation("PortableMedicalOrder-intro7"));
+        Html intro8 = new Html(getTranslation("PortableMedicalOrder-intro8"));
 
         patientOrRepresentativeSignature = new SignaturePad();
         patientOrRepresentativeSignature.setHeight("100px");
         patientOrRepresentativeSignature.setWidth("400px");
         patientOrRepresentativeSignature.setPenColor("#2874A6");
 
-        Button clearPatientSig = new Button("Clear Signature");
+        Button clearPatientSig = new Button(getTranslation("PortableMedicalOrder-clear_signature"));
         clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearPatientSig.addClickListener(event -> {
             patientOrRepresentativeSignature.clear();
         });
-        Button savePatientSig = new Button("Accept Signature");
+        Button savePatientSig = new Button(getTranslation("PortableMedicalOrder-accept_signature"));
         savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         savePatientSig.addClickListener(event -> {
             base64PatientOrRepresentativeSignature = patientOrRepresentativeSignature.getImageBase64();
@@ -547,7 +532,7 @@ public class PortableMedicalOrder extends ViewFrame {
         sigLayout.setSpacing(true);
 
         notPatientSigning = new Checkbox();
-        notPatientSigning.setLabel("If other than patient, enter full name, and provide authority if any.");
+        notPatientSigning.setLabel(getTranslation("PortableMedicalOrder-not_patient_signing"));
         notPatientSigning.addValueChangeListener(event -> {
            Boolean b = (Boolean)event.getValue();
            if (b) {
@@ -558,8 +543,8 @@ public class PortableMedicalOrder extends ViewFrame {
            }
         });
 
-        patientOrRepresentativeNameField = new TextField("Full Name");
-        authorityField = new TextField("Authority");
+        patientOrRepresentativeNameField = new TextField(getTranslation("PortableMedicalOrder-full_name"));
+        authorityField = new TextField(getTranslation("PortableMedicalOrder-authority"));
 
         notPatientSigningReqLayout = new FlexBoxLayout(patientOrRepresentativeNameField, authorityField);
         notPatientSigningReqLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -574,7 +559,7 @@ public class PortableMedicalOrder extends ViewFrame {
         notPatientSigningReqLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         notPatientSigningReqLayout.setVisible(false);
 
-        patientOrRepresentativeSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "E. Signature: Patient or Patient Representative"),intro7, intro8, new BasicDivider(),
+        patientOrRepresentativeSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-signature_patient_or_patient_representative")),intro7, intro8, new BasicDivider(),
                 patientOrRepresentativeSignature, notPatientSigning, notPatientSigningReqLayout, sigLayout);
         patientOrRepresentativeSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientOrRepresentativeSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -591,20 +576,20 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createHealthcareProviderSignature() {
-        Html intro9 = new Html("<p>I have discussed this order with the patient or his/her representative. The orders reflect the patient’s known wishes, to the best of my knowledge.</p>");
-        Html intro10 = new Html("<p><b>[Note:</b> Only licensed health care providers authorized by law to sign POLST form in state where completed may sign this order<b>]</b></p>");
+        Html intro9 = new Html(getTranslation("PortableMedicalOrder-intro9"));
+        Html intro10 = new Html(getTranslation("PortableMedicalOrder-intro10"));
 
         healthcareProviderSignature = new SignaturePad();
         healthcareProviderSignature.setHeight("100px");
         healthcareProviderSignature.setWidth("400px");
         healthcareProviderSignature.setPenColor("#2874A6");
 
-        Button clearPatientSig = new Button("Clear Signature");
+        Button clearPatientSig = new Button(getTranslation("PortableMedicalOrder-clear_signature"));
         clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearPatientSig.addClickListener(event -> {
             healthcareProviderSignature.clear();
         });
-        Button savePatientSig = new Button("Accept Signature");
+        Button savePatientSig = new Button(getTranslation("PortableMedicalOrder-accept_signature"));
         savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         savePatientSig.addClickListener(event -> {
             base64HealthcareProviderSignature = healthcareProviderSignature.getImageBase64();
@@ -619,15 +604,15 @@ public class PortableMedicalOrder extends ViewFrame {
         sigLayout.setSpacing(true);
 
         healthcareProviderPhoneNumberField = new TextField();
-        healthcareProviderPhoneNumberField.setLabel("Phone Number:");
+        healthcareProviderPhoneNumberField.setLabel(getTranslation("PortableMedicalOrder-phone_number"));
         healthcareProviderPhoneNumberField.setPlaceholder("(###) ###-####");
 
         healthcareProviderNameField = new TextField();
-        healthcareProviderNameField.setLabel("Full Name:");
+        healthcareProviderNameField.setLabel(getTranslation("PortableMedicalOrder-full_name"));
         healthcareProviderLicenseField = new TextField();
-        healthcareProviderLicenseField.setLabel("License/Cert. #:");
+        healthcareProviderLicenseField.setLabel(getTranslation("PortableMedicalOrder-license"));
 
-        healthcareProviderSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "F. Signature: Health Care Provider - Verbal orders are acceptable with follow up signature."),
+        healthcareProviderSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-signature_health_care_provider_verbal_orders_are")),
                 intro9, intro10, new BasicDivider(),
                 healthcareProviderSignature, healthcareProviderPhoneNumberField, healthcareProviderNameField, healthcareProviderLicenseField, sigLayout);
         healthcareProviderSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -645,20 +630,20 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createSupervisingPhysician() {
-        Html intro11 = new Html("<p>A supervising physicians signature may be required.</p>");
+        Html intro11 = new Html(getTranslation("PortableMedicalOrder-intro11"));
 
         supervisingPhysicianSignature = new SignaturePad();
         supervisingPhysicianSignature.setHeight("100px");
         supervisingPhysicianSignature.setWidth("400px");
         supervisingPhysicianSignature.setPenColor("#2874A6");
 
-        Button clearPatientSig = new Button("Clear Signature");
+        Button clearPatientSig = new Button(getTranslation("PortableMedicalOrder-clear_signature"));
         clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearPatientSig.addClickListener(event -> {
             supervisingPhysicianSignature.clear();
             supervisingPhysicianLicenseField.clear();
         });
-        Button savePatientSig = new Button("Accept Signature");
+        Button savePatientSig = new Button(getTranslation("PortableMedicalOrder-accept_signature"));
         savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         savePatientSig.addClickListener(event -> {
             base64SupervisingPhysicianSignature = supervisingPhysicianSignature.getImageBase64();
@@ -671,10 +656,10 @@ public class PortableMedicalOrder extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        supervisingPhysicianLicenseField = new TextField("License #:");
+        supervisingPhysicianLicenseField = new TextField(getTranslation("PortableMedicalOrder-license_number"));
 
         supervisorSignatureChk = new Checkbox();
-        supervisorSignatureChk.setLabel("Not Applicable");
+        supervisorSignatureChk.setLabel(getTranslation("PortableMedicalOrder-not_applicable"));
         supervisorSignatureChk.addValueChangeListener(event -> {
            Boolean b = (Boolean)event.getValue();
            if (b) {
@@ -694,7 +679,7 @@ public class PortableMedicalOrder extends ViewFrame {
                supervisingPhysicianLicenseField.setEnabled(true);
            }
         });
-        supervisingPhysicianLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Supervising Physician Signature"),
+        supervisingPhysicianLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-supervising_physician_signature")),
                 intro11, new BasicDivider(),
                 supervisorSignatureChk, supervisingPhysicianSignature, supervisingPhysicianLicenseField, sigLayout);
         supervisingPhysicianLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -711,15 +696,14 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createEmergencyContact() {
-        Html intro12 = new Html("<p>Patient’s Emergency Contact. (Note: Listing a person here does <b>NOT</b> grant them authority to be a legal representative. Only an " +
-                "advance directive or state law can grant that authority.)</p>");
+        Html intro12 = new Html(getTranslation("PortableMedicalOrder-intro12"));
 
-        emergencyContactNameField = new TextField("Full Name:");
-        legalRepresentative = new Checkbox("Legal Representative");
-        otherContactType = new Checkbox("Other Contact Type");
-        dayPhoneNumber = new TextField("Day Phone #:");
+        emergencyContactNameField = new TextField(getTranslation("PortableMedicalOrder-emergency_full_name"));
+        legalRepresentative = new Checkbox(getTranslation("PortableMedicalOrder-legal_representative"));
+        otherContactType = new Checkbox(getTranslation("PortableMedicalOrder-other_contact_type"));
+        dayPhoneNumber = new TextField(getTranslation("PortableMedicalOrder-day_phone_number"));
         dayPhoneNumber.setPlaceholder("(###) ###-####");
-        nightPhoneNumber = new TextField("Night Phone #:");
+        nightPhoneNumber = new TextField(getTranslation("PortableMedicalOrder-night_phone_number"));
         nightPhoneNumber.setPlaceholder("(###) ###-####");
         legalRepresentative.addValueChangeListener(event -> {
             Boolean b = (Boolean)event.getValue();
@@ -734,7 +718,7 @@ public class PortableMedicalOrder extends ViewFrame {
             }
         });
 
-        emergencyContactLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Contact Information - Emergency Contact (Optional)"),
+        emergencyContactLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-contact_information_emergency")),
                 intro12, new BasicDivider(),
                 emergencyContactNameField, legalRepresentative, otherContactType, dayPhoneNumber, nightPhoneNumber);
         emergencyContactLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
@@ -752,14 +736,13 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createPrimaryProvider() {
-        Html intro13 = new Html("<p>Patient’s Emergency Contact. (Note: Listing a person here does <b>NOT</b> grant them authority to be a legal representative. Only an " +
-                              "advance directive or state law can grant that authority.)</p>");
+        Html intro13 = new Html(getTranslation("PortableMedicalOrder-intro13"));
 
-        primaryProviderName = new TextField("Primary Care Provider Name:");
-        primaryProviderPhoneNumber = new TextField("Phone #:");
+        primaryProviderName = new TextField(getTranslation("PortableMedicalOrder-primary_care_provider_name"));
+        primaryProviderPhoneNumber = new TextField(getTranslation("PortableMedicalOrder-primary_provider_phone_number"));
         primaryProviderPhoneNumber.setPlaceholder("(###) ###-####");
 
-       primaryProviderLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Contact Information - Primary Provider (Optional)"),
+       primaryProviderLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-contact_information_primary_provider")),
                 intro13, new BasicDivider(), primaryProviderName, primaryProviderPhoneNumber);
         primaryProviderLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         primaryProviderLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -776,14 +759,13 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createHospice() {
-        Html intro14 = new Html("<p>Patient’s Emergency Contact. (Note: Listing a person here does <b>NOT</b> grant them authority to be a legal representative. Only an " +
-                "advance directive or state law can grant that authority.)</p>");
+        Html intro14 = new Html(getTranslation("PortableMedicalOrder-intro14"));
 
-        inHospiceCare = new Checkbox("Patient is enrolled in Hospice");
+        inHospiceCare = new Checkbox(getTranslation("PortableMedicalOrder-patient_is_enrolled_in_hospice"));
         inHospiceCare.setValue(false);
-        hospiceName = new TextField("Name of Agency:");
+        hospiceName = new TextField(getTranslation("PortableMedicalOrder-name_of_agency"));
         hospiceName.setEnabled(false);
-        hospicePhoneNumber = new TextField("Agency Phone Number:");
+        hospicePhoneNumber = new TextField(getTranslation("PortableMedicalOrder-agency_phone_number"));
         hospicePhoneNumber.setPlaceholder("(###) ###-####");
         hospicePhoneNumber.setEnabled(false);
 
@@ -803,7 +785,7 @@ public class PortableMedicalOrder extends ViewFrame {
            }
         });
 
-        hospiceLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Contact Information - Hospice Care (Optional)"),
+        hospiceLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-contact_information_hospice")),
                 intro14, new BasicDivider(), inHospiceCare, hospiceName, hospicePhoneNumber);
         hospiceLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         hospiceLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -819,14 +801,13 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createAdvancedDirectiveReview() {
-        Html intro15 = new Html("<p>Reviewed patient’s advance directive to confirm no conflict with POLST orders: " +
-                "(A POLST form does not replace an advance directive or living will)</p>");
-        livingWillReviewed = new Checkbox("Yes");
-        reviewedDate = new TextField("Date document reviewed:");
+        Html intro15 = new Html(getTranslation("PortableMedicalOrder-intro15"));
+        livingWillReviewed = new Checkbox(getTranslation("PortableMedicalOrder-yes"));
+        reviewedDate = new TextField(getTranslation("PortableMedicalOrder-date_document_reviewed"));
         reviewedDate.setEnabled(false);
-        livingWillConflict = new Checkbox("Conflict exists, notified patient (if patient lacks capacity, noted in chart)");
-        advanceDirectiveNotAvailable = new Checkbox("Advance directive not available");
-        noAdvanceDirective = new Checkbox("No advance directive exists");
+        livingWillConflict = new Checkbox(getTranslation("PortableMedicalOrder-living_will_conflict"));
+        advanceDirectiveNotAvailable = new Checkbox(getTranslation("PortableMedicalOrder-advance_directive_not_available"));
+        noAdvanceDirective = new Checkbox(getTranslation("PortableMedicalOrder-no_advance_directive_exists"));
         livingWillReviewed.addValueChangeListener(event -> {
            Boolean b = (Boolean)event.getValue();
            if (b) {
@@ -870,7 +851,7 @@ public class PortableMedicalOrder extends ViewFrame {
                 advanceDirectiveNotAvailable.clear();
             }
         });
-        advanceDirectiveReviewLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Form Completion Info - Review (Optional)"),
+        advanceDirectiveReviewLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-form_completion_info_review")),
                 intro15, new BasicDivider(), livingWillReviewed, reviewedDate, livingWillConflict, advanceDirectiveNotAvailable, noAdvanceDirective);
         advanceDirectiveReviewLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         advanceDirectiveReviewLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -886,17 +867,16 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createParticipants() {
-        Html intro16 = new Html("<p>Reviewed patient’s advance directive to confirm no conflict with POLST orders: " +
-                "(A POLST form does not replace an advance directive or living will)</p>");
-        patientParticipated = new Checkbox("Patient with decision-making capacity");
-        legalOrSurrogate = new Checkbox("Legal Surrogate / Health Care Agent");
-        courtAppointedGuardian = new Checkbox("Court Appointed Guardian");
-        parentOfMinor = new Checkbox("Parent of Minor");
-        otherParticipant = new Checkbox("Other:");
+        Html intro16 = new Html(getTranslation("PortableMedicalOrder-intro16"));
+        patientParticipated = new Checkbox(getTranslation("PortableMedicalOrder-patient_with_decision"));
+        legalOrSurrogate = new Checkbox(getTranslation("PortableMedicalOrder-legal_or_surrogate"));
+        courtAppointedGuardian = new Checkbox(getTranslation("PortableMedicalOrder-court_appointed_guardian"));
+        parentOfMinor = new Checkbox(getTranslation("PortableMedicalOrder-parent_of_minor"));
+        otherParticipant = new Checkbox(getTranslation("PortableMedicalOrder-other"));
         otherParticipantList = new TextField("");
-        otherParticipantList.setPlaceholder("List others that participated here");
+        otherParticipantList.setPlaceholder(getTranslation("PortableMedicalOrder-list_others_that_participated_here"));
 
-        participantLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Form Completion Info - Participant Types (Optional)"),
+        participantLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-form_completion_participant")),
                 intro16, new BasicDivider(), patientParticipated, legalOrSurrogate, courtAppointedGuardian, parentOfMinor, otherParticipant, otherParticipantList);
         participantLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         participantLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -912,21 +892,20 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void createWhoAssisted() {
-        Html intro17 = new Html("<p>Reviewed patient’s advance directive to confirm no conflict with POLST orders: " +
-                                "(A POLST form does not replace an advance directive or living will)</p>");
-        Label professional = new Label("Professional Assisting Health Care Provider w/ Form Completion (if applicable):");
-        whoAssistedInFormCompletionName = new TextField("Full Name:");
-        whoAssistedPhoneNumber = new TextField("Phone #:");
+        Html intro17 = new Html(getTranslation("PortableMedicalOrder-intro17"));
+        Label professional = new Label(getTranslation("PortableMedicalOrder-professional"));
+        whoAssistedInFormCompletionName = new TextField(getTranslation("PortableMedicalOrder-who_assisted_full_name"));
+        whoAssistedPhoneNumber = new TextField(getTranslation("PortableMedicalOrder-who_assisted_phone_number"));
         whoAssistedPhoneNumber.setPlaceholder("(###) ###-####");
-        dateAssisted = new TextField("Date Assisted:");
+        dateAssisted = new TextField(getTranslation("PortableMedicalOrder-date_assisted"));
         dateAssisted.setValue(getDateString(new Date()));
-        Label individualType = new Label("This individual is the patient’s:");
-        socialWorkerAssist = new Checkbox("Social Worker");
-        nurseAssisted = new Checkbox("Nurse");
-        clergyAssisted = new Checkbox("Clergy");
-        otherAssisted = new Checkbox("Other:");
+        Label individualType = new Label(getTranslation("PortableMedicalOrder-this_individual_is_the_patient"));
+        socialWorkerAssist = new Checkbox(getTranslation("PortableMedicalOrder-social_worker"));
+        nurseAssisted = new Checkbox(getTranslation("PortableMedicalOrder-nurse"));
+        clergyAssisted = new Checkbox(getTranslation("PortableMedicalOrder-clergy"));
+        otherAssisted = new Checkbox(getTranslation("PortableMedicalOrder-other"));
         otherAssistedList = new TextField("");
-        otherAssistedList.setPlaceholder("Enter Types");
+        otherAssistedList.setPlaceholder(getTranslation("PortableMedicalOrder-enter_types"));
         otherAssistedList.setEnabled(false);
 
         socialWorkerAssist.addValueChangeListener(event -> {
@@ -968,7 +947,7 @@ public class PortableMedicalOrder extends ViewFrame {
                otherAssistedList.setEnabled(true);
            }
         });
-        whoAssistedLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Form Completion Info - Participants (Optional)"),
+        whoAssistedLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("PortableMedicalOrder-form_completion_info_participant")),
                 intro17, new BasicDivider(), professional, whoAssistedInFormCompletionName, dateAssisted, whoAssistedPhoneNumber, new BasicDivider(), individualType, socialWorkerAssist, nurseAssisted, clergyAssisted, otherAssisted, otherAssistedList);
         whoAssistedLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         whoAssistedLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -983,19 +962,19 @@ public class PortableMedicalOrder extends ViewFrame {
         whoAssistedLayout.setVisible(false);
     }
     private Component getFooter() {
-        returnButton = new Button("Back", new Icon(VaadinIcon.BACKWARDS));
+        returnButton = new Button(getTranslation("PortableMedicalOrder-back"), new Icon(VaadinIcon.BACKWARDS));
         returnButton.setEnabled(false);
         returnButton.addClickListener(event -> {
             questionPosition--;
             evalNavigation();
         });
-        forwardButton = new Button("Next", new Icon(VaadinIcon.FORWARD));
+        forwardButton = new Button(getTranslation("PortableMedicalOrder-next"), new Icon(VaadinIcon.FORWARD));
         forwardButton.setIconAfterText(true);
         forwardButton.addClickListener(event -> {
             questionPosition++;
             evalNavigation();
         });
-        viewStateForm = new Button("View "+consentSession.getPrimaryState()+" instructions");
+        viewStateForm = new Button(getTranslation("PortableMedicalOrder-view")+consentSession.getPrimaryState()+getTranslation("PortableMedicalOrder-instructions"));
         viewStateForm.setIconAfterText(true);
         viewStateForm.addClickListener(event -> {
             Dialog d = createInfoDialog();
@@ -1070,7 +1049,7 @@ public class PortableMedicalOrder extends ViewFrame {
         return date;
     }
     private void successNotification() {
-        Span content = new Span("FHIR Treatment - Portable Medical Order successfully created!");
+        Span content = new Span(getTranslation("PortableMedicalOrder-portable_medical_order_created"));
 
         Notification notification = new Notification(content);
         notification.setDuration(3000);
@@ -1092,7 +1071,7 @@ public class PortableMedicalOrder extends ViewFrame {
         viewer.setHeight("800px");
         viewer.setWidth("840px");
 
-        Button closeButton = new Button("Close", e -> infoDialog.close());
+        Button closeButton = new Button(getTranslation("PortableMedicalOrder-close"), e -> infoDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
         FlexBoxLayout content = new FlexBoxLayout(viewer, closeButton);
@@ -1386,7 +1365,7 @@ public class PortableMedicalOrder extends ViewFrame {
         viewer.setWidth("840px");
 
 
-        Button closeButton = new Button("Cancel", e -> docDialog.close());
+        Button closeButton = new Button(getTranslation("PortableMedicalOrder-cancel"), e -> docDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
         closeButton.addClickListener(event -> {
             docDialog.close();
@@ -1394,7 +1373,7 @@ public class PortableMedicalOrder extends ViewFrame {
             evalNavigation();
         });
 
-        Button acceptButton = new Button("Accept and Submit");
+        Button acceptButton = new Button(getTranslation("PortableMedicalOrder-accept_and_submit"));
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
@@ -1682,55 +1661,47 @@ public class PortableMedicalOrder extends ViewFrame {
 
     private void doNotResuscitateResponse() {
         //DNR
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", "YES CPR: Attempt Resuscitation, including mechanical ventilation, " +
-                "defibrillation and cardioversion. (Requires choosing Full Treatments in Section B)", polst.isYesCPR());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", getTranslation("PortableMedicalOrder-questionnaire_response_item1_1"), polst.isYesCPR());
         responseList.add(item1_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2 = createItemBooleanType("1.2", "NO CPR: Do Not Attempt Resuscitation.</b> (May choose any " +
-                "option in Section B)", polst.isNoCPR());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2 = createItemBooleanType("1.2", getTranslation("PortableMedicalOrder-questionnaire_response_item1_2"), polst.isNoCPR());
         responseList.add(item1_2);
     }
 
     private void treatmentsResponse() {
         //TREATMENTS
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemBooleanType("2.1", "Full Treatments (required if choose CPR in Section A). Goal: Attempt to " +
-                "sustain life by all medically effective means. Provide appropriate medical and surgical treatments as indicated to attempt to prolong life, including intensive care.", polst.isFullTreatments());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemBooleanType("2.1", getTranslation("PortableMedicalOrder-questionnaire_response_item2_1"), polst.isFullTreatments());
         responseList.add(item2_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", "Selective Treatments. Goal: Attempt to restore function while avoiding intensive " +
-                "care and resuscitation efforts (ventilator, defibrillation and cardioversion). May use non-invasive positive airway pressure, antibiotics and IV fluids as indicated. Avoid intensive " +
-                "care. Transfer to hospital if treatment needs cannot be met in current location.)", polst.isSelectiveTreatments());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", getTranslation("PortableMedicalOrder-questionnaire_response_item2_2"), polst.isSelectiveTreatments());
         responseList.add(item2_2);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_3 = createItemBooleanType("2.3", "Comfort-focused Treatments. Goal: Maximize comfort through symptom management; allow " +
-                "natural death. Use oxygen, suction and manual treatment of airway obstruction as needed for comfort. Avoid treatments listed in full or select treatments unless consistent with comfort goal. " +
-                "Transfer to hospital <b>only</b> if comfort cannot be achieved in current setting.", polst.isComfortFocusedTreament());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_3 = createItemBooleanType("2.3", getTranslation("PortableMedicalOrder-questionnaire_response_item2_3"), polst.isComfortFocusedTreament());
         responseList.add(item2_3);
     }
 
     private void additionalOrdersResponse() {
         //Additional Orders
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item3 = createItemStringType("3", "C. Additional Orders or Instructions - These orders are in addition to those in section B +" +
-                "(e.g., blood products, dialysis). [EMS protocols may limit emergency responder ability to act on orders in this section.]", polst.getAdditionalTreatments());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3 = createItemStringType("3", getTranslation("PortableMedicalOrder-questionnaire_response_item3"), polst.getAdditionalTreatments());
         responseList.add(item3);
 
         //Nutrition
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = createItemBooleanType("4.1", "Provide feeding through new or existing surgically-placed tubes", polst.isNutritionByArtificialMeans());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = createItemBooleanType("4.1", getTranslation("PortableMedicalOrder-questionnaire_response_item4_1"), polst.isNutritionByArtificialMeans());
         responseList.add(item4_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", "Trial period for artificial nutrition but no surgically-placed tubes", polst.isTrialNutritionByArtificialMeans());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", getTranslation("PortableMedicalOrder-questionnaire_response_item4_2"), polst.isTrialNutritionByArtificialMeans());
         responseList.add(item4_2);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_3 = createItemBooleanType("4.3", "No artificial means of nutrition desired", polst.isNoArtificialMeans());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_3 = createItemBooleanType("4.3", getTranslation("PortableMedicalOrder-questionnaire_response_item4_3"), polst.isNoArtificialMeans());
         responseList.add(item4_3);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_4 = createItemBooleanType("4.4", "Discussed but no decision made (standard of care provided)", polst.isNoNutritionDecisionMade());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_4 = createItemBooleanType("4.4", getTranslation("PortableMedicalOrder-questionnaire_response_item4_4"), polst.isNoNutritionDecisionMade());
         responseList.add(item4_4);
     }
 
     private void nutritionResponse() {
         //Nutrition
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = createItemBooleanType("4.1", "Provide feeding through new or existing surgically-placed tubes", polst.isNutritionByArtificialMeans());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = createItemBooleanType("4.1", getTranslation("PortableMedicalOrder-questionnaire_response_item4_1"), polst.isNutritionByArtificialMeans());
         responseList.add(item4_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", "Trial period for artificial nutrition but no surgically-placed tubes", polst.isTrialNutritionByArtificialMeans());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", getTranslation("PortableMedicalOrder-questionnaire_response_item4_2"), polst.isTrialNutritionByArtificialMeans());
         responseList.add(item4_2);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_3 = createItemBooleanType("4.3", "No artificial means of nutrition desired", polst.isNoArtificialMeans());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_3 = createItemBooleanType("4.3", getTranslation("PortableMedicalOrder-questionnaire_response_item4_3"), polst.isNoArtificialMeans());
         responseList.add(item4_3);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_4 = createItemBooleanType("4.4", "Discussed but no decision made (standard of care provided)", polst.isNoNutritionDecisionMade());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_4 = createItemBooleanType("4.4", getTranslation("PortableMedicalOrder-questionnaire_response_item4_4"), polst.isNoNutritionDecisionMade());
         responseList.add(item4_4);
     }
 
@@ -1738,14 +1709,14 @@ public class PortableMedicalOrder extends ViewFrame {
         //Patient and Alternate Signature
         boolean patientSignatureBool = false;
         if (polst.getBase64EncodedSignature() != null && polst.getBase64EncodedSignature().length > 0) patientSignatureBool = true;
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1 = createItemBooleanType("5.1", "Patient signature acquired)", patientSignatureBool);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1 = createItemBooleanType("5.1", getTranslation("PortableMedicalOrder-questionnaire_response_item5_1"), patientSignatureBool);
         responseList.add(item5_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_2 = createItemBooleanType("5.2", "If other than patient, enter full name, and provide authority if any.)", polst.isRepresentativeSigning());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_2 = createItemBooleanType("5.2", getTranslation("PortableMedicalOrder-questionnaire_response_item5_2"), polst.isRepresentativeSigning());
         responseList.add(item5_2);
         if (polst.isRepresentativeSigning()) {
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item5_2_1 = createItemStringType("5.2.1", "Full Name", polst.getRepresentativeName());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item5_2_1 = createItemStringType("5.2.1", getTranslation("PortableMedicalOrder-questionnaire_response_item5_2_1"), polst.getRepresentativeName());
             responseList.add(item5_2_1);
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item5_2_2 = createItemStringType("5.2.2", "Authority", polst.getRepresentativeName());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item5_2_2 = createItemStringType("5.2.2", getTranslation("PortableMedicalOrder-questionnaire_response_item5_2_2"), polst.getRepresentativeName());
             responseList.add(item5_2_2);
         }
     }
@@ -1754,112 +1725,111 @@ public class PortableMedicalOrder extends ViewFrame {
         //Healthcare Provider Signature and Info
         boolean healthcareProviderSignatureBool = false;
         if (polst.getBase64EncodedSignatureHealthcareProvider() != null & polst.getBase64EncodedSignatureHealthcareProvider().length > 0) healthcareProviderSignatureBool = true;
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_1 = createItemBooleanType("6.1", "Healthcare provider signature acquired", healthcareProviderSignatureBool);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_1 = createItemBooleanType("6.1", getTranslation("PortableMedicalOrder-questionnaire_response_item6_1"), healthcareProviderSignatureBool);
         responseList.add(item6_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_2 = createItemStringType("6.2", "Healthcare provider Full Name", polst.getHealthcareProviderFullName());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_2 = createItemStringType("6.2", getTranslation("PortableMedicalOrder-questionnaire_response_item6_2"), polst.getHealthcareProviderFullName());
         responseList.add(item6_2);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_3 = createItemStringType("6.3", "License/Cert#", polst.getHealthcareProviderLicenseOrCert());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_3 = createItemStringType("6.3", getTranslation("PortableMedicalOrder-questionnaire_response_item6_3"), polst.getHealthcareProviderLicenseOrCert());
         responseList.add(item6_3);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_4_1 = createItemBooleanType("6.4.1", "Supervisor Signature Not Applicable", polst.isRequiredSupervisingPhysicianSignature());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6_4_1 = createItemBooleanType("6.4.1", getTranslation("PortableMedicalOrder-questionnaire_response_item6_4_1"), polst.isRequiredSupervisingPhysicianSignature());
         responseList.add(item6_4_1);
         if (!polst.isRequiredSupervisingPhysicianSignature()) {
             boolean supervisingPhysicianSignatureBool = false;
             if (polst.getBase64EncodedSupervisingPhysicianSignature() != null && polst.getBase64EncodedSupervisingPhysicianSignature().length > 0) supervisingPhysicianSignatureBool = true;
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item6_4_2 = createItemBooleanType("6.4.2", "Supervisor Signature Not Applicable", supervisingPhysicianSignatureBool);
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item6_4_2 = createItemBooleanType("6.4.2", getTranslation("PortableMedicalOrder-questionnaire_response_item6_4_2"), supervisingPhysicianSignatureBool);
             responseList.add(item6_4_2);
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item6_4_3 = createItemStringType("6.4.3", "License #", polst.getSupervisingPhysicianLicense());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item6_4_3 = createItemStringType("6.4.3", getTranslation("PortableMedicalOrder-questionnaire_response_item6_4_3"), polst.getSupervisingPhysicianLicense());
             responseList.add(item6_4_3);
         }
     }
 
     private void emergencyContactResponse() {
         //emergency contact
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_1 = createItemStringType("7.1", "Full Name", polst.getEmergencyContactFullName());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_1 = createItemStringType("7.1", getTranslation("PortableMedicalOrder-questionnaire_response_item7_1"), polst.getEmergencyContactFullName());
         responseList.add(item7_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_3_1 = createItemBooleanType("7.3.1", "Legal Representative", legalRepresentative.getValue());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_3_1 = createItemBooleanType("7.3.1", getTranslation("PortableMedicalOrder-questionnaire_response_item7_3_1"), legalRepresentative.getValue());
         responseList.add(item7_3_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_3_2 = createItemBooleanType("7.3.2", "Other Contact Type", polst.isOtherEmergencyType());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_3_2 = createItemBooleanType("7.3.2", getTranslation("PortableMedicalOrder-questionnaire_response_item7_3_2"), polst.isOtherEmergencyType());
         responseList.add(item7_3_2);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_4 = createItemStringType("7.4", "Day Phone Number", polst.getEmergencyContactPhoneNumberDay());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_4 = createItemStringType("7.4", getTranslation("PortableMedicalOrder-questionnaire_response_item7_4"), polst.getEmergencyContactPhoneNumberDay());
         responseList.add(item7_4);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_5 = createItemStringType("7.5", "Night Phone Number", polst.getEmergencyContactPhoneNumberNight());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item7_5 = createItemStringType("7.5", getTranslation("PortableMedicalOrder-questionnaire_response_item7_5"), polst.getEmergencyContactPhoneNumberNight());
         responseList.add(item7_5);
     }
 
     private void primaryProviderResponse() {
         //primary provider
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item8_1 = createItemStringType("8.1", "Primary Provider Name", polst.getPrimaryPhysicianFullName());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item8_1 = createItemStringType("8.1", getTranslation("PortableMedicalOrder-questionnaire_response_item8_1"), polst.getPrimaryPhysicianFullName());
         responseList.add(item8_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item8_2 = createItemStringType("8.2", "Phone Number", polst.getPrimaryPhysicianPhoneNumber());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item8_2 = createItemStringType("8.2", getTranslation("PortableMedicalOrder-questionnaire_response_item8_2"), polst.getPrimaryPhysicianPhoneNumber());
         responseList.add(item8_2);
     }
 
     private void hospiceResponse() {
         //Hospice
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item9_1 = createItemBooleanType("9.1", "Patient is enrolled in Hospice", polst.isInHospice());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item9_1 = createItemBooleanType("9.1", getTranslation("PortableMedicalOrder-questionnaire_response_item9_1"), polst.isInHospice());
         responseList.add(item9_1);
         if (polst.isInHospice()) {
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item9_2 = createItemStringType("9.2", "Name of Agency", polst.getHospiceAgencyName());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item9_2 = createItemStringType("9.2", getTranslation("PortableMedicalOrder-questionnaire_response_item9_2"), polst.getHospiceAgencyName());
             responseList.add(item9_2);
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item9_3 = createItemStringType("9.3", "Agency Phone Number", polst.getHospiceAgencyPhoneNumber());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item9_3 = createItemStringType("9.3", getTranslation("PortableMedicalOrder-questionnaire_response_item9_3"), polst.getHospiceAgencyPhoneNumber());
             responseList.add(item9_3);
         }
     }
 
     private void advanceDirectiveReviewResponse() {
         //Advanced Directive review (optional)
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_1 = createItemBooleanType("10.1", "Yes - Reviewed patient’s advance directive to confirm " +
-                "no conflict with POLST orders: (A POLST form does not replace an advance directive or living will)", polst.isAdvancedDirectiveReviewed());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_1 = createItemBooleanType("10.1", getTranslation("PortableMedicalOrder-questionnaire_response_item10_1"), polst.isAdvancedDirectiveReviewed());
         responseList.add(item10_1);
         if (polst.isAdvancedDirectiveReviewed()) {
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item10_2 = createItemStringType("10.2", "Date Reviewed", polst.getDateAdvancedDirectiveReviewed());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item10_2 = createItemStringType("10.2", getTranslation("PortableMedicalOrder-questionnaire_response_item10_2"), polst.getDateAdvancedDirectiveReviewed());
             responseList.add(item10_2);
         }
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_3 = createItemBooleanType("10.3", "Conflict exists, patient notified(if patient lacks capacity, noted in chart)", polst.isAdvanceDirectiveConflictExists());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_3 = createItemBooleanType("10.3", getTranslation("PortableMedicalOrder-questionnaire_response_item10_3"), polst.isAdvanceDirectiveConflictExists());
         responseList.add(item10_3);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_4 = createItemBooleanType("10.4", "Advanced Directive not available", polst.isAdvanceDirectiveNotAvailable());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_4 = createItemBooleanType("10.4", getTranslation("PortableMedicalOrder-questionnaire_response_item10_4"), polst.isAdvanceDirectiveNotAvailable());
         responseList.add(item10_4);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_5 = createItemBooleanType("10.5", "Advanced Directive does not exist", polst.isNoAdvanceDirectiveExists());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item10_5 = createItemBooleanType("10.5", getTranslation("PortableMedicalOrder-questionnaire_response_item10_5"), polst.isNoAdvanceDirectiveExists());
         responseList.add(item10_5);
     }
 
     private void participantsResponse() {
         //Participants
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_1 = createItemBooleanType("11.1", "Patient with decision making capacity", polst.isPatientWithDecisionMakingCapacity());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_1 = createItemBooleanType("11.1", getTranslation("PortableMedicalOrder-questionnaire_response_item11_1"), polst.isPatientWithDecisionMakingCapacity());
         responseList.add(item11_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_2 = createItemBooleanType("11.2", "Legal Surrogate/Health care agent", polst.isLegalSurrogateOrHealthcareAgent());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_2 = createItemBooleanType("11.2", getTranslation("PortableMedicalOrder-questionnaire_response_item11_2"), polst.isLegalSurrogateOrHealthcareAgent());
         responseList.add(item11_2);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_3 = createItemBooleanType("11.3", "Court appointed guardian", polst.isCourtAppointedGuardian());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_3 = createItemBooleanType("11.3", getTranslation("PortableMedicalOrder-questionnaire_response_item11_3"), polst.isCourtAppointedGuardian());
         responseList.add(item11_3);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_4 = createItemBooleanType("11.4", "Parent of minor", polst.isParentOfMinor());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_4 = createItemBooleanType("11.4", getTranslation("PortableMedicalOrder-questionnaire_response_item11_4"), polst.isParentOfMinor());
         responseList.add(item11_4);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_5 = createItemBooleanType("11.5", "Other", polst.isOtherParticipants());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item11_5 = createItemBooleanType("11.5", getTranslation("PortableMedicalOrder-questionnaire_response_item11_5"), polst.isOtherParticipants());
         responseList.add(item11_5);
         if (polst.isOtherParticipants()) {
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item11_6 = createItemStringType("11.6", "List of other participants", polst.getOtherParticipantsList());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item11_6 = createItemStringType("11.6", getTranslation("PortableMedicalOrder-questionnaire_response_item11_6"), polst.getOtherParticipantsList());
             responseList.add(item11_6);
         }
     }
 
     private void assistingIndividualResponse() {
         //Professional Assisting Health Care Provider w/ Form Completion (if applicable):
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_1 = createItemStringType("12.1", "Full Name", polst.getAssistingHealthcareProviderFullName());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_1 = createItemStringType("12.1", getTranslation("PortableMedicalOrder-questionnaire_response_item12_1"), polst.getAssistingHealthcareProviderFullName());
         responseList.add(item12_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_2 = createItemStringType("12.2", "Date Assisted", polst.getDateAssistedByHealthcareProvider());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_2 = createItemStringType("12.2",getTranslation("PortableMedicalOrder-questionnaire_response_item12_2"), polst.getDateAssistedByHealthcareProvider());
         responseList.add(item12_2);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_3 = createItemStringType("12.3", "Phone Number", polst.getAssistingHealthcareProviderPhoneNumber());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_3 = createItemStringType("12.3", getTranslation("PortableMedicalOrder-questionnaire_response_item12_3"), polst.getAssistingHealthcareProviderPhoneNumber());
         responseList.add(item12_3);
         //relationship
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_1 = createItemBooleanType("12.4.1", "Social Worker", polst.isSocialWorker());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_1 = createItemBooleanType("12.4.1", getTranslation("PortableMedicalOrder-questionnaire_response_item12_4_1"), polst.isSocialWorker());
         responseList.add(item12_4_1);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_2 = createItemBooleanType("12.4.2", "Nurse", polst.isNurse());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_2 = createItemBooleanType("12.4.2", getTranslation("PortableMedicalOrder-questionnaire_response_item12_4_2"), polst.isNurse());
         responseList.add(item12_4_2);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_3 = createItemBooleanType("12.4.3", "Clergy", polst.isClergy());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_3 = createItemBooleanType("12.4.3", getTranslation("PortableMedicalOrder-questionnaire_response_item12_4_3"), polst.isClergy());
         responseList.add(item12_4_3);
-        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_4 = createItemBooleanType("12.4.4", "Other", polst.isAssistingOther());
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_4 = createItemBooleanType("12.4.4", getTranslation("PortableMedicalOrder-questionnaire_response_item12_4_4"), polst.isAssistingOther());
         responseList.add(item12_4_4);
         if (polst.isAssistingOther()) {
-            QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_5 = createItemStringType("12.4.5", "Enter Type", polst.getAssistingOtherList());
+            QuestionnaireResponse.QuestionnaireResponseItemComponent item12_4_5 = createItemStringType("12.4.5", getTranslation("PortableMedicalOrder-questionnaire_response_item12_4_5"), polst.getAssistingOtherList());
             responseList.add(item12_4_5);
         }
     }
@@ -1888,64 +1858,63 @@ public class PortableMedicalOrder extends ViewFrame {
 
     private void errorCheckCommon() {
         if (!polst.isYesCPR() && !polst.isNoCPR()) {
-            errorList.add(new QuestionnaireError("Cardiopulmonary resusciation orders no selection made.", 1));
+            errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list1"), 1));
         }
         if (!polst.isFullTreatments() && !polst.isSelectiveTreatments() && !polst.isComfortFocusedTreament()) {
-            errorList.add(new QuestionnaireError("Initial treatment orders no selection made.", 2));
+            errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list2"), 2));
         }
         if (!polst.isNutritionByArtificialMeans() && !polst.isTrialNutritionByArtificialMeans() && !polst.isNoArtificialMeans() && !polst.isNoNutritionDecisionMade()) {
-            errorList.add(new QuestionnaireError("Medically assisted nutrition no selection made.", 4));
+            errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list3"), 4));
         }
     }
 
     private void errorCheckSignature() {
         //patient or patient representative signature check
         if (base64PatientOrRepresentativeSignature == null || base64PatientOrRepresentativeSignature.length == 0) {
-            errorList.add(new QuestionnaireError("Patient or patient's representative signature can not be blank.", 5));
+            errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list4"), 5));
         }
         if (polst.isRepresentativeSigning()) {
             if (polst.getRepresentativeName() == null || polst.getRepresentativeName().isEmpty()) {
-                errorList.add(new QuestionnaireError("Patient representative name can not be blank.", 5));
+                errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list5"), 5));
             }
             if (polst.getRepresentativeAuthority() == null || polst.getRepresentativeAuthority().isEmpty()) {
-                errorList.add(new QuestionnaireError("Patient representative authority can not be blank.", 5));
+                errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list6"), 5));
             }
         }
         //health care provider signature
         if (base64HealthcareProviderSignature == null || base64HealthcareProviderSignature.length == 0) {
-            errorList.add(new QuestionnaireError("Health care provider signature can not be blank.", 6));
+            errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list7"), 6));
         }
         if (polst.getHealthcareProviderFullName() == null || polst.getHealthcareProviderFullName().isEmpty()) {
-            errorList.add(new QuestionnaireError("Health care provider name can not be blank.", 6));
+            errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list8"), 6));
         }
         if (polst.getHealthcareProviderPhoneNumber() == null || polst.getHealthcareProviderPhoneNumber().isEmpty()) {
-            errorList.add(new QuestionnaireError("Health care provider phone number can not be blank.", 6));
+            errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list9"), 6));
         }
         if (polst.getHealthcareProviderLicenseOrCert() == null || polst.getHealthcareProviderLicenseOrCert().isEmpty()) {
-            errorList.add(new QuestionnaireError("Health care provider license or Certificate number can not be blank.", 6));
+            errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list10"), 6));
         }
         if (polst.isRequiredSupervisingPhysicianSignature()) {
             if (base64SupervisingPhysicianSignature == null || base64SupervisingPhysicianSignature.length == 0) {
-                errorList.add(new QuestionnaireError("Supervising physician signature is required.", 6));
+                errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list11"), 6));
             }
             if (polst.getSupervisingPhysicianLicense() == null || polst.getSupervisingPhysicianLicense().isEmpty()) {
-                errorList.add(new QuestionnaireError("Supervising physician license number required.", 6));
+                errorList.add(new QuestionnaireError(getTranslation("PortableMedicalOrder-error_list12"), 6));
             }
         }
     }
 
     private void createErrorDialog() {
-        Html errorIntro = new Html("<p><b>The following errors were identified. You will need to correct them before saving this consent document.</b></p>");
+        Html errorIntro = new Html(getTranslation("PortableMedicalOrder-error_intro"));
         Html flowTypeIntro;
         if (advDirectiveFlowType.equals("Default")) {
-            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Submit\" responses to all non-optional questions, signatures, and signature information is required.</p>");
+            flowTypeIntro = new Html(getTranslation("PortableMedicalOrder-flow_type_intro1"));
         }
         else {
-            flowTypeIntro = new Html("<p>Based on you selection of \"Accept and Get Notarized\" responses to all questions are required. You are expected to print a copy of this " +
-                    "consent document and acquire signatures for it in the presence of a notary.  You are then required to scan and upload this document to activate enforcement of it.</p>");
+            flowTypeIntro = new Html(getTranslation("PortableMedicalOrder-flow_type_intro2"));
         }
 
-        Button errorBTN = new Button("Correct Errors");
+        Button errorBTN = new Button(getTranslation("PortableMedicalOrder-error_btn"));
         errorBTN.setWidthFull();
         errorBTN.addClickListener(event -> {
             questionPosition = errorList.get(0).getQuestionnaireIndex();
@@ -1981,6 +1950,6 @@ public class PortableMedicalOrder extends ViewFrame {
         errorDialog.setCloseOnOutsideClick(false);
         errorDialog.setCloseOnEsc(false);
         errorDialog.setResizable(true);
-        errorDialog.add(createHeader(VaadinIcon.WARNING, "Failed Verification"),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
+        errorDialog.add(createHeader(VaadinIcon.WARNING, getTranslation("PortableMedicalOrder-failed_verification")),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
     }
 }
