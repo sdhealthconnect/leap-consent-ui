@@ -33,4 +33,10 @@ public class FHIRPractitioner {
         }
         return consentCollection;
     }
+
+    public Practitioner createPractitioner(Practitioner practitioner) {
+        Bundle bundle = hapiFhirServer.createAndExecuteBundle(practitioner);
+        Practitioner provider = (Practitioner)bundle.getEntry().get(0).getResource();
+        return provider;
+    }
 }

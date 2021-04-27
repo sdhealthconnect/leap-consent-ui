@@ -32,4 +32,10 @@ public class FHIROrganization {
         }
         return consentCollection;
     }
+
+    public Organization createOrganization(Organization organization) {
+        Bundle bundle = hapiFhirServer.createAndExecuteBundle(organization);
+        Organization org = (Organization)bundle.getEntry().get(0).getResource();
+        return org;
+    }
 }
