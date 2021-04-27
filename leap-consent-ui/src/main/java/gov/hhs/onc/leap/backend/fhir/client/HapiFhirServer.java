@@ -17,6 +17,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -354,5 +357,26 @@ public class HapiFhirServer {
                 .returnBundle(Bundle.class)
                 .execute();
         return bundle;
+    }
+
+    public List<Reference> getSubjectsWithSpecificCondition(String system, String code) {
+        List<Reference> refList = new ArrayList<>();
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Condition.class)
+                .where(Condition.CODE.exactly().systemAndCode(system, code))
+                .and(Condition.CLINICAL_STATUS.exactly().code("active"))
+                .returnBundle(Bundle.class)
+                .execute();
+
+        List<Bundle.BundleEntryComponent> entries = bundle.getEntry();
+        Iterator iter = entries.iterator();
+        while (iter.hasNext()) {
+            Bundle.BundleEntryComponent entryComponent = (Bundle.BundleEntryComponent) iter.next();
+            Condition condition = (Condition)entryComponent.getResource();
+            Reference ref = condition.getSubject();
+            refList.add(ref);
+        }
+        return refList;
     }
 }
