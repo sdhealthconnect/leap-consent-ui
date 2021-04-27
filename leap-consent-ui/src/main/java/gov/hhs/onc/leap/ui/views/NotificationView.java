@@ -25,11 +25,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
-import gov.hhs.onc.leap.backend.ConsentNotification;
 import gov.hhs.onc.leap.backend.ConsentDocument;
+import gov.hhs.onc.leap.backend.ConsentNotification;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRMedicationRequest;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRServiceRequest;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
@@ -48,9 +47,7 @@ import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
-import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFInformedConsentHandler;
-import gov.hhs.onc.leap.ui.util.pdf.PDFPOAHealthcareHandler;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,19 +158,19 @@ public class NotificationView extends ViewFrame {
     private void createTabs() {
         notificationTabs = new Tabs();
         notificationTabs.setOrientation(Tabs.Orientation.HORIZONTAL);
-        policyTab = new Tab("Policy");
-        medicationRequestTab = new Tab("Medication Requests");
+        policyTab = new Tab(getTranslation("NotificationView-policy"));
+        medicationRequestTab = new Tab(getTranslation("NotificationView-medication_request"));
         notificationTabs.add(policyTab, medicationRequestTab);
         notificationTabs.addSelectedChangeListener(event -> {
             String selectedTabName = notificationTabs.getSelectedTab().getLabel();
-            if (selectedTabName.equals("Policy")) {
+            if (selectedTabName.equals(getTranslation("NotificationView-policy"))) {
                 policyLayout.setVisible(true);
                 medicationRequestLayout.setVisible(false);
                 reviewInformedConsentLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
                 physicianSignatureLayout.setVisible(false);
             }
-            else if (selectedTabName.equals("Medication Requests")) {
+            else if (selectedTabName.equals(getTranslation("NotificationView-medication_request"))) {
                 policyLayout.setVisible(false);
                 medicationRequestLayout.setVisible(true);
                 reviewInformedConsentLayout.setVisible(false);
@@ -204,19 +201,19 @@ public class NotificationView extends ViewFrame {
                 }
         );
         grid.addColumn(new ComponentRenderer<>(this::createActionRequirement))
-                .setHeader("Requirement")
+                .setHeader(getTranslation("NotificationView-requirement"))
                 .setAutoWidth(true);
         grid.addColumn(badgeRenderer)
                 .setAutoWidth(true)
-                .setHeader("Current Status");
+                .setHeader(getTranslation("NotificationView-current_status"));
         grid.addColumn(new ComponentRenderer<>(this::createShortName))
-                .setHeader("Name")
+                .setHeader(getTranslation("NotificationView-name"))
                 .setAutoWidth(true);
         grid.addColumn(new ComponentRenderer<>(this::createDescription))
-                .setHeader("Description")
+                .setHeader(getTranslation("NotificationView-description"))
                 .setWidth("250px");
         grid.addColumn(new ComponentRenderer<>(this::createDestination))
-                .setHeader("Take Me There")
+                .setHeader(getTranslation("NotificationView-take_me_there"))
                 .setAutoWidth(true);
 
         policyLayout = new FlexBoxLayout(grid);
@@ -270,42 +267,39 @@ public class NotificationView extends ViewFrame {
                 }
         );
         medRequestGrid.addColumn(ConsentNotification::getNotificationDate)
-                .setHeader("Date Authored")
+                .setHeader(getTranslation("NotificationView-date_authored"))
                 .setSortable(true)
                 .setAutoWidth(true);
         medRequestGrid.addColumn(new ComponentRenderer<>(this::createActionRequirement))
-                .setHeader("Requirement")
+                .setHeader(getTranslation("NotificationView-requirement"))
                 .setAutoWidth(true);
         medRequestGrid.addColumn(badgeRenderer)
                 .setAutoWidth(true)
-                .setHeader("Current Status");
+                .setHeader(getTranslation("NotificationView-current_status"));
         medRequestGrid.addColumn(new ComponentRenderer<>(this::createShortName))
-                .setHeader("Medication")
+                .setHeader(getTranslation("NotificationView-medication"))
                 .setAutoWidth(true);
         medRequestGrid.addColumn(new ComponentRenderer<>(this::createDescription))
-                .setHeader("Requestor/Author")
+                .setHeader(getTranslation("NotificationView-request_author"))
                 .setWidth("250px");
         medRequestGrid.addColumn(new ComponentRenderer<>(this::createDestination))
-                .setHeader("Take Me There")
+                .setHeader(getTranslation("NotificationView-take_me_there"))
                 .setAutoWidth(true);
-
     }
 
     private void createInformedConsentLayout() {
-        Html intro = new Html("<p>Completion of the form is voluntary.  If not completed, this medication can not be administered.  This consent will be maintained " +
-                "in your records and will accessible to authorized users.</p>");
-        physicianName = new TextField("Your Physician:");
-        Html medIntro = new Html("<p>Wishes to prescribe the following medication for you.</p>");
-        medicationName = new TextField("Medication Name:");
-        Html medIntro2 = new Html("<p>This medication can not be administered without your consent.  The first step in that process you, and your physician, will review some " +
-                "information regarding this medication.  Such as its use, risks, side-effects, and other important information.  To begin that process click on the <b>Get Informed</b> button.</p>");
-        Button getInformedBtn = new Button("Get Informed");
+        Html intro = new Html(getTranslation("NotificationView-informed_consent_intro"));
+        physicianName = new TextField(getTranslation("NotificationView-physician_name"));
+        Html medIntro = new Html(getTranslation("NotificationView-informed_consent_med_intro"));
+        medicationName = new TextField(getTranslation("NotificationView-medication_name"));
+        Html medIntro2 = new Html(getTranslation("NotificationView-med_intro2"));
+        Button getInformedBtn = new Button(getTranslation("NotificationView-get_informed"));
         getInformedBtn.addClickListener(event -> {
             infoDialog = createInfoDialog();
             infoDialog.open();
         });
 
-        reviewInformedConsentLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request (Experimental)"), intro, new BasicDivider(),
+        reviewInformedConsentLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("NotificationView-get_informed_consent")), intro, new BasicDivider(),
                 physicianName, medIntro, medicationName, medIntro2, getInformedBtn);
         reviewInformedConsentLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         reviewInformedConsentLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -321,18 +315,15 @@ public class NotificationView extends ViewFrame {
     }
 
     private void createPatientSignatureLayout() {
-        Html intro = new Html("<p>I have been counseled about potential side effects of the medication, " +
-                "when they may occur, and when and where I should seek treatment.  I have read, or have had read to me, the informed consent " +
-                "provided for the medication to be administered. I have had the opportunity to ask questions, and all " +
-                "my questions have been answered to my satisfaction. I understand the benefits and risks of this medication.</p>");
+        Html intro = new Html(getTranslation("NotificationView-patient_signature_intro"));
 
-        treatmentAccepted = new Checkbox("I consent to this treatment");
+        treatmentAccepted = new Checkbox(getTranslation("NotificationView-i_consent_to_this_treatment"));
         treatmentAccepted.addClickListener(event -> {
            if (treatmentAccepted.getValue()) {
                treatmentDeclined.setValue(false);
            }
         });
-        treatmentDeclined = new Checkbox("I decline this treatment");
+        treatmentDeclined = new Checkbox(getTranslation("NotificationView-i_decline_this_treatment"));
         treatmentDeclined.addClickListener(event -> {
             if (treatmentDeclined.getValue()) {
                 treatmentAccepted.setValue(false);
@@ -344,18 +335,18 @@ public class NotificationView extends ViewFrame {
         patientSignature.setWidth("400px");
         patientSignature.setPenColor("#2874A6");
 
-        Button backButton = new Button("Back");
+        Button backButton = new Button(getTranslation("NotificationView-back"));
         backButton.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.FAST_BACKWARD));
         backButton.addClickListener(event -> {
            patientSignatureLayout.setVisible(false);
            reviewInformedConsentLayout.setVisible(true);
         });
-        Button clearWitnessSig = new Button("Clear Signature");
+        Button clearWitnessSig = new Button(getTranslation("NotificationView-clear_signature"));
         clearWitnessSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearWitnessSig.addClickListener(event -> {
             patientSignature.clear();
         });
-        Button saveWitnessSig = new Button("Accept Signature");
+        Button saveWitnessSig = new Button(getTranslation("NotificationView-accept_signature"));
         saveWitnessSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         saveWitnessSig.addClickListener(event -> {
             base64PatientSignature = patientSignature.getImageBase64();
@@ -368,7 +359,7 @@ public class NotificationView extends ViewFrame {
         sigLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
-        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request (Experimental)"), intro, new BasicDivider(),
+        patientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("NotificationView-get_informed_consent")), intro, new BasicDivider(),
                 treatmentAccepted, treatmentDeclined, patientSignature, sigLayout);
         patientSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         patientSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -384,14 +375,13 @@ public class NotificationView extends ViewFrame {
     }
 
     private void createPhysicianSignatureLayout() {
-        Html para1 = new Html("<p>I, Dr.</p>");
-        attestationDRName = new TextField("Physician's Name");
-        Html para2 = new Html("<p>have reviewed this document and have discussed with</p>");
-        attestationPatientName = new TextField("Patient's Name");
+        Html para1 = new Html(getTranslation("NotificationView-physician_signature_para1"));
+        attestationDRName = new TextField(getTranslation("NotificationView-physician_signature_physician_name"));
+        Html para2 = new Html(getTranslation("NotificationView-physician_signature_para2"));
+        attestationPatientName = new TextField(getTranslation("NotificationView-physician_signature_patient_name"));
         attestationPatientName.setValue(consentUser.getFirstName()+" "+consentUser.getMiddleName()+" "+consentUser.getLastName());
-        Html para3 = new Html("<p>any questions regarding the probable medical consequences of the treatment choices provided. "+
-                "This discussion with the patient occurred on this day.</p>");
-        attestationDate = new TextField("Date");
+        Html para3 = new Html(getTranslation("NotificationView-physician_signature_para3"));
+        attestationDate = new TextField(getTranslation("NotificationView-date"));
         attestationDate.setValue(getDateStringForDisplay(new Date()));
 
         physcianSignature = new SignaturePad();
@@ -399,18 +389,18 @@ public class NotificationView extends ViewFrame {
         physcianSignature.setWidth("400px");
         physcianSignature.setPenColor("#2874A6");
 
-        Button backButton = new Button("Back");
+        Button backButton = new Button(getTranslation("NotificationView-back"));
         backButton.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.FAST_BACKWARD));
         backButton.addClickListener(event -> {
             physicianSignatureLayout.setVisible(false);
             patientSignatureLayout.setVisible(true);
         });
-        Button clearPatientSig = new Button("Clear Signature");
+        Button clearPatientSig = new Button(getTranslation("NotificationView-clear_signature"));
         clearPatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
         clearPatientSig.addClickListener(event -> {
             physcianSignature.clear();
         });
-        Button savePatientSig = new Button("Accept Signature");
+        Button savePatientSig = new Button(getTranslation("NotificationView-accept_signature"));
         savePatientSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
         savePatientSig.addClickListener(event -> {
             base64PhysicianSignature = physcianSignature.getImageBase64();
@@ -423,8 +413,8 @@ public class NotificationView extends ViewFrame {
         sigLayout.setPadding(true);
         sigLayout.setSpacing(true);
 
-        Html intro = new Html("<p>Physician's attestation.</p>");
-        physicianSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Medication Request (Experimental)"), intro, new BasicDivider(),
+        Html intro = new Html(getTranslation("NotificationView-physician_signature_intro"));
+        physicianSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("NotificationView-get_informed_consent")), intro, new BasicDivider(),
                 para1, attestationDRName, para2, attestationPatientName, para3, attestationDate, physcianSignature, sigLayout);
         physicianSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         physicianSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -457,7 +447,7 @@ public class NotificationView extends ViewFrame {
     }
 
     private Component createDestination(ConsentNotification consentNotification) {
-        Button btn = new Button("Get Started");
+        Button btn = new Button(getTranslation("NotificationView-create_destination_get_started"));
         btn.addClickListener(event -> {
             if (consentNotification.getStatus().equals(ConsentNotification.Status.PENDING)) {
                 UI.getCurrent().navigate("consentdocumentview");
@@ -467,7 +457,7 @@ public class NotificationView extends ViewFrame {
                 ConsentNotification.Status selectedStatus = selectedConsentNotification.getStatus();
 
                 if (!selectedStatus.equals(ConsentNotification.Status.ONHOLD)) {
-                    Span content = new Span("You must select/highlight this row for this request to function.");
+                    Span content = new Span(getTranslation("NotificationView-create_destination_content"));
 
                     Notification notification = new Notification(content);
                     notification.setDuration(5000);
@@ -518,26 +508,23 @@ public class NotificationView extends ViewFrame {
     private void createBaseNotification() {
         //todo This is a listing of user consent requirements, ideally this is read in from a properties file or db based on the user's primary state's requirements and may require evaluation of patient's age and other demographic or conditional info
         //patient privacy
-        patientPrivacyNotification = new ConsentNotification(new Date(),"Action Required", ConsentNotification.Status.NOTCOMPLETE, "patient-privacy",
-                "Requires, at minimum, an exchange policy between your primary provider's organization and the hosting Healthcare Information Exchange(HIE).", "sharepatientdataview", null);
+        patientPrivacyNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-action_required"), ConsentNotification.Status.NOTCOMPLETE, getTranslation("NotificationView-privacy_notification_short_name"),
+                getTranslation("NotificationView-privacy_notification"), "sharepatientdataview", null);
         //Advance Directives
-        adrLivingWillNotification = new ConsentNotification(new Date(),"Action Required",ConsentNotification.Status.NOTCOMPLETE,"Advance Directive - Living Will",
-                "Use this form to make decisions now about your medical care if you are ever in a terminal condition, a persistent vegetative state or an irreversible coma.",
+        adrLivingWillNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-action_required"),ConsentNotification.Status.NOTCOMPLETE,getTranslation("NotificationView-privacy_living_will_notification_short_name"),
+                getTranslation("NotificationView-privacy_living_will_notification"),
                 "livingwillview", null);
-        adrPOAHealthCareNotification = new ConsentNotification(new Date(),"Action Required", ConsentNotification.Status.NOTCOMPLETE, "Advance Directive - Health Care Power of Attorney",
-                "Helps you identify a person, called an \"agent\", to make future health care decisions for you so that if you become too ill or cannot make those decisions for yourself the person you choose and trust to make medical decisions for you.",
+        adrPOAHealthCareNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-action_required"), ConsentNotification.Status.NOTCOMPLETE, getTranslation("NotificationView-adr_POA_health_care_notification_short_name"),
+                getTranslation("NotificationView-adr_POA_health_care_notification"),
                 "healthcarepowerofattorney", null);
-        adrPOAMentalHealthNotification = new ConsentNotification(new Date(),"Optional", ConsentNotification.Status.NOTCOMPLETE, "Advance Directive - Mental Health Power of Attorney",
-                "Helps you identify a person, also referred to as your \"agent\", to make future mental health care decisions for you if you become incapable of making those decisions for yourself.",
+        adrPOAMentalHealthNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-optional"), ConsentNotification.Status.NOTCOMPLETE, getTranslation("NotificationView-adr_POA_mental_health_notification_short_name"),
+                getTranslation("NotificationView-adr_POA_mental_health_notification"),
                 "mentalhealthpowerofattorney", null);
-        adrDNRNotification = new ConsentNotification(new Date(),"Optional", ConsentNotification.Status.NOTCOMPLETE, "Advance Directive - Do Not Resuscitate",
-                "A document signed by you and your doctor that informs emergency medical technicians (EMTs) or hospital emergency personnel not to resuscitate you.",
+        adrDNRNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-optional"), ConsentNotification.Status.NOTCOMPLETE, getTranslation("NotificationView-adr_DNR_notification_short_name"),
+                getTranslation("NotificationView-adr_DNR_notification"),
                 "dnrview", null);
-        polstNotification = new ConsentNotification(new Date(),"Optional", ConsentNotification.Status.NOTCOMPLETE, "National Portable Medical Order",
-                "Health care providers, the patient, or patient representative, should complete this form only after the " +
-                        "health care provider has had a conversation with their patient or the patient’s representative.  " +
-                        "The POLST decision-making process is for patients who are at risk for a life-threatening clinical event because they have a serious life-limiting medical " +
-                        "condition, which may include advanced frailty.",
+        polstNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-optional"), ConsentNotification.Status.NOTCOMPLETE, getTranslation("NotificationView-polst_notification_short_name"),
+                getTranslation("NotificationView-polst_notification"),
                 "portablemedicalorderview", null);
     }
 
@@ -714,7 +701,7 @@ public class NotificationView extends ViewFrame {
         viewer.setHeight("800px");
         viewer.setWidth("840px");
 
-        Button closeButton = new Button("Close");
+        Button closeButton = new Button(getTranslation("NotificationView-close"));
         closeButton.addClickListener(event -> {
             infoDialog.close();
             reviewInformedConsentLayout.setVisible(false);
@@ -748,10 +735,10 @@ public class NotificationView extends ViewFrame {
         viewer.setWidth("840px");
 
 
-        Button closeButton = new Button("Cancel", e -> docDialog.close());
+        Button closeButton = new Button(getTranslation("NotificationView-cancel"), e -> docDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
-        Button acceptButton = new Button("Accept and Submit");
+        Button acceptButton = new Button(getTranslation("NotificationView-accept_and_submit"));
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
@@ -840,7 +827,7 @@ public class NotificationView extends ViewFrame {
         Attachment attachment = new Attachment();
         attachment.setContentType("application/pdf");
         attachment.setCreation(new Date());
-        attachment.setTitle("InformedConsent");
+        attachment.setTitle(getTranslation("NotificationView_informed_consent"));
 
 
         String encodedString = Base64.getEncoder().encodeToString(consentPDFAsByteArray);
@@ -950,7 +937,7 @@ public class NotificationView extends ViewFrame {
     }
 
     private void successNotification() {
-        Span content = new Span("FHIR Informed Consent - MedicationRequest successfully created!");
+        Span content = new Span(getTranslation("NotificationView-success_notification"));
 
         Notification notification = new Notification(content);
         notification.setDuration(3000);
