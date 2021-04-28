@@ -6,6 +6,7 @@ import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
+import gov.hhs.onc.leap.ui.util.UIUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -32,7 +33,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
 
@@ -96,7 +96,7 @@ public class PDFInformedConsentHandler {
         ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         String patientState = consentSession.getPrimaryState();
         String languagePreference = consentSession.getLanguagePreference();
-
+        languagePreference = UIUtils.getLanguage(languagePreference);
         String fullFormPath = "/informed-consent/medication-request/"+languagePreference+"/"+formType+".pdf";
         byte[] bArray = null;
         PDDocument pdfdocument = null;
@@ -128,7 +128,7 @@ public class PDFInformedConsentHandler {
         ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         String patientState = consentSession.getPrimaryState();
         String languagePreference = consentSession.getLanguagePreference();
-
+        languagePreference = UIUtils.getLanguage(languagePreference);
         String fullFormPath = "/informed-consent/medication-request/"+languagePreference+"/"+formType+".pdf";
         byte[] bArray = null;
         PDDocument pdfdocument = null;

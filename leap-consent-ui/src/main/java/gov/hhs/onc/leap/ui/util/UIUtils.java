@@ -11,9 +11,11 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.ui.util.css.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -654,6 +656,16 @@ public class UIUtils {
 		for (Component component : components) {
 			component.getElement().getStyle().set("width", value);
 		}
+	}
+
+
+	public static String getLanguage(final String languagePreference) {
+		final VaadinSession session = VaadinSession.getCurrent();
+		String language = session.getLocale().getDisplayLanguage();
+		if (!Strings.isEmpty(languagePreference)) {
+			language = languagePreference;
+		}
+		return language;
 	}
 
 
