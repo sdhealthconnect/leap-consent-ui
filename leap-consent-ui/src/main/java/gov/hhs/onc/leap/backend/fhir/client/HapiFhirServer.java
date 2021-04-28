@@ -2,14 +2,18 @@ package gov.hhs.onc.leap.backend.fhir.client;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.SearchTotalModeEnum;
+import ca.uhn.fhir.rest.api.SortOrderEnum;
+import ca.uhn.fhir.rest.api.SortSpec;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam;
 import ca.uhn.fhir.rest.gclient.TokenClientParam;
+import ca.uhn.fhir.util.BundleUtil;
 import gov.hhs.onc.leap.backend.fhir.client.exceptions.HapiFhirCreateException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.instance.model.api.IBaseOperationOutcome;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
@@ -243,18 +247,27 @@ public class HapiFhirServer {
         return bundle;
     }
 
-    public Bundle getAllConsentsForPatient(String id) {
-        log.warn("ID from session: " + id);
+    public List<IBaseResource> getAllConsentsForPatient(String id) {
+        List<IBaseResource> consents = new ArrayList<>();
         Bundle bundle = hapiClient
                 .search()
                 .forResource(Consent.class)
                 .where(Consent.PATIENT.hasId(id))
                 .returnBundle(Bundle.class)
                 .execute();
-        return bundle;
+        consents.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while (bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            consents.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return consents;
     }
 
-    public Bundle getAllOrganizations(String state) {
+    public List<IBaseResource> getAllOrganizations(String state) {
+        //todo implement by state whereclause when more data is available
             /* Bundle bundle = hapiClient
                     .search()
                     .forResource(Organization.class)
@@ -263,15 +276,30 @@ public class HapiFhirServer {
                     .execute();
 
              */
+        SortSpec sortSpec = new SortSpec();
+        sortSpec.setParamName("name");
+        sortSpec.setOrder(SortOrderEnum.ASC);
+        List<IBaseResource> organizations = new ArrayList<>();
         Bundle bundle = hapiClient
                 .search()
                 .forResource(Organization.class)
+                .sort(sortSpec)
                 .returnBundle(Bundle.class)
                 .execute();
-        return bundle;
+        organizations.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while (bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            organizations.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+
+        return organizations;
     }
 
-    public Bundle getAllPractitioners(String state) {
+    public List<IBaseResource> getAllPractitioners(String state) {
+        //todo implement by state whereclause when more data is available
             /*Bundle bundle = hapiClient
                     .search()
                     .forResource(Practitioner.class)
@@ -280,12 +308,25 @@ public class HapiFhirServer {
                     .execute();
 
              */
+        SortSpec sortSpec = new SortSpec();
+        sortSpec.setParamName("family");
+        sortSpec.setOrder(SortOrderEnum.ASC);
+        List<IBaseResource> practitioners = new ArrayList<>();
         Bundle bundle = hapiClient
                 .search()
                 .forResource(Practitioner.class)
+                .sort(sortSpec)
                 .returnBundle(Bundle.class)
                 .execute();
-        return bundle;
+        practitioners.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while (bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            practitioners.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return practitioners;
     }
 
     public Bundle getAllPatientAuditEvents(String id) {
