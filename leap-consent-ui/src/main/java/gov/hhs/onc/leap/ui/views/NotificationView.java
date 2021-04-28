@@ -195,7 +195,7 @@ public class NotificationView extends ViewFrame {
         ComponentRenderer<Badge, ConsentNotification> badgeRenderer = new ComponentRenderer<>(
                 consentNotification -> {
                     ConsentNotification.Status status = consentNotification.getStatus();
-                    Badge badge = new Badge(status.getName(), status.getTheme());
+                    Badge badge = new Badge(getTranslation("NotificationView-" + status.name()), status.getTheme());
                     UIUtils.setTooltip(status.getDesc(), badge);
                     return badge;
                 }
@@ -261,7 +261,7 @@ public class NotificationView extends ViewFrame {
         ComponentRenderer<Badge, ConsentNotification> badgeRenderer = new ComponentRenderer<>(
                 consentNotification -> {
                     ConsentNotification.Status status = consentNotification.getStatus();
-                    Badge badge = new Badge(status.getName(), status.getTheme());
+                    Badge badge = new Badge(getTranslation("NotificationView-" + status.name()), status.getTheme());
                     UIUtils.setTooltip(status.getDesc(), badge);
                     return badge;
                 }
@@ -508,22 +508,42 @@ public class NotificationView extends ViewFrame {
     private void createBaseNotification() {
         //todo This is a listing of user consent requirements, ideally this is read in from a properties file or db based on the user's primary state's requirements and may require evaluation of patient's age and other demographic or conditional info
         //patient privacy
-        patientPrivacyNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-action_required"), ConsentNotification.Status.NOTCOMPLETE, getTranslation("NotificationView-privacy_notification_short_name"),
-                getTranslation("NotificationView-privacy_notification"), "sharepatientdataview", null);
+        patientPrivacyNotification = new ConsentNotification(new Date(),
+                getTranslation("NotificationView-action_required"),
+                ConsentNotification.Status.NOTCOMPLETE,
+                getTranslation("NotificationView-privacy_notification_short_name"),
+                getTranslation("NotificationView-privacy_notification"),
+                "sharepatientdataview",
+                null);
         //Advance Directives
-        adrLivingWillNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-action_required"),ConsentNotification.Status.NOTCOMPLETE,getTranslation("NotificationView-privacy_living_will_notification_short_name"),
+        adrLivingWillNotification = new ConsentNotification(new Date(),
+                getTranslation("NotificationView-action_required"),
+                ConsentNotification.Status.NOTCOMPLETE,
+                getTranslation("NotificationView-privacy_living_will_notification_short_name"),
                 getTranslation("NotificationView-privacy_living_will_notification"),
                 "livingwillview", null);
-        adrPOAHealthCareNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-action_required"), ConsentNotification.Status.NOTCOMPLETE, getTranslation("NotificationView-adr_POA_health_care_notification_short_name"),
+        adrPOAHealthCareNotification = new ConsentNotification(new Date(),
+                getTranslation("NotificationView-action_required"),
+                ConsentNotification.Status.NOTCOMPLETE,
+                getTranslation("NotificationView-adr_POA_health_care_notification_short_name"),
                 getTranslation("NotificationView-adr_POA_health_care_notification"),
                 "healthcarepowerofattorney", null);
-        adrPOAMentalHealthNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-optional"), ConsentNotification.Status.NOTCOMPLETE, getTranslation("NotificationView-adr_POA_mental_health_notification_short_name"),
+        adrPOAMentalHealthNotification = new ConsentNotification(new Date(),
+                getTranslation("NotificationView-optional"),
+                ConsentNotification.Status.NOTCOMPLETE,
+                getTranslation("NotificationView-adr_POA_mental_health_notification_short_name"),
                 getTranslation("NotificationView-adr_POA_mental_health_notification"),
                 "mentalhealthpowerofattorney", null);
-        adrDNRNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-optional"), ConsentNotification.Status.NOTCOMPLETE, getTranslation("NotificationView-adr_DNR_notification_short_name"),
+        adrDNRNotification = new ConsentNotification(new Date(),
+                getTranslation("NotificationView-optional"),
+                ConsentNotification.Status.NOTCOMPLETE,
+                getTranslation("NotificationView-adr_DNR_notification_short_name"),
                 getTranslation("NotificationView-adr_DNR_notification"),
                 "dnrview", null);
-        polstNotification = new ConsentNotification(new Date(),getTranslation("NotificationView-optional"), ConsentNotification.Status.NOTCOMPLETE, getTranslation("NotificationView-polst_notification_short_name"),
+        polstNotification = new ConsentNotification(new Date(),
+                getTranslation("NotificationView-optional"),
+                ConsentNotification.Status.NOTCOMPLETE,
+                getTranslation("NotificationView-polst_notification_short_name"),
                 getTranslation("NotificationView-polst_notification"),
                 "portablemedicalorderview", null);
     }
@@ -631,43 +651,43 @@ public class NotificationView extends ViewFrame {
         while (iter.hasNext()) {
             MedicationRequest mReq = (MedicationRequest)iter.next();
             Date reqDate = mReq.getAuthoredOn();
-            String actionRequired = "None";
+            String actionRequired = getTranslation("NotificationView-none");
             ConsentNotification.Status status = ConsentNotification.Status.ACTIVE;
             if (mReq.getStatus().equals(MedicationRequest.MedicationRequestStatus.CANCELLED)) {
                 status = ConsentNotification.Status.CANCELLED;
-                actionRequired = "None";
+                actionRequired =  getTranslation("NotificationView-none");
             }
             else if (mReq.getStatus().equals(MedicationRequest.MedicationRequestStatus.COMPLETED)) {
                 status = ConsentNotification.Status.COMPLETE;
-                actionRequired = "None";
+                actionRequired =  getTranslation("NotificationView-none");
             }
             else if (mReq.getStatus().equals(MedicationRequest.MedicationRequestStatus.DRAFT)) {
                 status = ConsentNotification.Status.DRAFT;
-                actionRequired = "None";
+                actionRequired =  getTranslation("NotificationView-none");
             }
             else if (mReq.getStatus().equals(MedicationRequest.MedicationRequestStatus.STOPPED)) {
                 status = ConsentNotification.Status.STOPPED;
-                actionRequired = "None";
+                actionRequired =  getTranslation("NotificationView-none");
             }
             else if (mReq.getStatus().equals(MedicationRequest.MedicationRequestStatus.ONHOLD)) {
                 status = ConsentNotification.Status.ONHOLD;
-                actionRequired = "Consent Required";
+                actionRequired =  getTranslation("NotificationView-consent_required");
             }
             else if(mReq.getStatus().equals(MedicationRequest.MedicationRequestStatus.ENTEREDINERROR)) {
                 status = ConsentNotification.Status.ENTEREDINERROR;
-                actionRequired = "None";
+                actionRequired =  getTranslation("NotificationView-none");
             }
             else if(mReq.getStatus().equals(MedicationRequest.MedicationRequestStatus.UNKNOWN)) {
                 status = ConsentNotification.Status.UNKNOWN;
-                actionRequired = "None";
+                actionRequired =  getTranslation("NotificationView-none");
             }
             else if(mReq.getStatus().equals(MedicationRequest.MedicationRequestStatus.ACTIVE)) {
                 status = ConsentNotification.Status.ACTIVE;
-                actionRequired = "None";
+                actionRequired =  getTranslation("NotificationView-none");
             }
             else {
                 status = ConsentNotification.Status.UNKNOWN;
-                actionRequired = "None";
+                actionRequired =  getTranslation("NotificationView-none");
             }
             String shortName = mReq.getMedicationCodeableConcept().getCoding().get(0).getDisplay();
             String requestor = mReq.getRequester().getDisplay();
