@@ -420,4 +420,23 @@ public class HapiFhirServer {
         }
         return refList;
     }
+
+    public List<IBaseResource> getSubjectsForSpecificPatientReference(String reference) {
+        List<IBaseResource> subjectList = new ArrayList<>();
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(ResearchSubject.class)
+                .where(new ReferenceClientParam("patient").hasId(reference))
+                .returnBundle(Bundle.class)
+                .execute();
+        subjectList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while (bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            subjectList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return subjectList;
+    }
 }

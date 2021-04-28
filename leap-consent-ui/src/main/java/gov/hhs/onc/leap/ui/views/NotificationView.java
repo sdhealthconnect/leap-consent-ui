@@ -29,6 +29,7 @@ import gov.hhs.onc.leap.backend.ConsentNotification;
 import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRMedicationRequest;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRResearchSubject;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRServiceRequest;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
@@ -51,6 +52,7 @@ import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFInformedConsentHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPOAHealthcareHandler;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,9 +88,13 @@ public class NotificationView extends ViewFrame {
     private Grid<ConsentNotification> medRequestGrid;
     private ListDataProvider<ConsentNotification> medRequestDataProvider;
 
+    private Grid<ConsentNotification> clinicalTrialsGrid;
+    private ListDataProvider<ConsentNotification> clinicalTrialsDataProvider;
+
     private Tabs notificationTabs;
     private Tab policyTab;
     private Tab medicationRequestTab;
+    private Tab clinicalTrialsTab;
 
     private FlexBoxLayout policyLayout;
 
@@ -120,11 +126,17 @@ public class NotificationView extends ViewFrame {
 
     private ConsentUser consentUser;
 
+    private FlexBoxLayout clinicalTrialsLayout;
+
+
     @Autowired
     private FHIRConsent fhirConsentClient;
 
     @Autowired
     private FHIRMedicationRequest fhirMedicationRequestClient;
+
+    @Autowired
+    private FHIRResearchSubject fhirResearchSubject;
 
     @Autowired
     private PDFSigningService pdfSigningService;
@@ -147,10 +159,11 @@ public class NotificationView extends ViewFrame {
         createTabs();
         createPolicyLayout();
         createMedicationRequestLayout();
+        createClinicalTrialsLayout();
         createInformedConsentLayout();
         createPatientSignatureLayout();
         createPhysicianSignatureLayout();
-        FlexBoxLayout content = new FlexBoxLayout(notificationTabs,policyLayout, medicationRequestLayout, reviewInformedConsentLayout, patientSignatureLayout, physicianSignatureLayout);
+        FlexBoxLayout content = new FlexBoxLayout(notificationTabs,policyLayout, medicationRequestLayout, clinicalTrialsLayout, reviewInformedConsentLayout, patientSignatureLayout, physicianSignatureLayout);
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -163,12 +176,14 @@ public class NotificationView extends ViewFrame {
         notificationTabs.setOrientation(Tabs.Orientation.HORIZONTAL);
         policyTab = new Tab("Policy");
         medicationRequestTab = new Tab("Medication Requests");
-        notificationTabs.add(policyTab, medicationRequestTab);
+        clinicalTrialsTab = new Tab("Clinical Trials");
+        notificationTabs.add(policyTab, medicationRequestTab, clinicalTrialsTab);
         notificationTabs.addSelectedChangeListener(event -> {
             String selectedTabName = notificationTabs.getSelectedTab().getLabel();
             if (selectedTabName.equals("Policy")) {
                 policyLayout.setVisible(true);
                 medicationRequestLayout.setVisible(false);
+                clinicalTrialsLayout.setVisible(false);
                 reviewInformedConsentLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
                 physicianSignatureLayout.setVisible(false);
@@ -176,6 +191,15 @@ public class NotificationView extends ViewFrame {
             else if (selectedTabName.equals("Medication Requests")) {
                 policyLayout.setVisible(false);
                 medicationRequestLayout.setVisible(true);
+                clinicalTrialsLayout.setVisible(false);
+                reviewInformedConsentLayout.setVisible(false);
+                patientSignatureLayout.setVisible(false);
+                physicianSignatureLayout.setVisible(false);
+            }
+            else if (selectedTabName.equals("Clinical Trials")) {
+                policyLayout.setVisible(false);
+                medicationRequestLayout.setVisible(false);
+                clinicalTrialsLayout.setVisible(true);
                 reviewInformedConsentLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
                 physicianSignatureLayout.setVisible(false);
@@ -289,6 +313,63 @@ public class NotificationView extends ViewFrame {
                 .setHeader("Take Me There")
                 .setAutoWidth(true);
 
+    }
+
+    private void createClinicalTrialsLayout() {
+        createClinicalTrialsGrid();
+
+
+        clinicalTrialsLayout = new FlexBoxLayout(clinicalTrialsGrid);
+        clinicalTrialsLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        clinicalTrialsLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        clinicalTrialsLayout.setHeightFull();
+        clinicalTrialsLayout.setBackgroundColor("white");
+        clinicalTrialsLayout.setShadow(Shadow.S);
+        clinicalTrialsLayout.setBorderRadius(BorderRadius.S);
+        clinicalTrialsLayout.getStyle().set("margin-bottom", "10px");
+        clinicalTrialsLayout.getStyle().set("margin-right", "10px");
+        clinicalTrialsLayout.getStyle().set("margin-left", "10px");
+        clinicalTrialsLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        clinicalTrialsLayout.setVisible(false);
+    }
+
+    private void createClinicalTrialsGrid() {
+        clinicalTrialsDataProvider = DataProvider.ofCollection(createResearchSubjectsArray());
+
+        clinicalTrialsGrid = new Grid<>();
+        clinicalTrialsGrid.setSelectionMode(Grid.SelectionMode.SINGLE);
+        clinicalTrialsGrid.setDataProvider(clinicalTrialsDataProvider);
+        clinicalTrialsGrid.setHeightFull();
+        clinicalTrialsGrid.setMultiSort(true);
+        clinicalTrialsGrid.addThemeVariants(GridVariant.LUMO_WRAP_CELL_CONTENT);
+
+        ComponentRenderer<Badge, ConsentNotification> badgeRenderer = new ComponentRenderer<>(
+                consentNotification -> {
+                    ConsentNotification.Status status = consentNotification.getStatus();
+                    Badge badge = new Badge(status.getName(), status.getTheme());
+                    UIUtils.setTooltip(status.getDesc(), badge);
+                    return badge;
+                }
+        );
+        clinicalTrialsGrid.addColumn(ConsentNotification::getNotificationDate)
+                .setHeader("Last Activity Date")
+                .setSortable(true)
+                .setAutoWidth(true);
+        clinicalTrialsGrid.addColumn(new ComponentRenderer<>(this::createActionRequirement))
+                .setHeader("Requirement")
+                .setAutoWidth(true);
+        clinicalTrialsGrid.addColumn(badgeRenderer)
+                .setAutoWidth(true)
+                .setHeader("Current Status");
+        clinicalTrialsGrid.addColumn(new ComponentRenderer<>(this::createShortName))
+                .setHeader("Study Identifier")
+                .setAutoWidth(true);
+        clinicalTrialsGrid.addColumn(new ComponentRenderer<>(this::createDescription))
+                .setHeader("Study Title")
+                .setWidth("250px");
+        clinicalTrialsGrid.addColumn(new ComponentRenderer<>(this::createDestination))
+                .setHeader("Take Me There")
+                .setAutoWidth(true);
     }
 
     private void createInformedConsentLayout() {
@@ -692,6 +773,56 @@ public class NotificationView extends ViewFrame {
             }
         }
 
+        return reqList;
+    }
+
+    private Collection<ConsentNotification> createResearchSubjectsArray() {
+        Collection<ConsentNotification> reqList = new ArrayList<>();
+        List<IBaseResource> subjectsList = fhirResearchSubject.getResearchSubjectsForSpecificPatientReference();
+        Iterator iter = subjectsList.iterator();
+        while(iter.hasNext()) {
+            ResearchSubject subject = (ResearchSubject)iter.next();
+            Date reqDate = subject.getMeta().getLastUpdated();
+            String actionRequired = "None";
+            ConsentNotification.Status status = ConsentNotification.Status.UNKNOWN;
+            if (subject.getStatus().equals(ResearchSubject.ResearchSubjectStatus.POTENTIALCANDIDATE)) {
+                status = ConsentNotification.Status.POTENTIALCANDIDATE;
+                actionRequired = "Consent Required";
+            }
+            else if (subject.getStatus().equals(ResearchSubject.ResearchSubjectStatus.CANDIDATE)) {
+                status = ConsentNotification.Status.CANDIDATE;
+                actionRequired = "None";
+            }
+            else if (subject.getStatus().equals(ResearchSubject.ResearchSubjectStatus.SCREENING)) {
+                status = ConsentNotification.Status.SCREENING;
+                actionRequired = "None";
+            }
+            else if (subject.getStatus().equals(ResearchSubject.ResearchSubjectStatus.ELIGIBLE)) {
+                status = ConsentNotification.Status.ELIGIBLE;
+                actionRequired = "None";
+            }
+            else if (subject.getStatus().equals(ResearchSubject.ResearchSubjectStatus.INELIGIBLE)) {
+                status = ConsentNotification.Status.INELIGIBLE;
+                actionRequired = "None";
+            }
+            else if (subject.getStatus().equals(ResearchSubject.ResearchSubjectStatus.ONSTUDY)) {
+                status = ConsentNotification.Status.ONSTUDY;
+                actionRequired = "None";
+            }
+            else if (subject.getStatus().equals(ResearchSubject.ResearchSubjectStatus.WITHDRAWN)) {
+                status = ConsentNotification.Status.WITHDRAWN;
+                actionRequired = "None";
+            }
+            else {
+                status = ConsentNotification.Status.UNKNOWN;
+                actionRequired = "None";
+            }
+            String shortName = subject.getStudy().getReference();
+            String requestor = subject.getStudy().getDisplay();
+            String destination = "unknownview";
+            ConsentNotification consentNotification = new ConsentNotification(reqDate, actionRequired, status, shortName, requestor, destination, subject);
+            reqList.add(consentNotification);
+        }
         return reqList;
     }
 
