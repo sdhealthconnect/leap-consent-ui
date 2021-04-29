@@ -22,12 +22,12 @@ public class DBConsentDecorator implements ConsentDecorator {
         ConsentUser consentUser = consentUserService.getConsentUser(consentSession.getConsentUser().getUser().getFhirPatientId());
         consentUser.setEmailAddress(consentSession.getConsentUser().getUser().getEmail());
         consentUser.setUserName(consentSession.getConsentUser().getUser().getUserName());
-        consentUser.setLanguagePreference(consentSession.getLanguagePreference());
         consentSession.setConsentUser(consentUser);
         consentSession.setUserId(consentSession.getConsentUser().getUser().getFhirPatientId());
         consentSession.setUsername(consentUser.getUserName());
         consentSession.setPrimaryState(consentUser.getState());
         consentSession.setFhirPatientId(consentSession.getConsentUser().getUser().getFhirPatientId());
+        consentSession.setLanguagePreference(consentUser.getLanguagePreference());
         return consentSession;
     }
 }

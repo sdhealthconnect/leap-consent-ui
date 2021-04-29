@@ -14,6 +14,7 @@ import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.ErrorHandler;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.Lumo;
 import gov.hhs.onc.leap.backend.ConsentDecorator;
@@ -107,6 +108,8 @@ public class MainLayout extends FlexBoxLayout
 		consentDecorator.decorate();
 		consentDecorator = new FhirConsentDecorator(consentSession, fhirPatient);
 		consentDecorator.decorate();
+
+		UIUtils.setLanguage(VaadinRequest.getCurrent(), UI.getCurrent().getSession());
 
 		addClassName(CLASS_NAME);
 		setFlexDirection(FlexDirection.COLUMN);

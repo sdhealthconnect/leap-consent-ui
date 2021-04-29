@@ -33,6 +33,11 @@ public class VaadinI18NProvider implements I18NProvider {
     private static final ResourceBundle RESOURCE_BUNDLE_DE = getBundle(RESOURCE_BUNDLE_NAME, GERMAN);
     private static final List<Locale> providedLocales = unmodifiableList(asList(ENGLISH, SPANISH, GERMAN));
 
+
+    public static Locale getLocale(String language){
+        return providedLocales.stream().filter(l -> l.getDisplayLanguage().equals(language)).findFirst().orElse(null);
+    }
+
     @Override
     public List<Locale> getProvidedLocales() {
         log.info("VaadinI18NProvider getProvidedLocales..");

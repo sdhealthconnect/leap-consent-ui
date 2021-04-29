@@ -44,10 +44,6 @@ public class TestData {
         CONSENT.put(i , new ConsentDocument(ConsentDocument.Status.REVOKED, true, "CONSENT TO SHARE", "MARIPOSA Community Health Center", "Health Current", getPastDate(2), getFutureDate(300), "N/A", "N/A", new Consent()));
     }
 
-    public static String getLanguagePreference() {
-        return "English";
-    }
-
     public static Organization getPrimaryOrganization() {
         Organization org = new Organization();
         org.setId("privacy-consent-scenario-H-healthcurrent");
@@ -106,7 +102,7 @@ public class TestData {
         ConsentSession sessionInfo = new ConsentSession(fhirBase);
         sessionInfo.setFhirCustodian(getPrimaryOrganization());
         // sessionInfo.setFhirPatient(getPatient()); Set in Fhir Decorator
-        sessionInfo.setLanguagePreference(getLanguagePreference());
+        // sessionInfo.setLanguagePreference(getLanguagePreference()); // Set in DB Decorator
         //sessionInfo.setUserId(getUserId()); Set in DB Decorator
         //sessionInfo.setUsername(getUserName()); Set in DB Decorator
         //sessionInfo.setPrimaryState("Arizona"); Set in DB Decorator
