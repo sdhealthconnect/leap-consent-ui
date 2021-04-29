@@ -37,4 +37,10 @@ public class FHIROrganization {
         Organization org = (Organization)bundle.getEntry().get(0).getResource();
         return org;
     }
+
+    public Organization getOrganizationById(String id) {
+        Bundle bundle = hapiFhirServer.getOrganizationById(id);
+        Organization org = (Organization)bundle.getEntry().get(0).getResource();
+        return org;
+    }
 }

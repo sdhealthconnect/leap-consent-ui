@@ -8,6 +8,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -27,10 +28,7 @@ import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.ConsentNotification;
 import gov.hhs.onc.leap.backend.ConsentDocument;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRMedicationRequest;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRResearchSubject;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRServiceRequest;
+import gov.hhs.onc.leap.backend.fhir.client.utils.*;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
@@ -52,6 +50,7 @@ import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFInformedConsentHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPOAHealthcareHandler;
+import gov.hhs.onc.leap.ui.util.pdf.PDFResearchStudyHandler;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
@@ -127,6 +126,18 @@ public class NotificationView extends ViewFrame {
     private ConsentUser consentUser;
 
     private FlexBoxLayout clinicalTrialsLayout;
+    private FlexBoxLayout rsReviewInformedConsentLayout;
+    private FlexBoxLayout rsReviewDetailLayout;
+    private FlexBoxLayout rsPatientSignatureLayout;
+    private TextField rsTitleField;
+    private Checkbox participateAccepted;
+    private Checkbox participateDeclined;
+    private SignaturePad rsPatientSignature;
+    private byte[] base64ResearchStudyPatientSignature;
+    private Date rsPatientSignatureDate;
+    private Dialog rsInfoDialog;
+
+
 
 
     @Autowired
@@ -137,6 +148,12 @@ public class NotificationView extends ViewFrame {
 
     @Autowired
     private FHIRResearchSubject fhirResearchSubject;
+
+    @Autowired
+    private FHIRResearchStudy fhirResearchStudy;
+
+    @Autowired
+    private FHIROrganization fhirOrganization;
 
     @Autowired
     private PDFSigningService pdfSigningService;
@@ -163,7 +180,11 @@ public class NotificationView extends ViewFrame {
         createInformedConsentLayout();
         createPatientSignatureLayout();
         createPhysicianSignatureLayout();
-        FlexBoxLayout content = new FlexBoxLayout(notificationTabs,policyLayout, medicationRequestLayout, clinicalTrialsLayout, reviewInformedConsentLayout, patientSignatureLayout, physicianSignatureLayout);
+        createRSInformedConsentLayout();
+        createRSReviewDetailLayout();
+        createRSPatientSignatureLayout();
+        FlexBoxLayout content = new FlexBoxLayout(notificationTabs,policyLayout, medicationRequestLayout, clinicalTrialsLayout, reviewInformedConsentLayout,
+                patientSignatureLayout, physicianSignatureLayout, rsReviewInformedConsentLayout, rsReviewDetailLayout, rsPatientSignatureLayout);
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -187,6 +208,9 @@ public class NotificationView extends ViewFrame {
                 reviewInformedConsentLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
                 physicianSignatureLayout.setVisible(false);
+                rsReviewInformedConsentLayout.setVisible(false);
+                rsReviewDetailLayout.setVisible(false);
+                rsPatientSignatureLayout.setVisible(false);
             }
             else if (selectedTabName.equals("Medication Requests")) {
                 policyLayout.setVisible(false);
@@ -195,6 +219,9 @@ public class NotificationView extends ViewFrame {
                 reviewInformedConsentLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
                 physicianSignatureLayout.setVisible(false);
+                rsReviewInformedConsentLayout.setVisible(false);
+                rsReviewDetailLayout.setVisible(false);
+                rsPatientSignatureLayout.setVisible(false);
             }
             else if (selectedTabName.equals("Clinical Trials")) {
                 policyLayout.setVisible(false);
@@ -203,6 +230,9 @@ public class NotificationView extends ViewFrame {
                 reviewInformedConsentLayout.setVisible(false);
                 patientSignatureLayout.setVisible(false);
                 physicianSignatureLayout.setVisible(false);
+                rsReviewInformedConsentLayout.setVisible(false);
+                rsReviewDetailLayout.setVisible(false);
+                rsPatientSignatureLayout.setVisible(false);
             }
             else {
                 //nothing here
@@ -401,6 +431,81 @@ public class NotificationView extends ViewFrame {
         reviewInformedConsentLayout.setVisible(false);
     }
 
+    private void createRSInformedConsentLayout() {
+        Html intro = new Html("<p>Completion of the form is voluntary.  If not completed, you will not be considered for the research study listed below.  This consent will be maintained " +
+                "in your records and will accessible to authorized users.</p>");
+        rsTitleField = new TextField("Research Study Title:");
+
+
+        Html intro2 = new Html("<p>The first step in this process you will review the informed consent document which contains some " +
+                "basic information regarding this research study.  To begin that process click on the <b>Get Informed</b> button.</p>");
+        Button getInformedBtn = new Button("Get Informed");
+        getInformedBtn.addClickListener(event -> {
+            rsInfoDialog = createRSInfoDialog();
+            rsInfoDialog.open();
+        });
+
+        rsReviewInformedConsentLayout = new FlexBoxLayout(createHeader(VaadinIcon.HOSPITAL, "Informed Consent - Research Study (Experimental)"), intro, new BasicDivider(),
+                rsTitleField, intro2, getInformedBtn);
+        rsReviewInformedConsentLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        rsReviewInformedConsentLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        rsReviewInformedConsentLayout.setHeightFull();
+        rsReviewInformedConsentLayout.setBackgroundColor("white");
+        rsReviewInformedConsentLayout.setShadow(Shadow.S);
+        rsReviewInformedConsentLayout.setBorderRadius(BorderRadius.S);
+        rsReviewInformedConsentLayout.getStyle().set("margin-bottom", "10px");
+        rsReviewInformedConsentLayout.getStyle().set("margin-right", "10px");
+        rsReviewInformedConsentLayout.getStyle().set("margin-left", "10px");
+        rsReviewInformedConsentLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        rsReviewInformedConsentLayout.setVisible(false);
+    }
+
+    private void createRSReviewDetailLayout() {
+        Html intro = new Html("<p>Completion of the form is voluntary.  If not completed, you will not be considered for this research study.  This consent will be maintained " +
+                "in your records and will accessible to authorized users.</p>");
+        Html intro2 = new Html("<p>The next step in this process you will review the detail information regarding this research study. Such as: eligibility " +
+                "criteria, intervention, outcome measure, etc.  These concepts are complex, because of this, it is recommended you discuss them with your primary physician. " +
+                " To begin that process click on the <b>Get Details..</b> button.  After you have completed your reading just click on your browsers back button to " +
+                "return to this questionnaire.</p>");
+
+        Button backButton = new Button("Back");
+        backButton.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.FAST_BACKWARD));
+        backButton.addClickListener(event -> {
+            rsReviewDetailLayout.setVisible(false);
+            rsReviewInformedConsentLayout.setVisible(true);
+        });
+
+        //todo dynamically create link, just hd for testing flow
+        Anchor cTrials = new Anchor("https://clinicaltrials.gov/ct2/show/NCT04269070", UIUtils.createButton("Get Details @ ClinicalTrials.gov", VaadinIcon.EXTERNAL_LINK));
+
+        Button nextButton = new Button("Next");
+        nextButton.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.FAST_FORWARD));
+        nextButton.setIconAfterText(true);
+        nextButton.addClickListener(event -> {
+            rsReviewDetailLayout.setVisible(false);
+            rsPatientSignatureLayout.setVisible(true);
+        });
+
+        HorizontalLayout btnLayout = new HorizontalLayout(backButton, cTrials, nextButton);
+        btnLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        btnLayout.setPadding(true);
+        btnLayout.setSpacing(true);
+
+        rsReviewDetailLayout = new FlexBoxLayout(createHeader(VaadinIcon.HOSPITAL, "Informed Consent - Research Study (Experimental)"), intro, new BasicDivider(),
+                intro2, btnLayout);
+        rsReviewDetailLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        rsReviewDetailLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        rsReviewDetailLayout.setHeightFull();
+        rsReviewDetailLayout.setBackgroundColor("white");
+        rsReviewDetailLayout.setShadow(Shadow.S);
+        rsReviewDetailLayout.setBorderRadius(BorderRadius.S);
+        rsReviewDetailLayout.getStyle().set("margin-bottom", "10px");
+        rsReviewDetailLayout.getStyle().set("margin-right", "10px");
+        rsReviewDetailLayout.getStyle().set("margin-left", "10px");
+        rsReviewDetailLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        rsReviewDetailLayout.setVisible(false);
+    }
+
     private void createPatientSignatureLayout() {
         Html intro = new Html("<p>I have been counseled about potential side effects of the medication, " +
                 "when they may occur, and when and where I should seek treatment.  I have read, or have had read to me, the informed consent " +
@@ -462,6 +567,69 @@ public class NotificationView extends ViewFrame {
         patientSignatureLayout.getStyle().set("margin-left", "10px");
         patientSignatureLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         patientSignatureLayout.setVisible(false);
+    }
+
+    private void createRSPatientSignatureLayout() {
+        Html intro = new Html("<p>I have reviewed the informed consent document and detail information regarding this research study. " +
+                "I have had the opportunity to ask questions, and all my questions have been answered to my satisfaction. " +
+                "I understand the benefits, and risks, with my participation in this research study.</p>");
+
+        participateAccepted = new Checkbox("I consent, and wish to participate in this study");
+        participateAccepted.addClickListener(event -> {
+            if (participateAccepted.getValue()) {
+                participateDeclined.setValue(false);
+            }
+        });
+        participateDeclined = new Checkbox("I decline, and will not participate in this study");
+        participateDeclined.addClickListener(event -> {
+            if (participateDeclined.getValue()) {
+                participateAccepted.setValue(false);
+            }
+        });
+
+        rsPatientSignature = new SignaturePad();
+        rsPatientSignature.setHeight("100px");
+        rsPatientSignature.setWidth("400px");
+        rsPatientSignature.setPenColor("#2874A6");
+
+        Button backButton = new Button("Back");
+        backButton.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.FAST_BACKWARD));
+        backButton.addClickListener(event -> {
+            rsPatientSignatureLayout.setVisible(false);
+            rsReviewDetailLayout.setVisible(true);
+        });
+        Button clearSig = new Button("Clear Signature");
+        clearSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
+        clearSig.addClickListener(event -> {
+            rsPatientSignature.clear();
+        });
+        Button saveSig = new Button("Accept Signature");
+        saveSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.CHECK));
+        saveSig.addClickListener(event -> {
+            base64ResearchStudyPatientSignature = rsPatientSignature.getImageBase64();
+            rsPatientSignatureDate = new Date();
+            //rsPatientSignatureLayout.setVisible(false);
+            //build accept dialog
+        });
+
+        HorizontalLayout sigLayout = new HorizontalLayout(backButton, clearSig, saveSig);
+        sigLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        sigLayout.setPadding(true);
+        sigLayout.setSpacing(true);
+
+        rsPatientSignatureLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Informed Consent - Research Study (Experimental)"), intro, new BasicDivider(),
+                participateAccepted, participateDeclined, rsPatientSignature, sigLayout);
+        rsPatientSignatureLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        rsPatientSignatureLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        rsPatientSignatureLayout.setHeightFull();
+        rsPatientSignatureLayout.setBackgroundColor("white");
+        rsPatientSignatureLayout.setShadow(Shadow.S);
+        rsPatientSignatureLayout.setBorderRadius(BorderRadius.S);
+        rsPatientSignatureLayout.getStyle().set("margin-bottom", "10px");
+        rsPatientSignatureLayout.getStyle().set("margin-right", "10px");
+        rsPatientSignatureLayout.getStyle().set("margin-left", "10px");
+        rsPatientSignatureLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        rsPatientSignatureLayout.setVisible(false);
     }
 
     private void createPhysicianSignatureLayout() {
@@ -564,6 +732,27 @@ public class NotificationView extends ViewFrame {
                 attestationDRName.setValue(((MedicationRequest)selectedConsentNotification.getFhirResource()).getRequester().getDisplay());
                 medicationRequestLayout.setVisible(false);
                 reviewInformedConsentLayout.setVisible(true);
+            }
+            else if (consentNotification.getStatus().equals(ConsentNotification.Status.POTENTIALCANDIDATE)) {
+                selectedConsentNotification = clinicalTrialsGrid.getSelectionModel().getFirstSelectedItem().get();
+                ConsentNotification.Status selectedStatus = selectedConsentNotification.getStatus();
+
+                if (!selectedStatus.equals(ConsentNotification.Status.POTENTIALCANDIDATE)) {
+                    Span content = new Span("You must select/highlight this row for this request to function.");
+
+                    Notification notification = new Notification(content);
+                    notification.setDuration(5000);
+
+                    notification.setPosition(Notification.Position.MIDDLE);
+                    notification.setThemeName("error");
+
+                    notification.open();
+                    return;
+                }
+                ResearchSubject subject = (ResearchSubject)selectedConsentNotification.getFhirResource();
+                rsTitleField.setValue(subject.getStudy().getDisplay());
+                clinicalTrialsLayout.setVisible(false);
+                rsReviewInformedConsentLayout.setVisible(true);
             }
             else {
                 UI.getCurrent().navigate(consentNotification.getDestinationView());
@@ -871,6 +1060,39 @@ public class NotificationView extends ViewFrame {
         return infoDialog;
     }
 
+    private Dialog createRSInfoDialog() {
+        StreamResource streamResource = setRSFieldsCreatePDF();
+
+        Dialog infoDialog = new Dialog();
+
+        streamResource.setContentType("application/pdf");
+
+        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
+        viewer.setHeight("800px");
+        viewer.setWidth("840px");
+
+        Button closeButton = new Button("Close");
+        closeButton.addClickListener(event -> {
+            rsInfoDialog.close();
+            rsReviewInformedConsentLayout.setVisible(false);
+            rsReviewDetailLayout.setVisible(true);
+        });
+        closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
+
+        FlexBoxLayout content = new FlexBoxLayout(viewer, closeButton);
+        content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        content.setBoxSizing(BoxSizing.BORDER_BOX);
+        content.setHeightFull();
+        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+
+        infoDialog.add(content);
+
+        infoDialog.setModal(false);
+        infoDialog.setResizable(true);
+        infoDialog.setDraggable(true);
+
+        return infoDialog;
+    }
     private void createHumanReadable() {
         StreamResource streamResource = setFieldsCreatePDF();
         docDialog = new Dialog();
@@ -931,6 +1153,60 @@ public class NotificationView extends ViewFrame {
 
         consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
         return res;
+    }
+
+    private StreamResource setRSFieldsCreatePDF() {
+        ResearchSubject subject = (ResearchSubject)selectedConsentNotification.getFhirResource();
+        String studyId = subject.getStudy().getReference().replaceAll("ResearchStudy/","");
+        Bundle studyBundle = fhirResearchStudy.getResearchStudy(studyId);
+        ResearchStudy study = (ResearchStudy)studyBundle.getEntry().get(0).getResource();
+
+        String sTitle = study.getTitle();
+        String sDescription = study.getDescription();
+        String sSponsoringOrgRef = study.getSponsor().getReference();
+        String sSponsoringOrg = study.getSponsor().getDisplay();
+        String orgId = sSponsoringOrgRef.replaceAll("Organization/","");
+        Organization org = fhirOrganization.getOrganizationById(orgId);
+        String city = org.getAddress().get(0).getCity();
+        String state = org.getAddress().get(0).getState();
+        String zip = org.getAddress().get(0).getPostalCode();
+
+        String cityStateAndZip = city+" "+state+" "+zip;
+
+        String sContactName = study.getContact().get(0).getName();
+        String sContactEmailAddress = "";
+        String sContactPhoneNumber = "";
+        List<ContactPoint> cList = study.getContact().get(0).getTelecom();
+        Iterator iter = cList.iterator();
+        while (iter.hasNext()) {
+            ContactPoint contactPoint = (ContactPoint) iter.next();
+            if (contactPoint.getSystem().equals(ContactPoint.ContactPointSystem.EMAIL)) {
+                sContactEmailAddress = contactPoint.getValue();
+            }
+            if (contactPoint.getSystem().equals(ContactPoint.ContactPointSystem.PHONE)) {
+                sContactPhoneNumber = contactPoint.getValue();
+            }
+        }
+
+        patientConsents = false;
+        patientDeclines = false;
+        //consider null
+        try { patientConsents = participateAccepted.getValue(); } catch (Exception ex) {}
+        try { patientDeclines = participateDeclined.getValue(); } catch (Exception ex) {}
+
+        base64ResearchStudyPatientSignature = null;
+        try { base64ResearchStudyPatientSignature = rsPatientSignature.getImageBase64(); } catch (Exception ex) {}
+        String signatureDate = getDateStringForDisplay(new Date());
+        String rsPatientName = consentUser.getFirstName()+" "+consentUser.getMiddleName()+" "+consentUser.getLastName();
+
+        PDFResearchStudyHandler pdfHandler = new PDFResearchStudyHandler(pdfSigningService);
+        StreamResource res = pdfHandler.updateAndRetrievePDFForm("research-study", sTitle, studyId, sDescription, patientConsents,
+                patientDeclines, base64ResearchStudyPatientSignature, rsPatientName, signatureDate, sSponsoringOrg,
+                cityStateAndZip, sContactName, sContactEmailAddress, sContactPhoneNumber );
+
+        consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
+        return res;
+
     }
 
     private void createFHIRConsent() {

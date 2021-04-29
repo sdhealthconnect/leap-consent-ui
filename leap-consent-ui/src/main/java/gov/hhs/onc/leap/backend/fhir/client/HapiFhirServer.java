@@ -439,4 +439,24 @@ public class HapiFhirServer {
         }
         return subjectList;
     }
+
+    public Bundle getResearchStudyById(String id) {
+        Bundle res = hapiClient
+                .search()
+                .forResource(ResearchStudy.class)
+                .where(Resource.RES_ID.exactly().code(id))
+                .returnBundle(Bundle.class)
+                .execute();
+        return res;
+    }
+
+    public Bundle getOrganizationById(String id) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Organization.class)
+                .where(Resource.RES_ID.exactly().code(id))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
 }

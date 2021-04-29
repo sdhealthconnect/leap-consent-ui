@@ -16,4 +16,9 @@ public class FHIRResearchStudy {
         Bundle bundle = hapiFhirServer.createAndExecuteBundle(researchStudy);
         return bundle;
     }
+
+    public Bundle getResearchStudy(String id) {
+        Bundle bundle = hapiFhirServer.getResearchStudyById(id);
+        return bundle;
+    }
 }
