@@ -8,6 +8,7 @@ import gov.hhs.onc.leap.session.ConsentSession;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.MedicationRequest;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.ResearchSubject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,27 @@ public class FHIRResearchSubject {
         }
         String patientId = consentUser.getUser().getFhirPatientId();
         List<IBaseResource> res = hapiFhirServer.getSubjectsForSpecificPatientReference(patientId);
+        return res;
+    }
+
+    public boolean consentDeclined(ResearchSubject researchSubject) {
+        boolean res = false;
+        researchSubject.setStatus(ResearchSubject.ResearchSubjectStatus.WITHDRAWN);
+        Bundle bundle = hapiFhirServer.createAndExecuteBundle(researchSubject);
+        return res;
+    }
+
+    public boolean consentGranted(ResearchSubject researchSubject) {
+        boolean res = false;
+        researchSubject.setStatus(ResearchSubject.ResearchSubjectStatus.CANDIDATE);
+        Bundle bundle = hapiFhirServer.createAndExecuteBundle(researchSubject);
+        return res;
+    }
+
+    public boolean consentRevoked(ResearchSubject researchSubject) {
+        boolean res = false;
+        researchSubject.setStatus(ResearchSubject.ResearchSubjectStatus.WITHDRAWN);
+        Bundle bundle = hapiFhirServer.createAndExecuteBundle(researchSubject);
         return res;
     }
 }

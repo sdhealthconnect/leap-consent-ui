@@ -127,7 +127,6 @@ public class NotificationView extends ViewFrame {
 
     private FlexBoxLayout clinicalTrialsLayout;
     private FlexBoxLayout rsReviewInformedConsentLayout;
-    private FlexBoxLayout rsReviewDetailLayout;
     private FlexBoxLayout rsPatientSignatureLayout;
     private TextField rsTitleField;
     private Checkbox participateAccepted;
@@ -136,6 +135,8 @@ public class NotificationView extends ViewFrame {
     private byte[] base64ResearchStudyPatientSignature;
     private Date rsPatientSignatureDate;
     private Dialog rsInfoDialog;
+    private String nctNumber;
+    private Anchor clinicalTrialsLink;
 
 
 
@@ -181,10 +182,9 @@ public class NotificationView extends ViewFrame {
         createPatientSignatureLayout();
         createPhysicianSignatureLayout();
         createRSInformedConsentLayout();
-        createRSReviewDetailLayout();
         createRSPatientSignatureLayout();
         FlexBoxLayout content = new FlexBoxLayout(notificationTabs,policyLayout, medicationRequestLayout, clinicalTrialsLayout, reviewInformedConsentLayout,
-                patientSignatureLayout, physicianSignatureLayout, rsReviewInformedConsentLayout, rsReviewDetailLayout, rsPatientSignatureLayout);
+                patientSignatureLayout, physicianSignatureLayout, rsReviewInformedConsentLayout, rsPatientSignatureLayout);
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -209,7 +209,6 @@ public class NotificationView extends ViewFrame {
                 patientSignatureLayout.setVisible(false);
                 physicianSignatureLayout.setVisible(false);
                 rsReviewInformedConsentLayout.setVisible(false);
-                rsReviewDetailLayout.setVisible(false);
                 rsPatientSignatureLayout.setVisible(false);
             }
             else if (selectedTabName.equals("Medication Requests")) {
@@ -220,7 +219,6 @@ public class NotificationView extends ViewFrame {
                 patientSignatureLayout.setVisible(false);
                 physicianSignatureLayout.setVisible(false);
                 rsReviewInformedConsentLayout.setVisible(false);
-                rsReviewDetailLayout.setVisible(false);
                 rsPatientSignatureLayout.setVisible(false);
             }
             else if (selectedTabName.equals("Clinical Trials")) {
@@ -231,7 +229,6 @@ public class NotificationView extends ViewFrame {
                 patientSignatureLayout.setVisible(false);
                 physicianSignatureLayout.setVisible(false);
                 rsReviewInformedConsentLayout.setVisible(false);
-                rsReviewDetailLayout.setVisible(false);
                 rsPatientSignatureLayout.setVisible(false);
             }
             else {
@@ -438,7 +435,13 @@ public class NotificationView extends ViewFrame {
 
 
         Html intro2 = new Html("<p>The first step in this process you will review the informed consent document which contains some " +
-                "basic information regarding this research study.  To begin that process click on the <b>Get Informed</b> button.</p>");
+                "basic information regarding this research study.  To begin that process click on the <b>Get Informed</b> button. " +
+                "Additional detail information regarding this research study. Such as: eligibility criteria, intervention, "+
+                "outcome measure, etc.  That detail information can be found at following link:</p>");
+
+        clinicalTrialsLink = new Anchor("https://clinicaltrials.gov/ct2/show/", UIUtils.createButton("www.clinicaltrials.gov", VaadinIcon.EXTERNAL_LINK));
+
+        Html intro3 = new Html("<p>These concepts are complex, because of this, it is recommended you discuss them with your primary physician. </p>");
         Button getInformedBtn = new Button("Get Informed");
         getInformedBtn.addClickListener(event -> {
             rsInfoDialog = createRSInfoDialog();
@@ -446,7 +449,7 @@ public class NotificationView extends ViewFrame {
         });
 
         rsReviewInformedConsentLayout = new FlexBoxLayout(createHeader(VaadinIcon.HOSPITAL, "Informed Consent - Research Study (Experimental)"), intro, new BasicDivider(),
-                rsTitleField, intro2, getInformedBtn);
+                rsTitleField, intro2, clinicalTrialsLink, intro3, getInformedBtn);
         rsReviewInformedConsentLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         rsReviewInformedConsentLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         rsReviewInformedConsentLayout.setHeightFull();
@@ -458,52 +461,6 @@ public class NotificationView extends ViewFrame {
         rsReviewInformedConsentLayout.getStyle().set("margin-left", "10px");
         rsReviewInformedConsentLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
         rsReviewInformedConsentLayout.setVisible(false);
-    }
-
-    private void createRSReviewDetailLayout() {
-        Html intro = new Html("<p>Completion of the form is voluntary.  If not completed, you will not be considered for this research study.  This consent will be maintained " +
-                "in your records and will accessible to authorized users.</p>");
-        Html intro2 = new Html("<p>The next step in this process you will review the detail information regarding this research study. Such as: eligibility " +
-                "criteria, intervention, outcome measure, etc.  These concepts are complex, because of this, it is recommended you discuss them with your primary physician. " +
-                " To begin that process click on the <b>Get Details..</b> button.  After you have completed your reading just click on your browsers back button to " +
-                "return to this questionnaire.</p>");
-
-        Button backButton = new Button("Back");
-        backButton.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.FAST_BACKWARD));
-        backButton.addClickListener(event -> {
-            rsReviewDetailLayout.setVisible(false);
-            rsReviewInformedConsentLayout.setVisible(true);
-        });
-
-        //todo dynamically create link, just hd for testing flow
-        Anchor cTrials = new Anchor("https://clinicaltrials.gov/ct2/show/NCT04269070", UIUtils.createButton("Get Details @ ClinicalTrials.gov", VaadinIcon.EXTERNAL_LINK));
-
-        Button nextButton = new Button("Next");
-        nextButton.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.FAST_FORWARD));
-        nextButton.setIconAfterText(true);
-        nextButton.addClickListener(event -> {
-            rsReviewDetailLayout.setVisible(false);
-            rsPatientSignatureLayout.setVisible(true);
-        });
-
-        HorizontalLayout btnLayout = new HorizontalLayout(backButton, cTrials, nextButton);
-        btnLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        btnLayout.setPadding(true);
-        btnLayout.setSpacing(true);
-
-        rsReviewDetailLayout = new FlexBoxLayout(createHeader(VaadinIcon.HOSPITAL, "Informed Consent - Research Study (Experimental)"), intro, new BasicDivider(),
-                intro2, btnLayout);
-        rsReviewDetailLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
-        rsReviewDetailLayout.setBoxSizing(BoxSizing.BORDER_BOX);
-        rsReviewDetailLayout.setHeightFull();
-        rsReviewDetailLayout.setBackgroundColor("white");
-        rsReviewDetailLayout.setShadow(Shadow.S);
-        rsReviewDetailLayout.setBorderRadius(BorderRadius.S);
-        rsReviewDetailLayout.getStyle().set("margin-bottom", "10px");
-        rsReviewDetailLayout.getStyle().set("margin-right", "10px");
-        rsReviewDetailLayout.getStyle().set("margin-left", "10px");
-        rsReviewDetailLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
-        rsReviewDetailLayout.setVisible(false);
     }
 
     private void createPatientSignatureLayout() {
@@ -572,18 +529,22 @@ public class NotificationView extends ViewFrame {
     private void createRSPatientSignatureLayout() {
         Html intro = new Html("<p>I have reviewed the informed consent document and detail information regarding this research study. " +
                 "I have had the opportunity to ask questions, and all my questions have been answered to my satisfaction. " +
-                "I understand the benefits, and risks, with my participation in this research study.</p>");
+                "I understand the benefits and risks of my participation in this research study.</p>");
 
         participateAccepted = new Checkbox("I consent, and wish to participate in this study");
         participateAccepted.addClickListener(event -> {
             if (participateAccepted.getValue()) {
                 participateDeclined.setValue(false);
+                patientConsents = true;
+                patientDeclines = false;
             }
         });
         participateDeclined = new Checkbox("I decline, and will not participate in this study");
         participateDeclined.addClickListener(event -> {
             if (participateDeclined.getValue()) {
                 participateAccepted.setValue(false);
+                patientConsents = false;
+                patientDeclines = true;
             }
         });
 
@@ -596,7 +557,7 @@ public class NotificationView extends ViewFrame {
         backButton.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.FAST_BACKWARD));
         backButton.addClickListener(event -> {
             rsPatientSignatureLayout.setVisible(false);
-            rsReviewDetailLayout.setVisible(true);
+            rsReviewInformedConsentLayout.setVisible(true);
         });
         Button clearSig = new Button("Clear Signature");
         clearSig.setIcon(UIUtils.createIcon(IconSize.M, TextColor.TERTIARY, VaadinIcon.ERASER));
@@ -608,8 +569,8 @@ public class NotificationView extends ViewFrame {
         saveSig.addClickListener(event -> {
             base64ResearchStudyPatientSignature = rsPatientSignature.getImageBase64();
             rsPatientSignatureDate = new Date();
-            //rsPatientSignatureLayout.setVisible(false);
-            //build accept dialog
+            createRSHumanReadable();
+            docDialog.open();
         });
 
         HorizontalLayout sigLayout = new HorizontalLayout(backButton, clearSig, saveSig);
@@ -708,54 +669,67 @@ public class NotificationView extends ViewFrame {
     private Component createDestination(ConsentNotification consentNotification) {
         Button btn = new Button("Get Started");
         btn.addClickListener(event -> {
-            if (consentNotification.getStatus().equals(ConsentNotification.Status.PENDING)) {
-                UI.getCurrent().navigate("consentdocumentview");
-            }
-            else if (consentNotification.getStatus().equals(ConsentNotification.Status.ONHOLD)) {
-                selectedConsentNotification = medRequestGrid.getSelectionModel().getFirstSelectedItem().get();
-                ConsentNotification.Status selectedStatus = selectedConsentNotification.getStatus();
+            try {
+                if (consentNotification.getStatus().equals(ConsentNotification.Status.PENDING)) {
+                    UI.getCurrent().navigate("consentdocumentview");
+                } else if (consentNotification.getStatus().equals(ConsentNotification.Status.ONHOLD)) {
+                    selectedConsentNotification = medRequestGrid.getSelectionModel().getFirstSelectedItem().get();
+                    ConsentNotification.Status selectedStatus = selectedConsentNotification.getStatus();
 
-                if (!selectedStatus.equals(ConsentNotification.Status.ONHOLD)) {
-                    Span content = new Span("You must select/highlight this row for this request to function.");
+                    if (!selectedStatus.equals(ConsentNotification.Status.ONHOLD)) {
+                        Span content = new Span("You must select/highlight this row for this request to function.");
 
-                    Notification notification = new Notification(content);
-                    notification.setDuration(5000);
+                        Notification notification = new Notification(content);
+                        notification.setDuration(5000);
 
-                    notification.setPosition(Notification.Position.MIDDLE);
-                    notification.setThemeName("error");
+                        notification.setPosition(Notification.Position.MIDDLE);
+                        notification.setThemeName("error");
 
-                    notification.open();
-                    return;
+                        notification.open();
+                        return;
+                    }
+                    physicianName.setValue(((MedicationRequest) selectedConsentNotification.getFhirResource()).getRequester().getDisplay());
+                    medicationName.setValue(((MedicationRequest) selectedConsentNotification.getFhirResource()).getMedicationCodeableConcept().getCoding().get(0).getDisplay());
+                    attestationDRName.setValue(((MedicationRequest) selectedConsentNotification.getFhirResource()).getRequester().getDisplay());
+                    medicationRequestLayout.setVisible(false);
+                    reviewInformedConsentLayout.setVisible(true);
+                } else if (consentNotification.getStatus().equals(ConsentNotification.Status.POTENTIALCANDIDATE)) {
+                    selectedConsentNotification = clinicalTrialsGrid.getSelectionModel().getFirstSelectedItem().get();
+                    ConsentNotification.Status selectedStatus = selectedConsentNotification.getStatus();
+
+                    if (!selectedStatus.equals(ConsentNotification.Status.POTENTIALCANDIDATE)) {
+                        Span content = new Span("You must select/highlight this row for this request to function.");
+
+                        Notification notification = new Notification(content);
+                        notification.setDuration(5000);
+
+                        notification.setPosition(Notification.Position.MIDDLE);
+                        notification.setThemeName("error");
+
+                        notification.open();
+                        return;
+                    }
+                    ResearchSubject subject = (ResearchSubject) selectedConsentNotification.getFhirResource();
+                    nctNumber = subject.getStudy().getReference().replaceAll("ResearchStudy/", "");
+                    clinicalTrialsLink.setHref("https://clinicaltrials.gov/ct2/show/" + nctNumber);
+                    rsTitleField.setValue(subject.getStudy().getDisplay());
+                    clinicalTrialsLayout.setVisible(false);
+                    rsReviewInformedConsentLayout.setVisible(true);
+                } else {
+                    UI.getCurrent().navigate(consentNotification.getDestinationView());
                 }
-                physicianName.setValue(((MedicationRequest)selectedConsentNotification.getFhirResource()).getRequester().getDisplay());
-                medicationName.setValue(((MedicationRequest)selectedConsentNotification.getFhirResource()).getMedicationCodeableConcept().getCoding().get(0).getDisplay());
-                attestationDRName.setValue(((MedicationRequest)selectedConsentNotification.getFhirResource()).getRequester().getDisplay());
-                medicationRequestLayout.setVisible(false);
-                reviewInformedConsentLayout.setVisible(true);
             }
-            else if (consentNotification.getStatus().equals(ConsentNotification.Status.POTENTIALCANDIDATE)) {
-                selectedConsentNotification = clinicalTrialsGrid.getSelectionModel().getFirstSelectedItem().get();
-                ConsentNotification.Status selectedStatus = selectedConsentNotification.getStatus();
+            catch (Exception ex) {
+                Span content = new Span("You must select/highlight this row for this request to function.");
 
-                if (!selectedStatus.equals(ConsentNotification.Status.POTENTIALCANDIDATE)) {
-                    Span content = new Span("You must select/highlight this row for this request to function.");
+                Notification notification = new Notification(content);
+                notification.setDuration(5000);
 
-                    Notification notification = new Notification(content);
-                    notification.setDuration(5000);
+                notification.setPosition(Notification.Position.MIDDLE);
+                notification.setThemeName("error");
 
-                    notification.setPosition(Notification.Position.MIDDLE);
-                    notification.setThemeName("error");
-
-                    notification.open();
-                    return;
-                }
-                ResearchSubject subject = (ResearchSubject)selectedConsentNotification.getFhirResource();
-                rsTitleField.setValue(subject.getStudy().getDisplay());
-                clinicalTrialsLayout.setVisible(false);
-                rsReviewInformedConsentLayout.setVisible(true);
-            }
-            else {
-                UI.getCurrent().navigate(consentNotification.getDestinationView());
+                notification.open();
+                return;
             }
         });
         if (consentNotification.getActionRequired().equals("None")) {
@@ -1075,7 +1049,7 @@ public class NotificationView extends ViewFrame {
         closeButton.addClickListener(event -> {
             rsInfoDialog.close();
             rsReviewInformedConsentLayout.setVisible(false);
-            rsReviewDetailLayout.setVisible(true);
+            rsPatientSignatureLayout.setVisible(true);
         });
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
@@ -1113,9 +1087,49 @@ public class NotificationView extends ViewFrame {
             docDialog.close();
             createFHIRConsent();
             updateMedicationRequestStatus();
-            successNotification();
+            successNotification("MedicationRequest");
             resetFormAndNavigation();
 
+        });
+
+        HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
+
+
+        FlexBoxLayout content = new FlexBoxLayout(viewer, hLayout);
+        content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        content.setBoxSizing(BoxSizing.BORDER_BOX);
+        content.setHeightFull();
+        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+
+        docDialog.add(content);
+
+        docDialog.setModal(false);
+        docDialog.setResizable(true);
+        docDialog.setDraggable(true);
+    }
+
+    private void createRSHumanReadable() {
+        StreamResource streamResource = setRSFieldsCreatePDF();
+        docDialog = new Dialog();
+
+        streamResource.setContentType("application/pdf");
+
+        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
+        viewer.setHeight("800px");
+        viewer.setWidth("840px");
+
+
+        Button closeButton = new Button("Cancel", e -> docDialog.close());
+        closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
+
+        Button acceptButton = new Button("Accept and Submit");
+        acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
+        acceptButton.addClickListener(event -> {
+            docDialog.close();
+            createResearchFHIRConsent();
+            updateResearchSubjectStatus();
+            successNotification("ResearchSubject");
+            resetRSFormAndNavigation();
         });
 
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
@@ -1351,6 +1365,154 @@ public class NotificationView extends ViewFrame {
         fhirConsentClient.createConsent(informedConsent);
     }
 
+    private void createResearchFHIRConsent() {
+        Patient patient = consentSession.getFhirPatient();
+        String researchSubjectID = ((ResearchSubject)selectedConsentNotification.getFhirResource()).getIdElement().getIdPart();
+        ResearchSubject subject = (ResearchSubject)selectedConsentNotification.getFhirResource();
+        String studyId = subject.getStudy().getReference().replaceAll("ResearchStudy/","");
+        Bundle studyBundle = fhirResearchStudy.getResearchStudy(studyId);
+        ResearchStudy study = (ResearchStudy)studyBundle.getEntry().get(0).getResource();
+
+        String sponsoringOrgRef = study.getSponsor().getReference();
+        String sponsoringOrg = study.getSponsor().getDisplay();
+
+        Consent informedConsent = new Consent();
+
+        informedConsent.setId("ResearchSubject-"+researchSubjectID+"-"+consentSession.getFhirPatientId());
+        boolean consentGranted = false;
+        boolean consentDeclined = false;
+        try { consentGranted = participateAccepted.getValue(); } catch (Exception ex) {}
+        try { consentDeclined = participateDeclined.getValue(); } catch (Exception ex) {}
+        if (consentGranted) informedConsent.setStatus(Consent.ConsentState.ACTIVE);
+        if (consentDeclined) informedConsent.setStatus(Consent.ConsentState.REJECTED);
+        CodeableConcept cConcept = new CodeableConcept();
+        Coding coding = new Coding();
+        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
+        coding.setCode("research");
+        cConcept.addCoding(coding);
+        informedConsent.setScope(cConcept);
+        List<CodeableConcept> cList = new ArrayList<>();
+        CodeableConcept cConceptCat = new CodeableConcept();
+        Coding codingCat = new Coding();
+        codingCat.setSystem("http://loinc.org");
+        codingCat.setCode("59284-6");
+        cConceptCat.addCoding(codingCat);
+        cList.add(cConceptCat);
+        informedConsent.setCategory(cList);
+        Reference patientRef = new Reference();
+        patientRef.setReference("Patient/"+consentSession.getFhirPatientId());
+        patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
+        informedConsent.setPatient(patientRef);
+        List<Reference> refList = new ArrayList<>();
+        Reference orgRef = new Reference();
+        //todo - this is the deployment and custodian organization for advanced directives and should be valid in fhir consent repository
+        orgRef.setReference(orgReference);
+        orgRef.setDisplay(orgDisplay);
+        refList.add(orgRef);
+        informedConsent.setOrganization(refList);
+        Attachment attachment = new Attachment();
+        attachment.setContentType("application/pdf");
+        attachment.setCreation(new Date());
+        attachment.setTitle("InformedConsent");
+
+
+        String encodedString = Base64.getEncoder().encodeToString(consentPDFAsByteArray);
+        attachment.setSize(encodedString.length());
+        attachment.setData(encodedString.getBytes());
+
+        informedConsent.setSource(attachment);
+
+        //set rule
+        CodeableConcept policyCode = new CodeableConcept();
+        Coding codes = new Coding();
+        codes.setCode("OPTOUT");
+        codes.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode");
+        policyCode.addCoding(codes);
+        informedConsent.setPolicyRule(policyCode);
+
+        Consent.provisionComponent provision = new Consent.provisionComponent();
+        Period period = new Period();
+        LocalDate sDate = LocalDate.now();
+        LocalDate eDate = LocalDate.now().plusYears(10);
+        if (consentGranted) {
+            sDate = LocalDate.now();
+            eDate = LocalDate.now().plusYears(1);
+        }
+        if (consentDeclined) {
+            sDate = LocalDate.now();
+            eDate = LocalDate.now();
+        }
+        Date startDate = Date.from(sDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(eDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        period.setStart(startDate);
+        period.setEnd(endDate);
+
+        provision.setPeriod(period);
+
+        Consent.provisionComponent purpose = new Consent.provisionComponent();
+
+
+
+        Consent.provisionComponent requestorProvision = new Consent.provisionComponent();
+        requestorProvision.setType(Consent.ConsentProvisionType.PERMIT);
+        List<Coding> purposeList = new ArrayList<>();
+        Coding purposeCoding = new Coding();
+        purposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
+        purposeCoding.setCode("HRESCH");
+        purposeList.add(purposeCoding);
+        requestorProvision.setPurpose(purposeList);
+
+        //actor
+        Consent.provisionActorComponent actor = new Consent.provisionActorComponent();
+        CodeableConcept sensRoleConcept = new CodeableConcept();
+        Coding sensRolecoding = new Coding();
+        sensRolecoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ParticipationType");
+        sensRolecoding.setCode("IRCP");
+        sensRoleConcept.addCoding(sensRolecoding);
+        actor.setRole(sensRoleConcept);
+
+
+        Reference actorRef = new Reference();
+        actorRef.setReference(sponsoringOrgRef);
+        actorRef.setDisplay(sponsoringOrg);
+
+        actor.setReference(actorRef);
+
+        List<Consent.provisionActorComponent> sensActorList = new ArrayList<>();
+        sensActorList.add(actor);
+
+        requestorProvision.setActor(sensActorList);
+
+        Coding sensactioncoding = new Coding();
+        sensactioncoding.setSystem("http://terminology.hl7.org/CodeSystem/consentaction");
+        sensactioncoding.setCode("access");
+
+        Coding sensactioncodingcorrect = new Coding();
+        sensactioncodingcorrect.setSystem("http://terminology.hl7.org/CodeSystem/consentaction");
+        sensactioncodingcorrect.setCode("correct");
+
+        List<CodeableConcept> sensActionCodeList = new ArrayList<>();
+        CodeableConcept sensActionConcept = new CodeableConcept();
+        sensActionConcept.addCoding(sensactioncoding);
+        sensActionConcept.addCoding(sensactioncodingcorrect);
+        sensActionCodeList.add(sensActionConcept);
+
+        requestorProvision.setAction(sensActionCodeList);
+
+        provision.addProvision(requestorProvision);
+
+
+
+
+        informedConsent.setProvision(provision);
+
+        Extension extension = createResearchSubjectExtension();
+        informedConsent.getExtension().add(extension);
+
+        fhirConsentClient.createConsent(informedConsent);
+    }
+
     private Extension createMedicationRequestExtension() {
         String medicationRequestFullPath = selectedConsentNotification.getFhirResource().getId();
         Extension extension = new Extension();
@@ -1359,8 +1521,16 @@ public class NotificationView extends ViewFrame {
         return extension;
     }
 
-    private void successNotification() {
-        Span content = new Span("FHIR Informed Consent - MedicationRequest successfully created!");
+    private Extension createResearchSubjectExtension() {
+        String researchSubjectFullPath = selectedConsentNotification.getFhirResource().getId();
+        Extension extension = new Extension();
+        extension.setUrl("http://sdhealthconnect.org/leap/research/informedconsent");
+        extension.setValue(new StringType(researchSubjectFullPath));
+        return extension;
+    }
+
+    private void successNotification(String type) {
+        Span content = new Span("FHIR Informed Consent for "+type+" successfully created!");
 
         Notification notification = new Notification(content);
         notification.setDuration(3000);
@@ -1391,6 +1561,20 @@ public class NotificationView extends ViewFrame {
         UI.getCurrent().navigate("consentdocumentview");
     }
 
+    private void resetRSFormAndNavigation() {
+        rsTitleField.clear();
+        participateDeclined.clear();
+        participateAccepted.clear();
+        rsPatientSignature.clear();
+        rsReviewInformedConsentLayout.setVisible(false);
+        rsPatientSignatureLayout.setVisible(false);
+        clinicalTrialsDataProvider = DataProvider.ofCollection(createResearchSubjectsArray());
+        clinicalTrialsGrid.setDataProvider(clinicalTrialsDataProvider);
+        grid.getDataProvider().refreshAll();
+        clinicalTrialsLayout.setVisible(true);
+        UI.getCurrent().navigate("consentdocumentview");
+    }
+
     private void updateMedicationRequestStatus() {
         MedicationRequest medicationRequest = (MedicationRequest)selectedConsentNotification.getFhirResource();
         if (patientConsents) {
@@ -1401,4 +1585,25 @@ public class NotificationView extends ViewFrame {
         }
     }
 
+    private void updateResearchSubjectStatus() {
+        ResearchSubject researchSubject = (ResearchSubject)selectedConsentNotification.getFhirResource();
+        String consentReference = "Consent/ResearchSubject-"+researchSubject.getIdElement().getIdPart()+"-"+consentSession.getFhirPatientId();
+        Reference ref = new Reference();
+        ref.setReference(consentReference);
+        researchSubject.setConsent(ref);
+        if (patientConsents) {
+            fhirResearchSubject.consentGranted(researchSubject);
+        }
+        if (patientDeclines) {
+            fhirResearchSubject.consentDeclined(researchSubject);
+        }
+    }
+
+    public String getNctNumber() {
+        return nctNumber;
+    }
+
+    public void setNctNumber(String nctNumber) {
+        this.nctNumber = nctNumber;
+    }
 }
