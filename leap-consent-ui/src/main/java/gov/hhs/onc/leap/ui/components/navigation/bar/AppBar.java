@@ -129,11 +129,11 @@ public class AppBar extends Header {
 		avatar.setClassName(CLASS_NAME + "__avatar");
 		ContextMenu contextMenu = new ContextMenu(avatar);
 		contextMenu.setOpenOnClick(true);
-		contextMenu.addItem("Settings", event -> {
+		contextMenu.addItem(getTranslation("appBar-settings"), event -> {
 					 UI.getCurrent().navigate("userpreferencesview");
 				}
 		);
-		contextMenu.addItem("Log Out",
+		contextMenu.addItem(getTranslation("appBar-log_out"),
 				e -> {
 					SecurityContextHolder.clearContext();
 					UI.getCurrent().getSession().close();
