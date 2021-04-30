@@ -71,6 +71,10 @@ public class PDFLivingWillHandler {
         String languagePreference = consentSession.getLanguagePreference();
         languagePreference = UIUtils.getLanguage(languagePreference);
         String fullFormPath = "/advanced_directives/"+patientState+"/LivingWill/"+languagePreference+"/LivingWill.pdf";
+        if (getClass().getResource(fullFormPath) == null) {
+            //Using English as default if the resource do not exists
+            fullFormPath = "/advanced_directives/"+patientState+"/LivingWill/English/LivingWill.pdf";
+        }
         byte[] bArray = null;
         PDDocument pdfdocument = null;
         StreamResource stream = null;

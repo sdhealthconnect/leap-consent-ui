@@ -71,6 +71,10 @@ public class PDFPOAMentalHealthHandler {
         String languagePreference = consentSession.getLanguagePreference();
         languagePreference = UIUtils.getLanguage(languagePreference);
         String fullFormPath = "/advanced_directives/"+patientState+"/POAMentalHealth/"+languagePreference+"/POAMentalHealth.pdf";
+        if (getClass().getResource(fullFormPath) == null) {
+            //Using English as default if the resource do not exists
+            fullFormPath = "/advanced_directives/"+patientState+"/POAMentalHealth/English/POAMentalHealth.pdf";
+        }
         byte[] bArray = null;
         PDDocument pdfdocument = null;
         StreamResource stream = null;
