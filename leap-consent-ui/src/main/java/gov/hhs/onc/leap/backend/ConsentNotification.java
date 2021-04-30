@@ -91,7 +91,7 @@ public class ConsentNotification {
                 POTENTIALCANDIDATE(VaadinIcon.CLOUD, "Potential Candidate", "Meets entry criteria.", BadgeColor.SUCCESS),
                 CANDIDATE(VaadinIcon.CLOUD_O, "Candidate", "Completed Informed Consent", BadgeColor.SUCCESS_PRIMARY),
                 SCREENING(VaadinIcon.CLOUD_DOWNLOAD, "Screening", "Reviewing Clinical Record", BadgeColor.CONTRAST),
-                ELIGIBLE(VaadinIcon.CHECK_SQUARE, "Eligible", "Patient is eligible for study", BadgeColor.CONTRAST),
+                ELIGIBLE(VaadinIcon.CHECK_SQUARE, "Eligible", "Patient is eligible for study", BadgeColor.SUCCESS),
                 INELIGIBLE(VaadinIcon.CHECK_CIRCLE_O, "Ineligible", "Patient is not eligible for study", BadgeColor.ERROR),
                 ONSTUDY(VaadinIcon.CHECK, "On Study", "Patient is on study", BadgeColor.SUCCESS_PRIMARY),
                 WITHDRAWN(VaadinIcon.EXIT, "Withdrawn", "Patient has been withdrawn from study", BadgeColor.ERROR_PRIMARY);

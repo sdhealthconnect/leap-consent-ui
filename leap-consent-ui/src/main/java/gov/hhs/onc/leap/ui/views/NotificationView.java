@@ -1515,6 +1515,8 @@ public class NotificationView extends ViewFrame {
 
     private Extension createMedicationRequestExtension() {
         String medicationRequestFullPath = selectedConsentNotification.getFhirResource().getId();
+        int pos = medicationRequestFullPath.indexOf("/_history");
+        if (pos > 0) medicationRequestFullPath = medicationRequestFullPath.substring(0, pos);
         Extension extension = new Extension();
         extension.setUrl("http://sdhealthconnect.org/leap/treatment/informedconsent");
         extension.setValue(new StringType(medicationRequestFullPath));
@@ -1523,6 +1525,8 @@ public class NotificationView extends ViewFrame {
 
     private Extension createResearchSubjectExtension() {
         String researchSubjectFullPath = selectedConsentNotification.getFhirResource().getId();
+        int pos = researchSubjectFullPath.indexOf("/_history");
+        if (pos > 0) researchSubjectFullPath = researchSubjectFullPath.substring(0, pos);
         Extension extension = new Extension();
         extension.setUrl("http://sdhealthconnect.org/leap/research/informedconsent");
         extension.setValue(new StringType(researchSubjectFullPath));

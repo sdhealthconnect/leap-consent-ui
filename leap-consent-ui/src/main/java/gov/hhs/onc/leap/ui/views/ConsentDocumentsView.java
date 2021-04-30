@@ -29,6 +29,7 @@ import gov.hhs.onc.leap.backend.TestData;
 import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRMedicationRequest;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRResearchSubject;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.Badge;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
@@ -50,6 +51,7 @@ import org.apache.commons.io.IOUtils;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Consent;
 import org.hl7.fhir.r4.model.MedicationRequest;
+import org.hl7.fhir.r4.model.ResearchSubject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +81,9 @@ public class ConsentDocumentsView extends SplitViewFrame {
 
     @Autowired
     private FHIRMedicationRequest fhirMedicationRequest;
+
+    @Autowired
+    private FHIRResearchSubject fhirResearchSubject;
 
     private Dialog docDialog;
 
@@ -249,7 +254,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
         else if (consentDocument.getStatus().getName().equals("Revoked")) {
             consentAction.setText("Reinstate Consent");
             consentAction.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.START_COG));
-            if (consentDocument.getPolicyType().contains("adr-") || consentDocument.getPolicyType().equals("treatment")) {
+            if (consentDocument.getPolicyType().contains("adr-") || consentDocument.getPolicyType().equals("treatment")  || consentDocument.getPolicyType().equals("research")) {
                 consentAction.setEnabled(false);
             }
             else {
@@ -456,6 +461,13 @@ public class ConsentDocumentsView extends SplitViewFrame {
                 log.error("Unable to determine treatment type to be revoked.");
             }
         }
+        else if (consent.getScope().getCoding().get(0).getCode().equals("research")) {
+            String extensionValue = consent.getExtension().get(0).getValue().toString();
+            revokeAndWithdrawResearchSubject(extensionValue);
+        }
+        else {
+            log.warn("Additional resources not considered in revocation based on scope.");
+        }
         dataProvider = DataProvider.ofCollection(getAllPatientConsents());
         grid.setDataProvider(dataProvider);
         grid.getDataProvider().refreshAll();
@@ -553,10 +565,22 @@ public class ConsentDocumentsView extends SplitViewFrame {
        boolean res = false;
        try {
            MedicationRequest medRequest = fhirMedicationRequest.getMedicationRequestByID(url);
-           fhirMedicationRequest.consentRevoked(medRequest);
+           res = fhirMedicationRequest.consentRevoked(medRequest);
        }
        catch (Exception ex) {
            log.error("Failed revoke action for Medication request. "+ex.getMessage());
+       }
+       return res;
+    }
+
+    private boolean revokeAndWithdrawResearchSubject(String url) {
+       boolean res = false;
+       try {
+           ResearchSubject researchSubject = fhirResearchSubject.getResearchSubjectByID(url);
+           res = fhirResearchSubject.consentRevoked(researchSubject);
+       }
+       catch (Exception ex) {
+           log.error("Failed to revoke consent and withdraw research subject "+ex.getMessage());
        }
        return res;
     }

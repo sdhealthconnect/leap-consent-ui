@@ -47,24 +47,49 @@ public class FHIRResearchSubject {
         return res;
     }
 
+    public ResearchSubject getResearchSubjectByID(String url) {
+        ResearchSubject res = new ResearchSubject();
+        Bundle bundle = hapiFhirServer.getResearchSubjectById(url);
+        Bundle.BundleEntryComponent b = bundle.getEntryFirstRep();
+        res = (ResearchSubject) b.getResource();
+        return res;
+    }
+
     public boolean consentDeclined(ResearchSubject researchSubject) {
-        boolean res = false;
-        researchSubject.setStatus(ResearchSubject.ResearchSubjectStatus.WITHDRAWN);
-        Bundle bundle = hapiFhirServer.createAndExecuteBundle(researchSubject);
+        boolean res = true;
+        try {
+            researchSubject.setStatus(ResearchSubject.ResearchSubjectStatus.WITHDRAWN);
+            Bundle bundle = hapiFhirServer.createAndExecuteBundle(researchSubject);
+        }
+        catch(Exception ex) {
+            log.error("Failed to withdraw research subject "+ex.getMessage());
+            res = false;
+        }
         return res;
     }
 
     public boolean consentGranted(ResearchSubject researchSubject) {
-        boolean res = false;
-        researchSubject.setStatus(ResearchSubject.ResearchSubjectStatus.CANDIDATE);
-        Bundle bundle = hapiFhirServer.createAndExecuteBundle(researchSubject);
+        boolean res = true;
+        try {
+            researchSubject.setStatus(ResearchSubject.ResearchSubjectStatus.CANDIDATE);
+            Bundle bundle = hapiFhirServer.createAndExecuteBundle(researchSubject);
+        }
+        catch (Exception ex) {
+            log.error("Failed to grant consent "+ex.getMessage());
+            res = false;
+        }
         return res;
     }
 
     public boolean consentRevoked(ResearchSubject researchSubject) {
-        boolean res = false;
-        researchSubject.setStatus(ResearchSubject.ResearchSubjectStatus.WITHDRAWN);
-        Bundle bundle = hapiFhirServer.createAndExecuteBundle(researchSubject);
+        boolean res = true;
+        try {
+            researchSubject.setStatus(ResearchSubject.ResearchSubjectStatus.WITHDRAWN);
+            Bundle bundle = hapiFhirServer.createAndExecuteBundle(researchSubject);
+        }
+        catch (Exception ex) {
+            log.error("Failed to revoke consent and withdraw research subject "+ex.getMessage());
+        }
         return res;
     }
 }

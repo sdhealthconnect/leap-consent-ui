@@ -450,6 +450,16 @@ public class HapiFhirServer {
         return res;
     }
 
+    public Bundle getResearchSubjectById(String id) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(ResearchSubject.class)
+                .where(Resource.RES_ID.exactly().code(id))
+                .returnBundle(Bundle.class)
+                .execute();
+        return bundle;
+    }
+
     public Bundle getOrganizationById(String id) {
         Bundle bundle = hapiClient
                 .search()
