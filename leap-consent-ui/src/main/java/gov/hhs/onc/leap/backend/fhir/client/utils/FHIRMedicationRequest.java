@@ -3,6 +3,7 @@ package gov.hhs.onc.leap.backend.fhir.client.utils;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.backend.fhir.client.HapiFhirServer;
 import gov.hhs.onc.leap.session.ConsentSession;
+import liquibase.pro.packaged.M;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Consent;
 import org.hl7.fhir.r4.model.MedicationRequest;
@@ -35,6 +36,14 @@ public class FHIRMedicationRequest {
         return medicationRequestCollection;
     }
 
+    public MedicationRequest getMedicationRequestByID(String url) {
+        MedicationRequest res = new MedicationRequest();
+        Bundle bundle = hapiFhirServer.getMedicationRequestById(url);
+        Bundle.BundleEntryComponent b = bundle.getEntryFirstRep();
+        res = (MedicationRequest) b.getResource();
+        return res;
+    }
+
     public boolean consentDeclined(MedicationRequest medRequest) {
         boolean res = false;
         medRequest.setStatus(MedicationRequest.MedicationRequestStatus.CANCELLED);
@@ -45,6 +54,13 @@ public class FHIRMedicationRequest {
     public boolean consentGranted(MedicationRequest medRequest) {
         boolean res = false;
         medRequest.setStatus(MedicationRequest.MedicationRequestStatus.ACTIVE);
+        Bundle bundle = hapiFhirServer.createAndExecuteBundle(medRequest);
+        return res;
+    }
+
+    public boolean consentRevoked(MedicationRequest medRequest) {
+        boolean res = false;
+        medRequest.setStatus(MedicationRequest.MedicationRequestStatus.STOPPED);
         Bundle bundle = hapiFhirServer.createAndExecuteBundle(medRequest);
         return res;
     }

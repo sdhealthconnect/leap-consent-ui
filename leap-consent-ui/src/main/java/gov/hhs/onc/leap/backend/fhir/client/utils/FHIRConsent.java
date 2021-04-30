@@ -2,6 +2,7 @@ package gov.hhs.onc.leap.backend.fhir.client.utils;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.backend.fhir.client.HapiFhirServer;
 import gov.hhs.onc.leap.session.ConsentSession;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Consent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,13 +42,11 @@ public class FHIRConsent {
         //get just the id portion
         String patientId = consentSession.getFhirPatientId();
         Collection<Consent> consentCollection = new ArrayList<>();
-        Bundle bundle = hapiFhirServer.getAllConsentsForPatient(patientId);
-        List<Bundle.BundleEntryComponent> resourceList = bundle.getEntry();
-        Iterator iter = resourceList.iterator();
+        List<IBaseResource> consents = hapiFhirServer.getAllConsentsForPatient(patientId);
+        Iterator iter = consents.iterator();
         while(iter.hasNext()) {
-            Bundle.BundleEntryComponent b = (Bundle.BundleEntryComponent)iter.next();
-            Consent c = (Consent)b.getResource();
-            consentCollection.add(c);
+            Consent b = (Consent)iter.next();
+            consentCollection.add(b);
         }
         return consentCollection;
     }
