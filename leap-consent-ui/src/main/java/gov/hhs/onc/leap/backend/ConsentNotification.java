@@ -87,7 +87,15 @@ public class ConsentNotification {
                 ENTEREDINERROR(VaadinIcon.DATE_INPUT, "Input In Error.", "This action is not valid was input in error.", BadgeColor.ERROR),
                 COMPLETE(VaadinIcon.SUN_DOWN, "Completed", "This action has completed", BadgeColor.NORMAL),
                 STOPPED(VaadinIcon.STOP, "Stopped", "This action has been stopped.", BadgeColor.NORMAL),
-                UNKNOWN(VaadinIcon.FIRE, "Unknown", "This action's status is unknown", BadgeColor.ERROR);
+                UNKNOWN(VaadinIcon.FIRE, "Unknown", "This action's status is unknown", BadgeColor.ERROR),
+                POTENTIALCANDIDATE(VaadinIcon.CLOUD, "Potential Candidate", "Meets entry criteria.", BadgeColor.SUCCESS),
+                CANDIDATE(VaadinIcon.CLOUD_O, "Candidate", "Completed Informed Consent", BadgeColor.SUCCESS_PRIMARY),
+                SCREENING(VaadinIcon.CLOUD_DOWNLOAD, "Screening", "Reviewing Clinical Record", BadgeColor.CONTRAST),
+                ELIGIBLE(VaadinIcon.CHECK_SQUARE, "Eligible", "Patient is eligible for study", BadgeColor.SUCCESS),
+                INELIGIBLE(VaadinIcon.CHECK_CIRCLE_O, "Ineligible", "Patient is not eligible for study", BadgeColor.ERROR),
+                ONSTUDY(VaadinIcon.CHECK, "On Study", "Patient is on study", BadgeColor.SUCCESS_PRIMARY),
+                WITHDRAWN(VaadinIcon.EXIT, "Withdrawn", "Patient has been withdrawn from study", BadgeColor.ERROR_PRIMARY);
+
 
 
 
@@ -122,6 +130,24 @@ public class ConsentNotification {
                     icon = UIUtils.createSuccessIcon(this.icon);
                     break;
                 case CANCELLED:
+                    icon = UIUtils.createSuccessIcon(this.icon);
+                    break;
+                case POTENTIALCANDIDATE:
+                    icon = UIUtils.createSuccessIcon(this.icon);
+                    break;
+                case CANDIDATE:
+                    icon = UIUtils.createSuccessIcon(this.icon);
+                    break;
+                case ELIGIBLE:
+                    icon = UIUtils.createSuccessIcon(this.icon);
+                    break;
+                case INELIGIBLE:
+                    icon = UIUtils.createSuccessIcon(this.icon);
+                    break;
+                case ONSTUDY:
+                    icon = UIUtils.createSuccessIcon(this.icon);
+                    break;
+                case WITHDRAWN:
                     icon = UIUtils.createSuccessIcon(this.icon);
                     break;
                 default:

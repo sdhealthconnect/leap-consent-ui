@@ -169,7 +169,6 @@ public class MainLayout extends FlexBoxLayout
 
 		menu.addNaviItem(VaadinIcon.CLIPBOARD, getTranslation("mainLayout-menu-portable_medical_order"), PortableMedicalOrder.class);
 
-		menu.addNaviItem(VaadinIcon.BUILDING, getTranslation("mainLayout-menu-participate_in_research"), ResearchView.class);
 		menu.addNaviItem(VaadinIcon.LIST, getTranslation("mainLayout-menu-activity_logs"), AuditView.class );
 		menu.addNaviItem(VaadinIcon.ENVELOPES, getTranslation("mainLayout-menu-notifications"), NotificationView.class);
 		/*
