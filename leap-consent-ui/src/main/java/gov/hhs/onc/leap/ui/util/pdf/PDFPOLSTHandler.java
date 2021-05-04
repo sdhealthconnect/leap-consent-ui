@@ -69,7 +69,7 @@ public class PDFPOLSTHandler {
         String patientState = consentSession.getPrimaryState();
         String languagePreference = consentSession.getLanguagePreference();
 
-        String fullFormPath = "/advanced_directives/"+patientState+"/POLST/"+languagePreference+"/POLST.pdf";
+        String fullFormPath = "/advanced_directives/"+patientState+"/POLST/English/POLST.pdf";
         byte[] bArray = null;
         PDDocument pdfdocument = null;
         StreamResource stream = null;
