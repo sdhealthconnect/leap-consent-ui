@@ -70,7 +70,9 @@ public class PDFPOLSTHandler {
         String patientState = consentSession.getPrimaryState();
         String languagePreference = consentSession.getLanguagePreference();
         languagePreference = UIUtils.getLanguage(languagePreference);
-        String fullFormPath = "/advanced_directives/"+patientState+"/POLST/"+languagePreference+"/POLST.pdf";
+        // Forcing English
+        // Spanish version of POLST has also been provided. However the system will use this Spanish version for informational purposes to the user. A POLST form must be signed and completed in English only.
+        String fullFormPath = "/advanced_directives/"+patientState+"/POLST/English/POLST.pdf";
         if (getClass().getResource(fullFormPath) == null) {
             //Using English as default if the resource do not exists
             fullFormPath = "/advanced_directives/"+patientState+"/POLST/English/POLST.pdf";
