@@ -18,6 +18,46 @@ Decision Service (CDS) .
 - Support notary flow for advance directives.
 - Digitally sign attachments with trusted custodian cert.
 
+##Quick Start
+Developers who wish to investigate further you can utilize the services already deployed in the San Diego HealthConnect LEAP project Google cloud.
+- Check out this repository:
+```
+> git clone https://github.com/sdhealthconnect/leap-consent-ui.git
+```
+- Create leap_consent database:
+```
+Using mysql client or mysql workbench create empty schema `leap_consent`
+```
+- Update local configuration files:
+```
+Modify src/main/resources/config/application-local.yaml and src/main/resources/db/local-liguidbase.properties
+to reflect your local mysql enviorment
+```
+- Load user preferences:
+```
+> cd leap-consent-ui/leap-consent-ui
+> mvn liquibase:update -Plocal
+```
+- Build it:
+```
+> mvn clean install -DskipTests
+```
+- Run it:
+```
+> export SLS_HOST_URL=http://34.94.253.50:9091
+> export HAPI_FHIR_URL=http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/
+> java -jar -Dspring.profiles.active=local -Dvaadin.productionMode=true target/leap-consent-ui-1.0-SNAPSHOT.war
+```
+- Use it:
+
+The LEAP Consent UI is now available @ http://localhost:8080 10 test users, their preferences, and 
+clincial data have been loaded for testing puposes.  
+
+You may also access the deployed version @ https://leap-gui-yop7t2tkfq-uc.a.run.app/login.
+
+Contact ddecouteau@saperi.io for credentials. 
+
+
 ##Architectural View
 ![High Level Architecture](docs/assets/high-level-architecture.png?raw=true)
 
@@ -31,10 +71,17 @@ action from patient.
 
 ![My Consent Documents](docs/assets/MyConsentDocuments.png?raw=true)
 
-The patient get access detail information about a specific consent by clicking on the row of interest.  Where they may access details, 
+The patient can retrieve detail information about a specific consent by clicking on the row of interest.  Where they may access details, 
 revoke or reinstate that consent, act on requirements for consent in pending state, or view the attached digitally signed human readable form.
 
 ![Completed Form](docs/assets/completePOLST.png?raw=true)
+
+##Analyze My Data
+This empowers the patient to make an informed decision on whether or not to constrain specific types of data base
+on their confidentialy code.  It utilizes the same Security Labeling Service (SLS) used within the LEAP Consent Enforcement 
+Services.
+
+![Analyze My Data](docs/assets/AnalyzeMyData.png?raw=true)
 
 
 
