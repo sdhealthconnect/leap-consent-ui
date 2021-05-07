@@ -77,7 +77,7 @@ revoke or reinstate that consent, act on requirements for consent in pending sta
 ![Completed Form](docs/assets/completePOLST.png?raw=true)
 
 ##Analyze My Data
-This empowers the patient to make an informed decision on whether or not to constrain specific types of data base
+This empowers the patient to make an informed decision on whether or not to constrain specific types of data based
 on their confidentialy code.  It utilizes the same Security Labeling Service (SLS) used within the LEAP Consent Enforcement 
 Services.
 
