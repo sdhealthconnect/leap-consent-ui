@@ -116,6 +116,7 @@ public class SharePatientDataView extends ViewFrame {
         setId("sharepatientdataView");
         setViewContent(createViewContent());
         setViewFooter(getFooter());
+        errorList = new ArrayList<>();
     }
 
 
@@ -334,7 +335,7 @@ public class SharePatientDataView extends ViewFrame {
     private void createDataDestinationRequirements() {
         destinationType = new RadioButtonGroup<>();
         destinationType.setLabel(getTranslation("sharePatient-the_person_or_org_requesting_your_info"));
-        destinationType.setItems("Practitioner", "Organization");
+        destinationType.setItems(getTranslation("sharePatient-practitioner"), getTranslation("sharePatient-organization"));
         destinationType.addThemeVariants(RadioGroupVariant.LUMO_HELPER_ABOVE_FIELD);
         destinationType.addValueChangeListener(event -> {
             if (event.getValue() == null) {

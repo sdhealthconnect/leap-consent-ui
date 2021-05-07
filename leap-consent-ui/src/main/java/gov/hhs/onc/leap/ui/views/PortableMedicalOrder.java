@@ -974,7 +974,7 @@ public class PortableMedicalOrder extends ViewFrame {
             questionPosition++;
             evalNavigation();
         });
-        viewStateForm = new Button(getTranslation("PortableMedicalOrder-view")+consentSession.getPrimaryState()+getTranslation("PortableMedicalOrder-instructions"));
+        viewStateForm = new Button(getTranslation("PortableMedicalOrder-view")+consentSession.getPrimaryState()+" "+getTranslation("PortableMedicalOrder-instructions"));
         viewStateForm.setIconAfterText(true);
         viewStateForm.addClickListener(event -> {
             Dialog d = createInfoDialog();
