@@ -1061,7 +1061,7 @@ public class PortableMedicalOrder extends ViewFrame {
 
     private Dialog createInfoDialog() {
         PDFDocumentHandler pdfHandler = new PDFDocumentHandler();
-        StreamResource streamResource = pdfHandler.retrievePDFForm("POLST");
+        StreamResource streamResource = setFieldsCreatePDF(false);
 
         Dialog infoDialog = new Dialog();
 
@@ -1355,7 +1355,7 @@ public class PortableMedicalOrder extends ViewFrame {
     }
 
     private void getHumanReadable() {
-        StreamResource streamResource = setFieldsCreatePDF();
+        StreamResource streamResource = setFieldsCreatePDF(true);
         docDialog = new Dialog();
 
         streamResource.setContentType("application/pdf");
@@ -1408,7 +1408,7 @@ public class PortableMedicalOrder extends ViewFrame {
         docDialog.setDraggable(true);
     }
 
-    private StreamResource setFieldsCreatePDF() {
+    private StreamResource setFieldsCreatePDF(boolean forceEnglish) {
         polst = new POLSTPortableMedicalOrder();
         //demographics
         polst.setPatientFirstName(patientFirstName.getValue());
@@ -1496,7 +1496,7 @@ public class PortableMedicalOrder extends ViewFrame {
         polst.setAssistingOtherList(otherAssistedList.getValue());
 
         PDFPOLSTHandler pdfHandler = new PDFPOLSTHandler(pdfSigningService);
-        StreamResource res = pdfHandler.retrievePDFForm(polst);
+        StreamResource res = pdfHandler.retrievePDFForm(polst, forceEnglish);
 
         consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
         return res;
