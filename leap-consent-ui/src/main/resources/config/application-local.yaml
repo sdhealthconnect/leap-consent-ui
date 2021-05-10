@@ -4,4 +4,9 @@ sls:
 hapi-fhir:
   url: ${HAPI_FHIR_URL:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}
 
+datasource:
+  url: jdbc:mysql://${DB_NAME:localhost:3306/leap_consent?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&jdbcCompliantTruncation=false&createDatabaseIfNotExist=true}
+  username: ${DB_USER:root}
+  password: ${DB_PASS:changeme}
+
 
