@@ -31,7 +31,7 @@ Advance Directives.
 Things not considered or out of scope of this project:
 - Patient/User provisioning.  We have pre-populated the user base for testing and demonstration purposes
 - Patient/User settings and preferences.  Again we have pre-populated that data for testing and demonstration purposes.
-- Patient/User production quality authentication service.  This project implements spring-security for demonstration purposes
+- Patient/User production quality identity and authentication service.  This project implements spring-security for demonstration purposes
  only. We assume a future production deployment would utilize the hosting organizations tools and services, 
  and that this codebase could be easily updated to support such a deployment.
 
@@ -102,7 +102,36 @@ Services.
 
 ![Analyze My Data](docs/assets/AnalyzeMyData.png?raw=true)
 
+##Share My Data
+This will be the most commonly used views within the LEAP Consent UI.  Allows the patient to create a patient-privacy scoped 
+consent, where purpose of that consent is treatment, and in foundation policy is OPTIN.  Patient can constrain this exchange
+by defining components of the provision(exceptions) such as: enforcement period, class of data allowed, the source/custodian, and 
+destination/recipient, and whether to redact sensitive information or not.
+  
+![Share My Data](docs/assets/ShareMyData.png?raw=true)
 
+##Advance Directives
+Covers LivingWill, Power of Attorney for Health Care and Mental Health Care, and Do Not Resuscitate.  This create a consent scope 
+of adr.  Utilizes and OPTOUT policy, with provision(exceptions) when purpose of use is ETREAT. A questionnaire response is linked
+to this consent via an extension, where responses are captured in computable form.  Two path are supported 1) where responses
+are captured as well as electronic signature, and digital signing of legal form, 2) where responses are captured, patient is
+allowed to print and obtain signatures through a notary flow.  
 
+![Advance Directives](docs/assets/AdvanceDirectives.png?raw=true)
 
+##Portable Medical Order (POLST)
+POLST is treated much like an Advance Directive.  This flow creates a consent scoped of adr.  Utilizes an OPTOUT policy.  Creates
+provision where purpose of use is ETREAT.  A questionnaire response is linked to this consent via an extension,  
+where responses are captured in computable form.
+
+![POLST](docs/assets/POLST.png?raw=true)
+
+##Notifications
+Notifications address 3 areas of consent management 1) define a policy, which could be driven by the custodian organization,
+or jurisdictional, where specific types of consents are required or optional based on a specific patient 
+population, example age group. The other areas with notification covers informed consent, both of these are experimental.  2) Consent for treatment, where we 
+utilized a medication request for an antidrepressant.  3) Consent for Research, using and an example flow of Pre-Diabetes 
+clinical trial.
+
+![Notfications](docs/assets/Notifications.png?raw=true)
 
