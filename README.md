@@ -1,4 +1,5 @@
-#LEAP Consent Management Service and UI
+
+# LEAP Consent Management Service and UI
 A service (including a user interface) for patients to analyze, create, revoke, reinstate, and audit consents.  Storing them 
 in the form of FHIR Consent resources in a FHIR Server (Consent Store).
 
@@ -18,7 +19,7 @@ Decision Service (CDS) .
 - Support notary flow for advance directives.
 - Digitally sign attachments with trusted custodian cert.
 
-##Implementation Objectives
+## Implementation Objectives
 Create a near-production quality patient experience for creation and management of their FHIR Consents.  Identify and overcome limitations 
 of FHIR R4 Consent resource.  Identify and overcome limitations in workflow when other FHIR resources integral to process, such as 
 MedicationRequest, ServiceRequest, ResearchSubject, and ResearchStudy, are not necessarily consent aware.  
@@ -35,7 +36,7 @@ Things not considered or out of scope of this project:
  only. We assume a future production deployment would utilize the hosting organizations tools and services, 
  and that this codebase could be easily updated to support such a deployment.
 
-##Quick Start
+## Quick Start
 You may access the latest deployed version @ https://leap-gui-yop7t2tkfq-uc.a.run.app/login.
 Contact ddecouteau@saperi.io for credentials. 
 
@@ -77,14 +78,14 @@ clincial data have been loaded for testing puposes.
 Again for credential info contact ddecouteau@saperi.io. 
 
 
-##Architectural View
+## Architectural View
 ![High Level Architecture](docs/assets/high-level-architecture.png?raw=true)
 
 The Consent Management Service and UI are just some of the components in a cloud based multi-service framework for the creation and enforcement of a patient's consent.  
 This implementation is geared for a deployment at a regional Health Information Exchange (HIE).  However, it's decisioning and enforcement reach is 
 not limited to just exchanges between that HIE (custodian) and other entities.
 
-##My Consent Documents
+## My Consent Documents
 This provides the patient with a view of all FHIR consents that are Active, Expired (exceeded provision end date), Revoked (by patient or other workflow), or Pending requiring some 
 action from patient.
 
@@ -95,14 +96,14 @@ revoke or reinstate that consent, act on requirements for consent in pending sta
 
 ![Completed Form](docs/assets/completePOLST.png?raw=true)
 
-##Analyze My Data
+## Analyze My Data
 This empowers the patient to make an informed decision on whether or not to constrain specific types of data based
 on their confidentialy code.  It utilizes the same Security Labeling Service (SLS) used within the LEAP Consent Enforcement 
 Services.
 
 ![Analyze My Data](docs/assets/AnalyzeMyData.png?raw=true)
 
-##Share My Data
+## Share My Data
 This will be the most commonly used views within the LEAP Consent UI.  Allows the patient to create a patient-privacy scoped 
 consent, where purpose of that consent is treatment, and in foundation policy is OPTIN.  Patient can constrain this exchange
 by defining components of the provision(exceptions) such as: enforcement period, class of data allowed, the source/custodian, and 
@@ -110,7 +111,7 @@ destination/recipient, and whether to redact sensitive information or not.
   
 ![Share My Data](docs/assets/ShareMyData.png?raw=true)
 
-##Advance Directives
+## Advance Directives
 Covers LivingWill, Power of Attorney for Health Care and Mental Health Care, and Do Not Resuscitate.  This create a consent scope 
 of adr.  Utilizes and OPTOUT policy, with provision(exceptions) when purpose of use is ETREAT. A questionnaire response is linked
 to this consent via an extension, where responses are captured in computable form.  Two path are supported 1) where responses
@@ -119,14 +120,14 @@ allowed to print and obtain signatures through a notary flow.
 
 ![Advance Directives](docs/assets/AdvanceDirectives.png?raw=true)
 
-##Portable Medical Order (POLST)
+## Portable Medical Order (POLST)
 POLST is treated much like an Advance Directive.  This flow creates a consent scoped of adr.  Utilizes an OPTOUT policy.  Creates
 provision where purpose of use is ETREAT.  A questionnaire response is linked to this consent via an extension,  
 where responses are captured in computable form.
 
 ![POLST](docs/assets/POLST.png?raw=true)
 
-##Notifications
+## Notifications
 Notifications address 3 areas of consent management 1) define a policy, which could be driven by the custodian organization,
 or jurisdictional, where specific types of consents are required or optional based on a specific patient 
 population, example age group. The other areas with notification covers informed consent, both of these are experimental.  2) Consent for treatment, where we 
