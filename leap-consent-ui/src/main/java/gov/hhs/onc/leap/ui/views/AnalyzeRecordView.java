@@ -1,5 +1,8 @@
 package gov.hhs.onc.leap.ui.views;
 
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
+import ca.uhn.fhir.rest.client.api.IGenericClient;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
@@ -33,6 +36,7 @@ import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import org.apache.commons.io.IOUtils;
+import org.hl7.fhir.r4.model.Bundle;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.ByteArrayInputStream;
@@ -53,14 +57,21 @@ public class AnalyzeRecordView extends ViewFrame {
     private Upload upload;
     private TextField outcomeField;
     private TextArea notesField;
+
+    @Value("${hapi-fhir.url:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}")
+    private String baseURL;
+
     @Value("${sls.url:http://34.94.253.50:9091}")
     private String slsHost;
+
+    private ConsentSession consentSession;
+
     private String msg;
     private Html optionLabel = new Html("<p><b>-OR-</b></p>");
 
     public AnalyzeRecordView() {
         setId("analyzerecordview");
-        ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
+        this.consentSession = consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         setViewContent(createViewContent());
         setViewFooter(getFooter());
     }
@@ -82,9 +93,9 @@ public class AnalyzeRecordView extends ViewFrame {
             clearButton.setEnabled(true);
         });
 
-        hieButton = new Button("Request record from your state Health Information Exchange", new Icon(VaadinIcon.HOSPITAL));
+        hieButton = new Button("Get records from your state Health Information Exchange", new Icon(VaadinIcon.HOSPITAL));
         hieButton.addClickListener(event -> {
-           //todo had handler for patientHistory request from hapi-fhir server
+           analyzeInstreamFHIR();
         });
 
         HorizontalLayout horizontalLayout = new HorizontalLayout(upload, output, optionLabel, hieButton);
@@ -205,4 +216,49 @@ public class AnalyzeRecordView extends ViewFrame {
         upload.getElement().setPropertyJson("files", Json.createArray());
     }
 
+    private void analyzeInstreamFHIR() {
+        hieButton.setEnabled(false);
+        SLSRequestClient sls = new SLSRequestClient(slsHost);
+        String id = UUID.randomUUID().toString();
+        String orgin = "LEAP Consent UI";
+        String msgSource = "FHIR";
+        String msgVersion = "4.0.1";
+        try {
+
+            FhirContext fhirContext = FhirContext.forR4();
+
+            String uri = baseURL + "Patient/" + consentSession.getFhirPatientId() + "/$everything";
+
+
+            IGenericClient client = fhirContext.newRestfulGenericClient(baseURL);
+
+            Bundle bundle = client.search().byUrl(uri).returnBundle(Bundle.class).execute();
+
+            IParser parser = fhirContext.newJsonParser();
+
+            String msg = parser.encodeResourceToString(bundle);
+
+
+            String results = sls.requestLabelingSecured(id, orgin, msgSource, msgVersion, msg);
+            if (results.contains("RESTRICTED") && !results.contains("NON-RESTRICTED")) {
+                outcomeField.setValue("RESTRICTED - SENSITIVE information was found in your clinical record.");
+            }
+            else if (results.contains("NON-RESTRICTED")){
+                outcomeField.setValue("NORMAL - No sensitivie information was found in your clinical record.");
+            }
+            else {
+                outcomeField.setValue("ERROR - SLS was not able to process the file you provided.");
+            }
+            notesField.setValue(results);
+            clearButton.setEnabled(true);
+            processFileButton.setEnabled(false);
+        }
+        catch (Exception ex) {
+            outcomeField.setValue("ERROR");
+            notesField.setValue("Failed processing Instream FHIR bundle: "+ex.getMessage());
+            clearButton.setEnabled(true);
+            processFileButton.setEnabled(false);
+            ex.printStackTrace();
+        }
+    }
 }
