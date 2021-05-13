@@ -21,7 +21,7 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDCheckbox;
+import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,10 +172,10 @@ public class PDFInformedConsentHandler {
                 if (field.getFullyQualifiedName().equals("rxnormPreferredLabel")) field.setValue(rxnormPreferredLabel);
                 if (field.getFullyQualifiedName().equals("medicationRequestID")) field.setValue(medicationRequestID);
                 if (field.getFullyQualifiedName().equals("consentGranted")) {
-                    if (consentGranted) ((PDCheckbox) field).check();
+                    if (consentGranted) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("consentDeclined")) {
-                    if (consentDeclined) ((PDCheckbox) field).check();
+                    if (consentDeclined) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("patientSignature_af_image")) {
                     try {
