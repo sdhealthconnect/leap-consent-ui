@@ -22,7 +22,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <pnpmEnabled>true</pnpmEnabled>
 
-        <vaadin.version>18.0.5</vaadin.version>
+        <vaadin.version>19.0.4</vaadin.version>
         <!--<jetty.version>9.4.15.v20190215</jetty.version> -->
 
         <!-- The liquibase version should match the one managed by
