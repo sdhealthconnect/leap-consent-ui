@@ -40,4 +40,4 @@ ENV DB_USER=${ARG_DB_USER}
 ENV DB_PASS=${ARG_DB_PASS}
 
 COPY --from=builder /leap-consent/leap-consent-ui/${JAR_FILE} app.jar
-ENTRYPOINT ["java", "-Dspring.profiles.active=docker", "-Dserver.tomcat.remote-ip-header=x-forwarded-for", "-Dserver.tomcat.protocol-header=x-forwarded-proto", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=docker", "-Dserver.tomcat.remote-ip-header=x-forwarded-for", "-Dserver.tomcat.protocol-header=x-forwarded-proto", "-Dspring.servlet.multipart.max-file-size=5MB", "-Dspring.servlet.multipart.max-request-size=5MB", "-jar", "/app.jar"]
