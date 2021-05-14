@@ -757,6 +757,14 @@ public class DoNotResuscitate extends ViewFrame {
         period.setEnd(endDate);
         
         provision.setPeriod(period);
+
+        List<Coding> purposeList = new ArrayList<>();
+        Coding purposeCoding = new Coding();
+        purposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
+        purposeCoding.setCode("ETREAT");
+        purposeList.add(purposeCoding);
+
+        provision.setPurpose(purposeList);
         
         dnrDirective.setProvision(provision);
 
