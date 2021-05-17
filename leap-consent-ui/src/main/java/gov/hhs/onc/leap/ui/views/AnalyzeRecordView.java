@@ -190,13 +190,12 @@ public class AnalyzeRecordView extends ViewFrame {
             msgVersion = "unknown";
         }
         String results = sls.requestLabelingSecured(id, origin, msgSource, msgVersion, msg);
-        if (results.contains("RESTRICTED") && !results.contains("NON-RESTRICTED")) {
-            outcomeField.setValue( getTranslation("analyzeRecordView-restricted_msg"));
-        }
-        else if (results.contains("NON-RESTRICTED")){
+        if (results.contains("NON-RESTRICTED")){
             outcomeField.setValue(getTranslation("analyzeRecordView-normal_msg"));
         }
-        else {
+        else if (results.contains("RESTRICTED")) {
+            outcomeField.setValue( getTranslation("analyzeRecordView-restricted_msg"));
+        } else {
             outcomeField.setValue(getTranslation("analyzeRecordView-error_msg"));
         }
         notesField.setValue(results);
