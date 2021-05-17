@@ -29,6 +29,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -44,6 +45,7 @@ public class UIUtils {
 			.withInitial(() -> new DecimalFormat("###,###.00", DecimalFormatSymbols.getInstance(Locale.US)));
 	private static final ThreadLocal<DateTimeFormatter> dateFormat = ThreadLocal
 			.withInitial(() -> DateTimeFormatter.ofPattern("MMM dd, YYYY"));
+	private static final ThreadLocal<DateTimeFormatter> dateTimeFormat = ThreadLocal.withInitial(() -> DateTimeFormatter.ofPattern("MMM dd, YYYY HH:mm:ss", Locale.ENGLISH));
 
 	/* ==== BUTTONS ==== */
 
@@ -464,6 +466,10 @@ public class UIUtils {
 
 	public static String formatDate(LocalDate date) {
 		return dateFormat.get().format(date);
+	}
+
+	public static String formatDateTime(LocalDateTime date) {
+		return dateTimeFormat.get().format(date);
 	}
 
 	/* === NOTIFICATIONS === */

@@ -360,21 +360,45 @@ public class HapiFhirServer {
         return bundle;
     }
 
-    public Bundle getAuditEvents(final String patientId) {
+    public List<IBaseResource> getAuditEvents(final String patientId) {
+        SortSpec sortSpec = new SortSpec();
+        sortSpec.setParamName("date");
+        sortSpec.setOrder(SortOrderEnum.DESC);
+        List<IBaseResource> auditEvents = new ArrayList<>();
         Bundle bundle = hapiClient
                 .search()
                 .forResource(AuditEvent.class)
+                .sort(sortSpec)
                 .where(new ReferenceClientParam("patient").hasId(patientId))
+                .returnBundle(Bundle.class)
+                .execute();
+
+        auditEvents.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while (bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            auditEvents.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return auditEvents;
+    }
+
+    public Bundle getOrganization(Identifier organizationId) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Organization.class)
+                .where(new TokenClientParam("identifier").exactly().systemAndCode(organizationId.getSystem(), organizationId.getValue()))
                 .returnBundle(Bundle.class)
                 .execute();
         return bundle;
     }
 
-    public Bundle getOrganization(String organizationId) {
+    public Bundle getPractitioner(Identifier practitionerId) {
         Bundle bundle = hapiClient
                 .search()
-                .forResource(Organization.class)
-                .where(new TokenClientParam("identifier").exactly().identifier(organizationId))
+                .forResource(Practitioner.class)
+                .where(new TokenClientParam("identifier").exactly().systemAndCode(practitionerId.getSystem(), practitionerId.getValue()))
                 .returnBundle(Bundle.class)
                 .execute();
         return bundle;

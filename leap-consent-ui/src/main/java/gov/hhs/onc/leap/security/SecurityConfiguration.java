@@ -107,6 +107,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				// (development mode) H2 debugging console
 				"/h2-console/**",
 
+				"/sw-runtime-resources-precache.js",
+
 				// (production mode) static resources
 				"/frontend-es5/**", "/frontend-es6/**");
 	}

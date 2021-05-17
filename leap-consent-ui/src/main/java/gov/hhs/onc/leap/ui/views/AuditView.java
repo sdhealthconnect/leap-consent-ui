@@ -1,5 +1,7 @@
 package gov.hhs.onc.leap.ui.views;
 
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
@@ -10,6 +12,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -18,11 +21,14 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.backend.AuditEventService;
+import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.ConsentLog;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.components.ListItem;
+import gov.hhs.onc.leap.ui.components.detailsdrawer.DetailsDrawer;
+import gov.hhs.onc.leap.ui.components.detailsdrawer.DetailsDrawerHeader;
 import gov.hhs.onc.leap.ui.layout.size.Horizontal;
 import gov.hhs.onc.leap.ui.layout.size.Right;
 import gov.hhs.onc.leap.ui.layout.size.Top;
@@ -33,6 +39,7 @@ import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
+import org.hl7.fhir.r4.model.AuditEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -40,7 +47,7 @@ import java.util.Collection;
 
 @PageTitle("My Record Disclosures")
 @Route(value = "auditview", layout = MainLayout.class)
-public class AuditView extends ViewFrame {
+public class AuditView extends SplitViewFrame {
 
     private Button logButton;
     private Button chartButton;
@@ -49,6 +56,10 @@ public class AuditView extends ViewFrame {
     private FlexBoxLayout logLayout;
     private FlexBoxLayout chartLayout;
 
+    private DetailsDrawer detailsDrawer;
+    private TextArea auditDetail;
+    private FhirContext fhirContext = FhirContext.forR4();
+
     @Autowired
     private AuditEventService consentLogService;
 
@@ -56,11 +67,12 @@ public class AuditView extends ViewFrame {
     public void setup() {
         setId("auditview");
         setViewContent(createViewContent());
+        setViewDetails(createDetailsDrawer());
         setViewFooter(getFooter());
     }
 
     private Component createViewContent() {
-
+        detailsDrawer = createDetailsDrawer();
         logLayout = new FlexBoxLayout(createHeader(VaadinIcon.FILE, "Activity Logs"),createGrid());
         logLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         logLayout.setBoxSizing(BoxSizing.BORDER_BOX);
@@ -91,6 +103,7 @@ public class AuditView extends ViewFrame {
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
         content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        detailsDrawer.hide();
         return content;
     }
 
@@ -101,6 +114,15 @@ public class AuditView extends ViewFrame {
 
         grid = new Grid<>();
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+
+        grid.addSelectionListener(event -> {
+            if (event.getAllSelectedItems().isEmpty()) {
+                hideDetails();
+            }
+            else {
+                event.getFirstSelectedItem().ifPresent(this::showDetails);
+            }
+        });
         grid.setDataProvider(dataProvider);
         grid.setHeightFull();
 
@@ -109,13 +131,16 @@ public class AuditView extends ViewFrame {
                 .setWidth("100px");
 
         grid.addColumn(TemplateRenderer.<ConsentLog>of("[[item.decisionDate]]")
-                .withProperty("decisionDate", consentLog -> UIUtils.formatDate(consentLog.getDecisionDate())))
+                .withProperty("decisionDate", consentLog -> UIUtils.formatDateTime(consentLog.getDecisionDate())))
                 .setAutoWidth(true)
                 .setComparator(ConsentLog::getDecisionDate)
                 .setFlexGrow(0)
                 .setHeader("Decision Date");
-        grid.addColumn(new ComponentRenderer<>(this::createCustodian))
-                .setHeader("Custodian")
+        grid.addColumn(new ComponentRenderer<>(this::createAction))
+                .setHeader("Action")
+                .setWidth("150px");
+        grid.addColumn(new ComponentRenderer<>(this::createPurpose))
+                .setHeader("Purpose")
                 .setWidth("150px");
         grid.addColumn(new ComponentRenderer<>(this::createRecipient))
                 .setHeader("Recipient")
@@ -126,12 +151,22 @@ public class AuditView extends ViewFrame {
 
     private Component createDecision(ConsentLog consentLog) {
         ListItem item = new ListItem(consentLog.getDecision());
+        if (consentLog.getDecision().equals("CONSENT_DENY") || consentLog.getDecision().equals("Deny") || consentLog.getDecision().equals("Not Applicable") || consentLog.getDecision().equals("NO_CONSENT")) {
+            item.getStyle().set("color", "Red");
+            item.getStyle().set("fontWeight", "bold");
+        }
         item.setPadding(Vertical.XS);
         return item;
     }
 
-    private Component createCustodian(ConsentLog consentLog) {
-        ListItem item = new ListItem(consentLog.getCustodian());
+    private Component createAction(ConsentLog consentLog) {
+        ListItem item = new ListItem(consentLog.getAction());
+        item.setPadding(Vertical.XS);
+        return item;
+    }
+
+    private Component createPurpose(ConsentLog consentLog) {
+        ListItem item = new ListItem(consentLog.getPurposeOfUse());
         item.setPadding(Vertical.XS);
         return item;
     }
@@ -140,6 +175,36 @@ public class AuditView extends ViewFrame {
         ListItem item = new ListItem(consentLog.getRequestor());
         item.setPadding(Vertical.XS);
         return item;
+    }
+
+    private DetailsDrawer createDetailsDrawer() {
+        detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
+
+        auditDetail = new TextArea();
+        auditDetail.setWidth("95%");
+        auditDetail.setHeight("95%");
+        auditDetail.getStyle().set("margin-left", "10px");
+        auditDetail.getStyle().set("margin-right", "10px");
+        auditDetail.getStyle().set("margin-bottom", "10px");
+        auditDetail.setReadOnly(true);
+
+        detailsDrawer.setContent(auditDetail);
+        DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("FHIR AuditEvent");
+        detailsDrawerHeader.addCloseListener(buttonClickEvent -> detailsDrawer.hide());
+        detailsDrawer.setHeader(detailsDrawerHeader);
+
+        return detailsDrawer;
+    }
+
+    private void showDetails(ConsentLog consentLog) {
+        AuditEvent auditEvent = consentLog.getAuditEvent();
+        String auditString = fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(auditEvent);
+        auditDetail.setValue(auditString);
+        detailsDrawer.show();
+    }
+
+    private void hideDetails() {
+        detailsDrawer.hide();
     }
 
 
@@ -210,6 +275,7 @@ public class AuditView extends ViewFrame {
             logLayout.setVisible(false);
             chartLayout.setVisible(true);
         });
+        chartButton.setEnabled(false);
         HorizontalLayout footer = new HorizontalLayout(logButton, chartButton);
         footer.setAlignItems(FlexComponent.Alignment.CENTER);
         footer.setPadding(true);
