@@ -926,7 +926,13 @@ public class NotificationView extends ViewFrame {
                 status = ConsentNotification.Status.UNKNOWN;
                 actionRequired = "None";
             }
-            String shortName = mReq.getMedicationCodeableConcept().getCoding().get(0).getDisplay();
+            String shortName = "Not Found";
+            try {
+                shortName = mReq.getMedicationCodeableConcept().getCoding().get(0).getDisplay();
+            }
+            catch (Exception ex) {
+                log.error("Expected CodeableConcept: "+ex.getMessage());
+            }
             String requestor = mReq.getRequester().getDisplay();
             String destination = "unknownview";
             //filter for ones we care about

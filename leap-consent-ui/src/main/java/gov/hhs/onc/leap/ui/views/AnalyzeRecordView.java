@@ -69,6 +69,8 @@ public class AnalyzeRecordView extends ViewFrame {
     private String msg;
     private Html optionLabel = new Html("<p><b>-OR-</b></p>");
 
+    private FhirContext fhirContext = FhirContext.forR4();
+
     public AnalyzeRecordView() {
         setId("analyzerecordview");
         this.consentSession = consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
@@ -224,8 +226,6 @@ public class AnalyzeRecordView extends ViewFrame {
         String msgSource = "FHIR";
         String msgVersion = "4.0.1";
         try {
-
-            FhirContext fhirContext = FhirContext.forR4();
 
             String uri = baseURL + "Patient/" + consentSession.getFhirPatientId() + "/$everything";
 
