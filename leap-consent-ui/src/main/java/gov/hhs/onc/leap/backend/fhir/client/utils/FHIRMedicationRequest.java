@@ -3,9 +3,8 @@ package gov.hhs.onc.leap.backend.fhir.client.utils;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.backend.fhir.client.HapiFhirServer;
 import gov.hhs.onc.leap.session.ConsentSession;
-import liquibase.pro.packaged.M;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Consent;
 import org.hl7.fhir.r4.model.MedicationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,12 +24,10 @@ public class FHIRMedicationRequest {
         ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         String patientId = consentSession.getFhirPatientId();
         Collection<MedicationRequest> medicationRequestCollection = new ArrayList<>();
-        Bundle bundle = hapiFhirServer.getMedicationRequests(patientId);
-        List<Bundle.BundleEntryComponent> resourceList = bundle.getEntry();
+        List<IBaseResource> resourceList = hapiFhirServer.getMedicationRequests(patientId);
         Iterator iter = resourceList.iterator();
         while(iter.hasNext()) {
-            Bundle.BundleEntryComponent b = (Bundle.BundleEntryComponent)iter.next();
-            MedicationRequest c = (MedicationRequest) b.getResource();
+            MedicationRequest c = (MedicationRequest)iter.next();
             medicationRequestCollection.add(c);
         }
         return medicationRequestCollection;
