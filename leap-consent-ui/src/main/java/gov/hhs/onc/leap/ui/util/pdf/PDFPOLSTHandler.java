@@ -23,7 +23,7 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDCheckbox;
+import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,35 +145,35 @@ public class PDFPOLSTHandler {
                 }
 
                 if (field.getFullyQualifiedName().equals("yesCPR")) {
-                    if (polst.isYesCPR()) ((PDCheckbox) field).check();
+                    if (polst.isYesCPR()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("noCPR")) {
-                    if (polst.isNoCPR()) ((PDCheckbox) field).check();
+                    if (polst.isNoCPR()) ((PDCheckBox) field).check();
                 }
 
                 if (field.getFullyQualifiedName().equals("fullTreatment")) {
-                    if (polst.isFullTreatments()) ((PDCheckbox) field).check();
+                    if (polst.isFullTreatments()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("selectiveTreatment")) {
-                    if (polst.isSelectiveTreatments()) ((PDCheckbox) field).check();
+                    if (polst.isSelectiveTreatments()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("comfortFocusTreatment")) {
-                    if (polst.isComfortFocusedTreament()) ((PDCheckbox) field).check();
+                    if (polst.isComfortFocusedTreament()) ((PDCheckBox) field).check();
                 }
 
                 if (field.getFullyQualifiedName().equals("additionalOrders")) field.setValue(polst.getAdditionalTreatments());
 
                 if (field.getFullyQualifiedName().equals("provideFeeding")) {
-                    if (polst.isNutritionByArtificialMeans()) ((PDCheckbox) field).check();
+                    if (polst.isNutritionByArtificialMeans()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("trialFeeding")) {
-                    if (polst.isTrialNutritionByArtificialMeans()) ((PDCheckbox) field).check();
+                    if (polst.isTrialNutritionByArtificialMeans()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("noArtificalFeeding")) {
-                    if (polst.isNoArtificialMeans()) ((PDCheckbox) field).check();
+                    if (polst.isNoArtificialMeans()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("noDecisionOnFeeding")) {
-                    if (polst.isNoNutritionDecisionMade()) ((PDCheckbox) field).check();
+                    if (polst.isNoNutritionDecisionMade()) ((PDCheckBox) field).check();
                 }
 
                 if (field.getFullyQualifiedName().equals("patientOrRepresentativeSignature_af_image")) {
@@ -198,7 +198,7 @@ public class PDFPOLSTHandler {
                 if (field.getFullyQualifiedName().equals("healthcareProviderPhoneNumber")) field.setValue(polst.getHealthcareProviderPhoneNumber());
 
                 if (field.getFullyQualifiedName().equals("supervisorSignatureRequired")) {
-                    if (polst.isRequiredSupervisingPhysicianSignature()) ((PDCheckbox) field).check();
+                    if (polst.isRequiredSupervisingPhysicianSignature()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("supervisingPhysicianLicense")) {
                     if (!polst.isRequiredSupervisingPhysicianSignature()) {
@@ -218,10 +218,10 @@ public class PDFPOLSTHandler {
 
                 if (field.getFullyQualifiedName().equals("emergencyContactFullName")) field.setValue(polst.getEmergencyContactFullName());
                 if (field.getFullyQualifiedName().equals("legalRepresentative")) {
-                    if (polst.isPatientRepresentative()) ((PDCheckbox) field).check();
+                    if (polst.isPatientRepresentative()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("otherEmergencyContact")) {
-                    if (polst.isOtherEmergencyType()) ((PDCheckbox) field).check();
+                    if (polst.isOtherEmergencyType()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("dayPhoneNumber")) field.setValue(polst.getEmergencyContactPhoneNumberDay());
                 if (field.getFullyQualifiedName().equals("nightPhoneNumber")) field.setValue(polst.getEmergencyContactPhoneNumberNight());
@@ -231,7 +231,7 @@ public class PDFPOLSTHandler {
 
                 //hospice
                 if (field.getFullyQualifiedName().equals("enrolledInHospice")) {
-                    if (polst.isInHospice()) ((PDCheckbox) field).check();
+                    if (polst.isInHospice()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("hospiceAgencyName")) {
                     if (polst.isInHospice()) {
@@ -246,33 +246,33 @@ public class PDFPOLSTHandler {
 
                 //directive review
                 if (field.getFullyQualifiedName().equals("advanceDirectiveReviewed")) {
-                    if (polst.isAdvancedDirectiveReviewed()) ((PDCheckbox) field).check();
+                    if (polst.isAdvancedDirectiveReviewed()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("dateAdvanceDirectiveReviewed")) field.setValue(polst.getDateAdvancedDirectiveReviewed());
                 if (field.getFullyQualifiedName().equals("advanceDirectiveConflictExists")) {
-                    if (polst.isAdvanceDirectiveConflictExists()) ((PDCheckbox) field).check();
+                    if (polst.isAdvanceDirectiveConflictExists()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("advanceDirectiveNotAvailable")) {
-                    if (polst.isAdvanceDirectiveNotAvailable()) ((PDCheckbox) field).check();
+                    if (polst.isAdvanceDirectiveNotAvailable()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("noAdvanceDirectiveExists")) {
-                    if (polst.isNoAdvanceDirectiveExists()) ((PDCheckbox) field).check();
+                    if (polst.isNoAdvanceDirectiveExists()) ((PDCheckBox) field).check();
                 }
 
                 if (field.getFullyQualifiedName().equals("patientDecisionMaker")) {
-                    if (polst.isPatientWithDecisionMakingCapacity()) ((PDCheckbox) field).check();
+                    if (polst.isPatientWithDecisionMakingCapacity()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("legalSurrogateHealthcareAgent")) {
-                    if (polst.isLegalSurrogateOrHealthcareAgent()) ((PDCheckbox) field).check();
+                    if (polst.isLegalSurrogateOrHealthcareAgent()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("courtAppointedGuardian")) {
-                    if (polst.isCourtAppointedGuardian()) ((PDCheckbox) field).check();
+                    if (polst.isCourtAppointedGuardian()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("parentOfMinor")) {
-                    if (polst.isParentOfMinor()) ((PDCheckbox) field).check();
+                    if (polst.isParentOfMinor()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("otherParticipated")) {
-                    if (polst.isOtherParticipants()) ((PDCheckbox) field).check();
+                    if (polst.isOtherParticipants()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("otherParticipantList")) field.setValue(polst.getOtherParticipantsList());
                 if (field.getFullyQualifiedName().equals("assistingHealthcareProviderFullName")) field.setValue(polst.getAssistingHealthcareProviderFullName());
@@ -280,16 +280,16 @@ public class PDFPOLSTHandler {
                 if (field.getFullyQualifiedName().equals("assistingHealthcareProviderPhoneNumber")) field.setValue(polst.getAssistingHealthcareProviderPhoneNumber());
 
                 if (field.getFullyQualifiedName().equals("socialWorker")) {
-                    if (polst.isSocialWorker()) ((PDCheckbox) field).check();
+                    if (polst.isSocialWorker()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("nurse")) {
-                    if (polst.isNurse()) ((PDCheckbox) field).check();
+                    if (polst.isNurse()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("clergy")) {
-                    if (polst.isClergy()) ((PDCheckbox) field).check();
+                    if (polst.isClergy()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("otherAssistedType")) {
-                    if (polst.isAssistingOther()) ((PDCheckbox) field).check();
+                    if (polst.isAssistingOther()) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("otherAssistedTypeList")) field.setValue(polst.getAssistingOtherList());
 

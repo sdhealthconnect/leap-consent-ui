@@ -1556,6 +1556,14 @@ public class PortableMedicalOrder extends ViewFrame {
 
         provision.setPeriod(period);
 
+        List<Coding> purposeList = new ArrayList<>();
+        Coding purposeCoding = new Coding();
+        purposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
+        purposeCoding.setCode("ETREAT");
+        purposeList.add(purposeCoding);
+
+        provision.setPurpose(purposeList);
+
         polstDirective.setProvision(provision);
 
         Extension extension = createPortableMedicalOrderQuestionnaireResponse();

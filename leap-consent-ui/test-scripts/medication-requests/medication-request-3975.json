@@ -1,0 +1,39 @@
+{
+  "resourceType": "MedicationRequest",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2021-03-24T16:37:48.101+00:00",
+    "source": "#GxTNS2vlVybRViUw",
+    "profile": [
+      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-medicationrequest"
+    ]
+  },
+  "status": "on-hold",
+  "intent": "order",
+  "medicationCodeableConcept": {
+    "coding": [
+      {
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+        "code": "212233",
+        "display": "Sertraline 25 MG Oral Tablet [Zoloft]"
+      }
+    ],
+    "text": "Sertraline 25 MG Oral Tablet [Zoloft]"
+  },
+  "subject": {
+    "reference": "Patient/3975"
+  },
+  "encounter": {
+    "reference": "Encounter/6761"
+  },
+  "authoredOn": "2021-03-11T02:06:20-08:00",
+  "requester": {
+    "reference": "Practitioner/2025",
+    "display": "Dr. Carla633 Manzanares924"
+  },
+  "reasonReference": [
+    {
+      "reference": "Condition/4224"
+    }
+  ]
+}

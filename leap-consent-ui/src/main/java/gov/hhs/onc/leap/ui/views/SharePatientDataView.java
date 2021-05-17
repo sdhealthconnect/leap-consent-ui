@@ -893,6 +893,13 @@ public class SharePatientDataView extends ViewFrame {
         period.setEnd(endDate);
         provision.setPeriod(period);
 
+        List<Coding> purposeList = new ArrayList<>();
+        Coding purposeCoding = new Coding();
+        purposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
+        purposeCoding.setCode("TREAT");
+        purposeList.add(purposeCoding);
+
+        provision.setPurpose(purposeList);
 
         //create provisions for classes
         if (constrainDataClass.getValue().equals(getTranslation("sharePatient-deny_access_to_following"))) {

@@ -22,7 +22,7 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDCheckbox;
+import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,10 +147,10 @@ public class PDFResearchStudyHandler {
                 if (field.getFullyQualifiedName().equals("nctNumber")) field.setValue(nctNumber);
                 if (field.getFullyQualifiedName().equals("studyDescription")) field.setValue(studyDescription);
                 if (field.getFullyQualifiedName().equals("consentGranted")) {
-                    if (consentGranted) ((PDCheckbox) field).check();
+                    if (consentGranted) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("consentDeclined")) {
-                    if (consentDeclined) ((PDCheckbox) field).check();
+                    if (consentDeclined) ((PDCheckBox) field).check();
                 }
                 if (field.getFullyQualifiedName().equals("patientSignature_af_image")) {
                     try {
