@@ -21,10 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -404,14 +401,23 @@ public class HapiFhirServer {
         return bundle;
     }
 
-    public Bundle getMedicationRequests(final String patientId) {
+    public List<IBaseResource> getMedicationRequests(final String patientId) {
+        List<IBaseResource> medList = new ArrayList<>();
         Bundle bundle = hapiClient
                 .search()
                 .forResource(MedicationRequest.class)
                 .where(new ReferenceClientParam("patient").hasId(patientId))
                 .returnBundle(Bundle.class)
                 .execute();
-        return bundle;
+        medList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while (bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            medList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return medList;
     }
 
     public Bundle getServiceRequests(final String patientId) {
