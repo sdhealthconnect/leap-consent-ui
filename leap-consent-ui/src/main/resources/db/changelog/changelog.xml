@@ -223,4 +223,22 @@
             </update>
         </rollback>
     </changeSet>
+    <changeSet id="00000000000005" author="sgroh" logicalFilePath="changelog.xml" labels="consentUserAvatar">
+        <addColumn tableName="consentuser">
+            <column name="language_preference" defaultValue="English" type="varchar(150)"></column>
+        </addColumn>
+        <update tableName="consentuser">
+            <column name="language_preference" value="Spanish"/>
+            <where>fhir_patient_id=7950</where>
+        </update>
+        <update tableName="consentuser">
+            <column name="language_preference" value=""/>
+            <where>fhir_patient_id=2035</where>
+        </update>
+        <rollback>
+            <dropColumn tableName="consentuser">
+                <column name="language_preference"/>
+            </dropColumn>
+        </rollback>
+    </changeSet>
 </databaseChangeLog>

@@ -5,12 +5,15 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
-import gov.hhs.onc.leap.ui.MainLayout;
+import gov.hhs.onc.leap.ui.util.UIUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.*;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -69,9 +72,14 @@ public class PDFPatientPrivacyHandler {
 
     public StreamResource retrievePatientPrivacyForm() {
         ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
-
-
-        String fullFormPath = "/patient-privacy/patient-privacy-demo.pdf";
+        String patientState = consentSession.getPrimaryState();
+        String languagePreference = consentSession.getLanguagePreference();
+        languagePreference = UIUtils.getLanguage(languagePreference);
+        String fullFormPath = "/patient-privacy/"+languagePreference+"/patient-privacy-demo.pdf";
+        if (getClass().getResource(fullFormPath) == null) {
+            //Using English as default if the resource do not exists
+            fullFormPath = "/patient-privacy/English/patient-privacy-demo.pdf";
+        }
         byte[] bArray = null;
         PDDocument pdfdocument = null;
         StreamResource stream = null;

@@ -45,6 +45,9 @@ public class ConsentUser {
     @NotEmpty(message = "*Please provide your ethnicity")
     private String ethnicity;                   // Fullfilled with DB
 
+    @Column(name = "language_preference")
+    private String languagePreference;         // Manual entry attribute
+
     @OneToOne(cascade = CascadeType.ALL, optional = false)
     @JoinColumn(name = "fhir_patient_id", referencedColumnName = "fhir_patient_id")
     private User user;                          // Security attribute to link with Fhir information
@@ -71,8 +74,6 @@ public class ConsentUser {
     private String mobile;                      // Fhir attribute
     @Transient
     private String emailAddress;                // Security attribute
-    @Transient
-    private String languagePreference;          // Manual entry attribute
     @Transient
     private String primaryPhysician;            // Manual entry attribute
     @Transient

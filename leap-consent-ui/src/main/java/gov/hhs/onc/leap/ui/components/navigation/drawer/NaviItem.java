@@ -77,7 +77,7 @@ public class NaviItem extends ListItem {
 	}
 
 	private void updateAriaLabel() {
-		String action = (subItemsVisible ? "Collapse " : "Expand ") + text;
+		String action = (subItemsVisible ? getTranslation("Navi-collapse") : getTranslation("Navi-expand")) + text;
 		UIUtils.setAriaLabel(action, expandCollapse);
 	}
 

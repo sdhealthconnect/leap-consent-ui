@@ -6,6 +6,7 @@ import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
+import gov.hhs.onc.leap.ui.util.UIUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -101,8 +102,12 @@ public class PDFDNRHandler {
         ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         String patientState = consentSession.getPrimaryState();
         String languagePreference = consentSession.getLanguagePreference();
-
+        languagePreference = UIUtils.getLanguage(languagePreference);
         String fullFormPath = "/advanced_directives/"+patientState+"/DNR/"+languagePreference+"/DNR.pdf";
+        if (getClass().getResource(fullFormPath) == null) {
+            //Using English as default if the resource do not exists
+            fullFormPath = "/advanced_directives/"+patientState+"/DNR/English/DNR.pdf";
+        }
         byte[] bArray = null;
         PDDocument pdfdocument = null;
         StreamResource stream = null;

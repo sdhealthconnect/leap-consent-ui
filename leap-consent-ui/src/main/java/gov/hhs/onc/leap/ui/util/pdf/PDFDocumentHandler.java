@@ -4,6 +4,7 @@ import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.session.ConsentSession;
+import gov.hhs.onc.leap.ui.util.UIUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -34,8 +35,12 @@ public class PDFDocumentHandler {
         ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         String patientState = consentSession.getPrimaryState();
         String languagePreference = consentSession.getLanguagePreference();
-
+        languagePreference = UIUtils.getLanguage(languagePreference);
         String fullFormPath = "/advanced_directives/"+patientState+"/"+formType+"/"+languagePreference+"/"+formType+".pdf";
+        if (getClass().getResource(fullFormPath) == null) {
+            //Using English as default if the resource do not exists
+            fullFormPath = "/advanced_directives/" + patientState + "/" + formType + "/English/" + formType + ".pdf";
+        }
         byte[] bArray = null;
         PDDocument pdfdocument = null;
         StreamResource stream = null;

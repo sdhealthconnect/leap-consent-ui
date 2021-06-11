@@ -11,9 +11,14 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinSession;
+import gov.hhs.onc.leap.VaadinI18NProvider;
+import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.ui.util.css.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -32,6 +37,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+
+import static java.util.Locale.ENGLISH;
 
 public class UIUtils {
 
@@ -659,6 +666,49 @@ public class UIUtils {
 	public static void setWidth(String value, Component... components) {
 		for (Component component : components) {
 			component.getElement().getStyle().set("width", value);
+		}
+	}
+
+
+	/**
+	 * Get Language preference using next policy:
+	 *
+	 * 1) Obtain the language from the session.
+	 * 2) Check if exists a Language Preference, this have precedence over other settings.
+	 * 3) If no language preference is set we use the session Language.
+	 * 4) We force English if no language available.
+	 *
+	 * @param languagePreference
+	 * @return the language extracted.
+	 */
+	public static String getLanguage(final String languagePreference) {
+		final VaadinSession session = VaadinSession.getCurrent();
+		String language = session.getLocale().getDisplayLanguage();
+		if (!Strings.isEmpty(languagePreference)) {
+			language = languagePreference;
+		}
+		return language.isEmpty()?"English":language;
+	}
+
+    public static void setLanguage(VaadinRequest request, VaadinSession session) {
+		// Override the session locale with the request locale
+		Locale defaultLocale = request.getLocale() == null ? session.getLocale(): request.getLocale();
+		// Get user language preference
+		ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
+		if (consentSession != null) {
+			String languagePreference = consentSession.getLanguagePreference();
+			if (Strings.isNotEmpty(languagePreference)) {
+				Locale locale = VaadinI18NProvider.getLocale(languagePreference);
+				if (locale != null) {
+					session.setLocale(locale);
+				} else {
+					// Forcing English since the Language preference was not found in the i18n provider
+					session.setLocale(ENGLISH);
+				}
+
+			} else {
+				session.setLocale(defaultLocale);
+			}
 		}
 	}
 

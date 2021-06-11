@@ -58,65 +58,63 @@ public class UserPreferencesView extends ViewFrame {
     public UserPreferencesView() {
         setId("userpreferencesview");
         FormLayout layoutWithFormItems = new FormLayout();
-        firstName.setPlaceholder("Firstname");
-        middleName.setPlaceholder("Middlename");
-        lastName.setPlaceholder("Lastname");
-        maritalStatus.setPlaceholder("Marital Status");
-        eyeColor.setPlaceholder("Eye color");
-        hairColor.setPlaceholder("Hair color");
-        weight.setPlaceholder("Weight");
-        gender.setPlaceholder("Gender");
-        state.setPlaceholder("State");
-        ethnicity.setPlaceholder("Ethnicity");
+        firstName.setPlaceholder(getTranslation("UserPreferences-firstname_placeholder"));
+        middleName.setPlaceholder(getTranslation("UserPreferences-middlename_placeholder"));
+        lastName.setPlaceholder(getTranslation("UserPreferences-lastName_placeholder"));
+        maritalStatus.setPlaceholder(getTranslation("UserPreferences-maritalstatus_.placeholder"));
+        eyeColor.setPlaceholder(getTranslation("UserPreferences-eyecolor_placeholder"));
+        hairColor.setPlaceholder(getTranslation("UserPreferences-haircolor_placeholder"));
+        weight.setPlaceholder(getTranslation("UserPreferences-weight_placeholder"));
+        gender.setPlaceholder(getTranslation("UserPreferences-gender_placeholder"));
+        state.setPlaceholder(getTranslation("UserPreferences-state_placeholder"));
+        ethnicity.setPlaceholder(getTranslation("UserPreferences-ethnicity_placeholder"));
 
         //DatePicker birthDate = new DatePicker();
         populateUSerFromSession();
 
-        layoutWithFormItems.addFormItem(firstName, "First Name");
-        layoutWithFormItems.addFormItem(middleName, "Middle Name");
+        layoutWithFormItems.addFormItem(firstName, getTranslation("UserPreferences-firstName"));
+        layoutWithFormItems.addFormItem(middleName, getTranslation("UserPreferences-middleName"));
 
-        layoutWithFormItems.addFormItem(lastName, "Last Name");
-        layoutWithFormItems.addFormItem(maritalStatus, "Marital Status");
+        layoutWithFormItems.addFormItem(lastName, getTranslation("UserPreferences-lastName"));
+        layoutWithFormItems.addFormItem(maritalStatus, getTranslation("UserPreferences-maritalStatus"));
 
-        layoutWithFormItems.addFormItem(eyeColor, "Eye Color");
-        layoutWithFormItems.addFormItem(hairColor, "Hair Color");
-
-
-        layoutWithFormItems.addFormItem(weight, "Weight");
-        layoutWithFormItems.addFormItem(gender, "Gender");
-
-        layoutWithFormItems.addFormItem(state, "State");
-        layoutWithFormItems.addFormItem(ethnicity, "Ethnicity");
-
-        layoutWithFormItems.addFormItem(username, "Username");
-        layoutWithFormItems.addFormItem(prefix, "Prefix");
+        layoutWithFormItems.addFormItem(eyeColor, getTranslation("UserPreferences-eyeColor"));
+        layoutWithFormItems.addFormItem(hairColor, getTranslation("UserPreferences-hairColor"));
 
 
-        layoutWithFormItems.addFormItem(dateOfBirth, "Birthdate");
-        layoutWithFormItems.addFormItem(height, "Height");
+        layoutWithFormItems.addFormItem(weight, getTranslation("UserPreferences-weight"));
+        layoutWithFormItems.addFormItem(gender, getTranslation("UserPreferences-gender"));
 
-        layoutWithFormItems.addFormItem(streetAddress1, "Street Address 1");
-        layoutWithFormItems.addFormItem(streetAddress2, "Street Address 2");
+        layoutWithFormItems.addFormItem(state, getTranslation("UserPreferences-state"));
+        layoutWithFormItems.addFormItem(ethnicity, getTranslation("UserPreferences-ethnicity"));
 
-        layoutWithFormItems.addFormItem(city, "City");
-        layoutWithFormItems.addFormItem(zipCode, "ZIP Code");
-
-        layoutWithFormItems.addFormItem(phone, "Phone");
-        layoutWithFormItems.addFormItem(mobile, "Mobile");
-
-        layoutWithFormItems.addFormItem(emailAddress, "Email Address");
-        layoutWithFormItems.addFormItem(languagePreference, "Language Preference");
-
-        layoutWithFormItems.addFormItem(primaryPhysician, "Primary Physician");
-        layoutWithFormItems.addFormItem(primaryPhysicianPhoneNumber, "Primary Physician Phone Number");
-
-        layoutWithFormItems.addFormItem(emergencyContact, "Emergency Contact");
-        layoutWithFormItems.addFormItem(emergencyContactPhone, "Emergency Contact Phone");
-
-        layoutWithFormItems.addFormItem(relationship, "Relationship");
-        layoutWithFormItems.addFormItem(image, "Avatar Image");
+        layoutWithFormItems.addFormItem(username, getTranslation("UserPreferences-username"));
+        layoutWithFormItems.addFormItem(prefix, getTranslation("UserPreferences-prefix"));
 
 
+        layoutWithFormItems.addFormItem(dateOfBirth, getTranslation("UserPreferences-date_of_birth"));
+        layoutWithFormItems.addFormItem(height, getTranslation("UserPreferences-height"));
+
+        layoutWithFormItems.addFormItem(streetAddress1, getTranslation("UserPreferences-street_address1"));
+        layoutWithFormItems.addFormItem(streetAddress2, getTranslation("UserPreferences-street_address2"));
+
+        layoutWithFormItems.addFormItem(city, getTranslation("UserPreferences-city"));
+        layoutWithFormItems.addFormItem(zipCode, getTranslation("UserPreferences-zipCode"));
+
+        layoutWithFormItems.addFormItem(phone, getTranslation("UserPreferences-phone"));
+        layoutWithFormItems.addFormItem(mobile, getTranslation("UserPreferences-mobile"));
+
+        layoutWithFormItems.addFormItem(emailAddress, getTranslation("UserPreferences-emailAddress"));
+        layoutWithFormItems.addFormItem(languagePreference, getTranslation("UserPreferences-language_preference"));
+
+        layoutWithFormItems.addFormItem(primaryPhysician, getTranslation("UserPreferences-primary_physician"));
+        layoutWithFormItems.addFormItem(primaryPhysicianPhoneNumber, getTranslation("UserPreferences-primary_physician_phone_number"));
+
+        layoutWithFormItems.addFormItem(emergencyContact, getTranslation("UserPreferences-emergency_contact"));
+        layoutWithFormItems.addFormItem(emergencyContactPhone, getTranslation("UserPreferences-emergency_contact_phone"));
+
+        layoutWithFormItems.addFormItem(relationship, getTranslation("UserPreferences-relationship"));
+        layoutWithFormItems.addFormItem(image, getTranslation("UserPreferences-image"));
         setViewContent(layoutWithFormItems);
     }
 
@@ -229,7 +227,7 @@ public class UserPreferencesView extends ViewFrame {
     }
 
     public void onAttach(AttachEvent attachEvent) {
-        MainLayout.get().getAppBar().setTitle("User Preferences");
+        MainLayout.get().getAppBar().setTitle(getTranslation("UserPreferences"));
     }
 
 }

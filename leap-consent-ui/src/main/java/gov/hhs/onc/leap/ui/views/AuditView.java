@@ -1,7 +1,6 @@
 package gov.hhs.onc.leap.ui.views;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.IParser;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
@@ -21,7 +20,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.backend.AuditEventService;
-import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.ConsentLog;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -73,7 +71,7 @@ public class AuditView extends SplitViewFrame {
 
     private Component createViewContent() {
         detailsDrawer = createDetailsDrawer();
-        logLayout = new FlexBoxLayout(createHeader(VaadinIcon.FILE, "Activity Logs"),createGrid());
+        logLayout = new FlexBoxLayout(createHeader(VaadinIcon.FILE, getTranslation("AuditView-activity_logs")),createGrid());
         logLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         logLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         logLayout.setHeightFull();
@@ -85,7 +83,7 @@ public class AuditView extends SplitViewFrame {
         logLayout.getStyle().set("margin-left", "10px");
         logLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
 
-        chartLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, "Activity Logs"),createChart());
+        chartLayout = new FlexBoxLayout(createHeader(VaadinIcon.CHART, getTranslation("AuditView-activity_logs")),createChart());
         chartLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         chartLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         chartLayout.setHeightFull();
@@ -127,7 +125,7 @@ public class AuditView extends SplitViewFrame {
         grid.setHeightFull();
 
         grid.addColumn(new ComponentRenderer<>(this::createDecision))
-                .setHeader("Access Decision")
+                .setHeader(getTranslation("AuditView-access_decision"))
                 .setWidth("100px");
 
         grid.addColumn(TemplateRenderer.<ConsentLog>of("[[item.decisionDate]]")
@@ -135,15 +133,15 @@ public class AuditView extends SplitViewFrame {
                 .setAutoWidth(true)
                 .setComparator(ConsentLog::getDecisionDate)
                 .setFlexGrow(0)
-                .setHeader("Decision Date");
+                .setHeader(getTranslation("AuditView-decision_date"));
         grid.addColumn(new ComponentRenderer<>(this::createAction))
-                .setHeader("Action")
+                .setHeader(getTranslation("AuditView-action"))
                 .setWidth("150px");
         grid.addColumn(new ComponentRenderer<>(this::createPurpose))
-                .setHeader("Purpose")
+                .setHeader(getTranslation("AuditView-purpose"))
                 .setWidth("150px");
         grid.addColumn(new ComponentRenderer<>(this::createRecipient))
-                .setHeader("Recipient")
+                .setHeader(getTranslation("AuditView-recipient"))
                 .setWidth("150px");
 
         return grid;
@@ -189,7 +187,7 @@ public class AuditView extends SplitViewFrame {
         auditDetail.setReadOnly(true);
 
         detailsDrawer.setContent(auditDetail);
-        DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("FHIR AuditEvent");
+        DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader(getTranslation("AuditView-fhir_audit_event"));
         detailsDrawerHeader.addCloseListener(buttonClickEvent -> detailsDrawer.hide());
         detailsDrawer.setHeader(detailsDrawerHeader);
 
@@ -213,13 +211,16 @@ public class AuditView extends SplitViewFrame {
     private Component createChart() {
         Chart chart = new Chart(ChartType.SCATTER);
         Configuration configuration = chart.getConfiguration();
-        configuration.setTitle("Record Access History - Visualization");
+        configuration.setTitle(getTranslation("AuditView-record_access_history_visialization"));
 
         XAxis xAxis = configuration.getxAxis();
-        xAxis.setTitle("Date");
+        xAxis.setTitle(getTranslation("AuditView-date"));
         xAxis.setStartOnTick(true);
         xAxis.setEndOnTick(true);
         xAxis.setShowLastLabel(true);
+
+        Axis yAxis = configuration.getyAxis();
+        yAxis.setTitle(getTranslation("AuditView-values"));
 
         Legend legend = configuration.getLegend();
         legend.setLayout(LayoutDirection.VERTICAL);
@@ -234,21 +235,21 @@ public class AuditView extends SplitViewFrame {
         scatterTooltip.setHeaderFormat("<b>{series.name}</b><br>\",\"pointFormat\":\"{point.x} cm, {point.y} kg");
 
         DataSeries permitSeries = new DataSeries();
-        permitSeries.setName("Permit");
+        permitSeries.setName(getTranslation("AuditView-permit"));
 
         PlotOptionsScatter permitPlotOptions = new PlotOptionsScatter();
         permitPlotOptions.setClassName("permitSeries");
         permitSeries.setPlotOptions(permitPlotOptions);
 
         DataSeries denySeries = new DataSeries();
-        denySeries.setName("Deny");
+        denySeries.setName(getTranslation("AuditView-deny"));
 
         PlotOptionsScatter denyPlotOptions = new PlotOptionsScatter();
         denyPlotOptions.setClassName("denySeries");
         denySeries.setPlotOptions(denyPlotOptions);
 
         DataSeries noConsentSeries = new DataSeries();
-        noConsentSeries.setName("No Consent");
+        noConsentSeries.setName(getTranslation("AuditView-no_consent"));
 
         PlotOptionsScatter noConsentPlotOptions = new PlotOptionsScatter();
         denyPlotOptions.setClassName("noConsentSeries");
@@ -265,12 +266,12 @@ public class AuditView extends SplitViewFrame {
     }
 
     private Component getFooter() {
-        logButton = new Button("Logs", new Icon(VaadinIcon.FILE));
+        logButton = new Button(getTranslation("AuditView-logs"), new Icon(VaadinIcon.FILE));
         logButton.addClickListener(event -> {
             logLayout.setVisible(true);
             chartLayout.setVisible(false);
         });
-        chartButton = new Button("Chart", new Icon(VaadinIcon.CHART));
+        chartButton = new Button(getTranslation("AuditView-chart"), new Icon(VaadinIcon.CHART));
         chartButton.addClickListener(event -> {
             logLayout.setVisible(false);
             chartLayout.setVisible(true);

@@ -109,7 +109,7 @@ public class AppBar extends Header {
 
 	private void initSearch() {
 		search = new TextField();
-		search.setPlaceholder("Search");
+		search.setPlaceholder(getTranslation("appBar-search"));
 		search.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
 		search.setVisible(false);
 	}
@@ -129,11 +129,11 @@ public class AppBar extends Header {
 		avatar.setClassName(CLASS_NAME + "__avatar");
 		ContextMenu contextMenu = new ContextMenu(avatar);
 		contextMenu.setOpenOnClick(true);
-		contextMenu.addItem("Settings", event -> {
+		contextMenu.addItem(getTranslation("appBar-settings"), event -> {
 					 UI.getCurrent().navigate("userpreferencesview");
 				}
 		);
-		contextMenu.addItem("Log Out",
+		contextMenu.addItem(getTranslation("appBar-log_out"),
 				e -> {
 					SecurityContextHolder.clearContext();
 					UI.getCurrent().getSession().close();
@@ -245,8 +245,9 @@ public class AppBar extends Header {
 		updateTabsVisibility();
 	}
 
-	public Tab addTab(String text) {
-		Tab tab = tabs.addTab(text);
+	public Tab addTab(String text, String translation) {
+		Tab tab = tabs.addTab(translation);
+		tab.setId(text);
 		configureTab(tab);
 		return tab;
 	}
