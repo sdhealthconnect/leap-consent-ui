@@ -21,6 +21,7 @@ import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.adr.model.*;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRProvenance;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
@@ -40,6 +41,8 @@ import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPOAHealthcareHandler;
 import org.hl7.fhir.r4.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.alejandro.PdfBrowserViewer;
@@ -53,6 +56,7 @@ import java.util.*;
 @PageTitle("Health Care Power Of Attorney")
 @Route(value = "healthcarepowerofattorney", layout = MainLayout.class)
 public class HealthcarePowerOfAttorney extends ViewFrame {
+    private static final Logger log = LoggerFactory.getLogger(HealthcarePowerOfAttorney.class);
 
     private ConsentSession consentSession;
     private ConsentUser consentUser;
@@ -163,6 +167,10 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
     private String advDirectiveFlowType = "Default";
     private Dialog errorDialog;
 
+    private String consentProvenance;
+    private String questionnaireProvenance;
+    private Date dateRecordedProvenance;
+
     @Autowired
     private PDFSigningService pdfSigningService;
 
@@ -171,6 +179,9 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
     @Autowired
     private FHIRQuestionnaireResponse fhirQuestionnaireResponse;
+
+    @Autowired
+    private FHIRProvenance fhirProvenanceClient;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -1263,6 +1274,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
                 consentState = Consent.ConsentState.PROPOSED;
                 createQuestionnaireResponse();
                 createFHIRConsent();
+                createFHIRProvenance();
                 successNotification();
                 //todo test for fhir consent create success
                 resetFormAndNavigation();
@@ -1486,7 +1498,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         poaDirective.setOrganization(refList);
         Attachment attachment = new Attachment();
         attachment.setContentType("application/pdf");
-        attachment.setCreation(new Date());
+        dateRecordedProvenance = new Date();
+        attachment.setCreation(dateRecordedProvenance);
         attachment.setTitle("POAHealthcare");
 
 
@@ -1521,7 +1534,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         Extension extension = createHealthcarePowerOfAttorneyQuestionnaireResponse();
         poaDirective.getExtension().add(extension);
 
-        fhirConsentClient.createConsent(poaDirective);
+        Consent completedConsent = fhirConsentClient.createConsent(poaDirective);
+        consentProvenance = "Consent/"+completedConsent.getIdElement().getIdPart();
     }
 
     private Extension createHealthcarePowerOfAttorneyQuestionnaireResponse() {
@@ -1529,6 +1543,15 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         extension.setUrl("http://sdhealthconnect.com/leap/adr/poahealthcare");
         extension.setValue(new StringType(consentSession.getFhirbase()+"QuestionnaireResponse/leap-poahealthcare-"+consentSession.getFhirPatientId()));
         return extension;
+    }
+
+    private void createFHIRProvenance() {
+        try {
+            fhirProvenanceClient.createProvenance(consentProvenance, dateRecordedProvenance, questionnaireProvenance);
+        }
+        catch (Exception ex) {
+            log.warn("Error creating provenance resource. "+ex.getMessage());
+        }
     }
 
     private void resetFormAndNavigation() {
@@ -1597,7 +1620,7 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         signatureRequirementsResponse();
 
         questionnaireResponse.setItem(responseList);
-        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+        QuestionnaireResponse completedQuestionnaireResponse = fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
     }
 
     private void powerOfAttorneyResponse() {
