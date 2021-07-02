@@ -26,6 +26,7 @@ import de.f0rce.signaturepad.SignaturePad;
 import elemental.json.Json;
 import gov.hhs.onc.leap.adr.model.QuestionnaireError;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRProvenance;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
@@ -126,12 +127,18 @@ public class DoNotResuscitate extends ViewFrame {
     private String advDirectiveFlowType = "Default";
     private Dialog errorDialog;
 
+    private String consentProvenance;
+    private String questionnaireProvenance;
+    private Date dateRecordedProvenance;
+
     @Autowired
     private FHIRConsent fhirConsentClient;
     @Autowired
     private PDFSigningService pdfSigningService;
     @Autowired
     private FHIRQuestionnaireResponse fhirQuestionnaireResponse;
+    @Autowired
+    private FHIRProvenance fhirProvenanceClient;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -623,6 +630,7 @@ public class DoNotResuscitate extends ViewFrame {
             else {
                 createQuestionnaireResponse();
                 createFHIRConsent();
+                createFHIRProvenance();
                 successNotification();
                 //todo test for fhir consent create success
                 resetFormAndNavigation();
@@ -728,7 +736,8 @@ public class DoNotResuscitate extends ViewFrame {
         dnrDirective.setOrganization(refList);
         Attachment attachment = new Attachment();
         attachment.setContentType("application/pdf");
-        attachment.setCreation(new Date());
+        dateRecordedProvenance = new Date();
+        attachment.setCreation(dateRecordedProvenance);
         attachment.setTitle("DNR");
 
 
@@ -764,7 +773,8 @@ public class DoNotResuscitate extends ViewFrame {
         dnrDirective.getExtension().add(extension);
 
 
-        fhirConsentClient.createConsent(dnrDirective);
+        Consent completedConsent = fhirConsentClient.createConsent(dnrDirective);
+        consentProvenance = "Consent/"+completedConsent.getIdElement().getIdPart();
     }
 
     private Extension createDoNotResuscitateQuestionnaireResponse() {
@@ -808,7 +818,17 @@ public class DoNotResuscitate extends ViewFrame {
         witnessSignatureResponse();
 
         questionnaireResponse.setItem(responseList);
-        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+        QuestionnaireResponse completedQuestionnaireResponse = fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+        questionnaireProvenance = "QuestionnaireResponse/"+completedQuestionnaireResponse.getIdElement().getIdPart();
+    }
+
+    private void createFHIRProvenance() {
+        try {
+            fhirProvenanceClient.createProvenance(consentProvenance, dateRecordedProvenance, questionnaireProvenance);
+        }
+        catch (Exception ex) {
+            log.warn("Error creating provenance resource. "+ex.getMessage());
+        }
     }
 
     private void doNotResuscitateResponse() {
