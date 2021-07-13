@@ -28,9 +28,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.adr.model.QuestionnaireError;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIROrganization;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRPractitioner;
+import gov.hhs.onc.leap.backend.fhir.client.utils.*;
+import gov.hhs.onc.leap.privacy.model.PatientPrivacy;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -48,6 +47,8 @@ import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPatientPrivacyHandler;
 import org.apache.commons.io.IOUtils;
 import org.hl7.fhir.r4.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
@@ -63,6 +64,8 @@ import java.util.*;
 @PageTitle("Share My Data")
 @Route(value = "sharepatientdataview", layout = MainLayout.class)
 public class SharePatientDataView extends ViewFrame {
+
+    private static final Logger log = LoggerFactory.getLogger(SharePatientDataView.class);
     private RadioButtonGroup<String> consentDefaultPeriod;
 
     private DateTimePicker startDateTime;
@@ -101,19 +104,44 @@ public class SharePatientDataView extends ViewFrame {
     private byte[] consentPDFAsByteArray;
     private List<QuestionnaireError> errorList;
 
+    private Consent consentCompleted;
+    private ConsentSession consentSession;
+    private String consentProvenance;
+    private String questionnaireProvenance;
+    private Date dateRecordedProvenance;
+
+    private QuestionnaireResponse questionnaireResponse;
+
+    private List<QuestionnaireResponse.QuestionnaireResponseItemComponent> responseList;
+
+    private String fhirBase;
+
+    private PatientPrivacy privacy;
+
     @Autowired
     private FHIROrganization fhirOrganization;
+
     @Autowired
     private FHIRPractitioner fhirPractitioner;
+
     @Autowired
     private FHIRConsent fhirConsentClient;
+
     @Autowired
     private PDFSigningService pdfSigningService;
-    private String fhirBase;
+
+    @Autowired
+    private FHIRQuestionnaireResponse fhirQuestionnaireResponse;
+
+    @Autowired
+    private FHIRProvenance fhirProvenanceClient;
+
 
     @PostConstruct
     public void setup() {
         setId("sharepatientdataView");
+        this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
+        this.responseList = new ArrayList<>();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
         errorList = new ArrayList<>();
@@ -638,6 +666,7 @@ public class SharePatientDataView extends ViewFrame {
     private StreamResource setFieldsCreatePDF() {
 
             //get consent period
+            privacy = new PatientPrivacy();  //capture for questionnaire response
             String sDate = "";
             String eDate = "";
             LocalDateTime defDate = LocalDateTime.now();
@@ -647,14 +676,19 @@ public class SharePatientDataView extends ViewFrame {
             String sensitivities = getTranslation("sharePatient-remove_following_sensitivity_types_if_found_in_my_record");
             try {
                 if (timeSettings.getValue().equals(getTranslation("sharePatient-use_default_option"))) {
+                    privacy.setUseDefaultOptions(true);
                     if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-24_hours"))) {
                         defDate = LocalDateTime.now().plusDays(1);
+                        privacy.setOneDay(true);
                     } else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-1_year"))) {
                         defDate = LocalDateTime.now().plusYears(1);
+                        privacy.setOneYear(true);
                     } else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-5_years"))) {
                         defDate = LocalDateTime.now().plusYears(5);
+                        privacy.setFiveYears(true);
                     } else if (consentDefaultPeriod.getValue().equals(getTranslation("sharePatient-10_years"))) {
                         defDate = LocalDateTime.now().plusYears(10);
+                        privacy.setTenYears(true);
                     } else {
                         errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_default_date_selected"), 0));
                         defDate = null;
@@ -664,7 +698,10 @@ public class SharePatientDataView extends ViewFrame {
                     //for use later
                     provisionStartDateTime = LocalDateTime.now();
                     provisionEndDateTime = defDate;
+                    privacy.setDefaultOptionStartDate(provisionStartDateTime);
+                    privacy.setDefaultOptionEndDate(provisionEndDateTime);
                 } else if (timeSettings.getValue().equals(getTranslation("sharePatient-custom_date_option"))) {
+                    privacy.setUseCustomDateOption(true);
                     sDate = startDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
                     eDate = endDateTime.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
                     //for use later
@@ -679,6 +716,8 @@ public class SharePatientDataView extends ViewFrame {
                     if (provisionEndDateTime.isBefore(defDate)) {
                         errorList.add(new QuestionnaireError(getTranslation("sharePatient-custom_date_can_not_be_before_today"), 0));
                     }
+                    privacy.setCustomEndDate(provisionEndDateTime);
+                    privacy.setCustomStartDate(provisionStartDateTime);
                 } else {
                     errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_date_range_seleccion_made"), 0));
                 }
@@ -689,7 +728,9 @@ public class SharePatientDataView extends ViewFrame {
             //get domain constraints
             try {
                 if (constrainDataClass.getValue().equals(getTranslation("sharePatient-deny_access_to_following"))) {
+                    privacy.setLimitDataClasses(true);
                     Set<String> classList = dataClassComboBox.getSelectedItems();
+                    privacy.setDataClassList(classList);
                     Iterator iterClass = classList.iterator();
                     while (iterClass.hasNext()) {
                         String s = (String) iterClass.next();
@@ -700,6 +741,7 @@ public class SharePatientDataView extends ViewFrame {
                     }
                 } else {
                     //this is the default when none selected
+                    privacy.setNoDataClassConstraints(true);
                     dataDomainConstraintlist = getTranslation("sharePatient-allow_all_types_of_data_to_be_exchanged");
                 }
             }
@@ -710,8 +752,12 @@ public class SharePatientDataView extends ViewFrame {
             try {
                 if (custodianType.getValue().equals(getTranslation("sharePatient-practitioner"))) {
                     custodian = practitionerComboBoxSource.getValue().getName().get(0).getNameAsSingleString();
+                    privacy.setPractitionerDataSource(true);
+                    privacy.setPractitionerName(custodian);
                 } else if (custodianType.getValue().equals(getTranslation("sharePatient-organization"))) {
                     custodian = organizationComboBoxSource.getValue().getName();
+                    privacy.setOrganizationDataSource(true);
+                    privacy.setOrganizationName(custodian);
                 } else {
                     errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_custodian_selection_made"), 2));
                 }
@@ -744,13 +790,16 @@ public class SharePatientDataView extends ViewFrame {
             try {
 
                 if (sensConstraints.getValue().equals(getTranslation("sharePatient-remove_them"))) {
+                    privacy.setRemoveThem(true);
                     Set<String> sensSet = sensitivityOptions.getSelectedItems();
+                    privacy.setRemoveAllLabeledConfidential(true);
                     Iterator sensIter = sensSet.iterator();
                     while (sensIter.hasNext()) {
                         String s = (String) sensIter.next();
                         sensitivities = sensitivities + s + " ";
                     }
                 } else if (sensConstraints.getValue().equals(getTranslation("sharePatient-i_do_not_have_privacy_concerns"))) {
+                    privacy.setNoPrivacyConcerns(true);
                     sensitivities = getTranslation("sharePatient-i_do_not_have_privacy_concerns");
                 } else {
                     //default if none selected
@@ -770,6 +819,9 @@ public class SharePatientDataView extends ViewFrame {
             }
             if (errorList.size() > 0) {
                 return null;
+            }
+            if (base64Signature.length > 0) {
+                privacy.setAcceptedAndSignaturedCaptured(true);
             }
             PDFPatientPrivacyHandler pdfHandler = new PDFPatientPrivacyHandler(pdfSigningService);
             StreamResource res = pdfHandler.retrievePDFForm(sDate, eDate, dataDomainConstraintlist, custodian,
@@ -799,7 +851,9 @@ public class SharePatientDataView extends ViewFrame {
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
         acceptButton.addClickListener(event -> {
             docDialog.close();
+            createQuestionnaireResponse();
             createFHIRConsent();
+            createFHIRProvenance();
             successNotification();
             //todo test for fhir consent create success
             resetQuestionNavigation();
@@ -823,12 +877,12 @@ public class SharePatientDataView extends ViewFrame {
     }
 
     private void createFHIRConsent() {
-        ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         fhirBase = consentSession.getFhirbase();
         Patient patient = consentSession.getFhirPatient();
 
         Consent patientPrivacyConsent = new Consent();
         patientPrivacyConsent.setId(UUID.randomUUID().toString());
+        consentProvenance="Consent/"+patientPrivacyConsent.getId();
         patientPrivacyConsent.setStatus(Consent.ConsentState.ACTIVE);
 
         patientPrivacyConsent.setDateTime(new Date());
@@ -1026,7 +1080,8 @@ public class SharePatientDataView extends ViewFrame {
         //create attachment
         Attachment attachment = new Attachment();
         attachment.setContentType("application/pdf");
-        attachment.setCreation(new Date());
+        dateRecordedProvenance = new Date();
+        attachment.setCreation(dateRecordedProvenance);
         attachment.setTitle(getTranslation("sharePatient-patient_privacy"));
 
         ByteArrayInputStream bais = null;
@@ -1044,7 +1099,158 @@ public class SharePatientDataView extends ViewFrame {
 
         patientPrivacyConsent.setSource(attachment);
 
-        fhirConsentClient.createConsent(patientPrivacyConsent);
+
+        Extension extension = createPatientPrivacyQuestionnaireResponseExtension();
+        patientPrivacyConsent.getExtension().add(extension);
+
+        consentCompleted = fhirConsentClient.createConsent(patientPrivacyConsent);
+    }
+
+    private void createQuestionnaireResponse() {
+        questionnaireResponse = new QuestionnaireResponse();
+        questionnaireResponse.setId(consentSession.getFhirPatient().getIdElement().getIdPart() + "-" + UUID.randomUUID().toString());
+        Reference refpatient = new Reference();
+        refpatient.setReference("Patient/"+consentSession.getFhirPatient().getIdElement().getIdPart());
+        questionnaireResponse.setAuthor(refpatient);
+        questionnaireResponse.setAuthored(new Date());
+        questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
+        questionnaireResponse.setSubject(refpatient);
+        questionnaireResponse.setQuestionnaire("Questionnaire/leap-patient-privacy");
+
+        enforcementDatesResponse();
+        dataClassRestrictionsResponse();
+        dataCustodianResponse();
+        dataRecipientResponse();
+        dataSensitivityRestrictionsResponse();
+        acceptAndSignResponse();
+
+        questionnaireResponse.setItem(responseList);
+        QuestionnaireResponse completedQuestionnaireResponse = fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+        questionnaireProvenance = "QuestionnaireResponse/"+questionnaireResponse.getId();
+    }
+
+    private void enforcementDatesResponse() {
+        String defaultSDate = "";
+        String defaultEDate = "";
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_1 = createItemBooleanType("1.1", getTranslation("PatientPrivacy-questionnaire_response_item_1_1"), privacy.isUseDefaultOptions());
+        responseList.add(item1_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_2 = createItemBooleanType("1.2", getTranslation("PatientPrivacy-questionnaire_response_item_1_2"), privacy.isUseCustomDateOption());
+        responseList.add(item1_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_1 = createItemBooleanType("1.3.1", getTranslation("PatientPrivacy-questionnaire_response_item_1_3_1"), privacy.isOneDay());
+        responseList.add(item1_3_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_2 = createItemBooleanType("1.3.2", getTranslation("PatientPrivacy-questionnaire_response_item_1_3_2"), privacy.isOneYear());
+        responseList.add(item1_3_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_3 = createItemBooleanType("1.3.3", getTranslation("PatientPrivacy-questionnaire_response_item_1_3_3"), privacy.isFiveYears());
+        responseList.add(item1_3_3);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_4 = createItemBooleanType("1.3.4", getTranslation("PatientPrivacy-questionnaire_response_item_1_3_4"), privacy.isTenYears());
+        responseList.add(item1_3_4);
+        if (privacy.isUseDefaultOptions()) {
+            defaultSDate = privacy.getDefaultOptionStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+            defaultEDate = privacy.getDefaultOptionEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        }
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_5 = createItemStringType("1.3.5", getTranslation("PatientPrivacy-questionnaire_response_item_1_3_5"), defaultSDate);
+        responseList.add(item1_3_5);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_3_6 = createItemStringType("1.3.6", getTranslation("PatientPrivacy-questionnaire_response_item_1_3_6"), defaultEDate);
+        responseList.add(item1_3_6);
+        String customSDate = "";
+        String customEDate = "";
+        if (privacy.isUseCustomDateOption()) {
+            customSDate = privacy.getCustomStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+            customEDate = privacy.getCustomEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        }
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_4_1 = createItemStringType("1.4.1", getTranslation("PatientPrivacy-questionnaire_response_item_1_4_1"), customSDate);
+        responseList.add(item1_4_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item1_4_2 = createItemStringType("1.4.2", getTranslation("PatientPrivacy-questionnaire_response_item_1_4_2"), customEDate);
+        responseList.add(item1_4_2);
+    }
+
+    private void dataClassRestrictionsResponse() {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1 = createItemBooleanType("2.1", getTranslation("PatientPrivacy-questionnaire_response_item_2_1"), privacy.isLimitDataClasses());
+        responseList.add(item2_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_1_1 = createItemStringArrayType("2.1.1", getTranslation("PatientPrivacy-questionnaire_response_item_2_1_1"), privacy.getDataClassList());
+        responseList.add(item2_1_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item2_2 = createItemBooleanType("2.2", getTranslation("PatientPrivacy-questionnaire_response_item_2_2"), privacy.isNoDataClassConstraints());
+        responseList.add(item2_2);
+    }
+
+    private void dataCustodianResponse() {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1 = createItemBooleanType("3.1", getTranslation("PatientPrivacy-questionnaire_response_item_3_1"), privacy.isPractitionerDataSource());
+        responseList.add(item3_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_1_1 = createItemStringType("3.1.1", getTranslation("PatientPrivacy-questionnaire_response_item_3_1_1"), privacy.getPractitionerName());
+        responseList.add(item3_1_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2 = createItemBooleanType("3.2", getTranslation("PatientPrivacy-questionnaire_response_item_3_2"), privacy.isOrganizationDataSource());
+        responseList.add(item3_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item3_2_1 = createItemStringType("3.2.1", getTranslation("PatientPrivacy-questionnaire_response_item_3_2_1"), privacy.getOrganizationName());
+        responseList.add(item3_2_1);
+    }
+
+    private void dataRecipientResponse() {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1 = createItemBooleanType("4.1", getTranslation("PatientPrivacy-questionnaire_response_item_4_1"), privacy.isPractitionerDataRecipient());
+        responseList.add(item4_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_1_1 = createItemStringType("4.1.1", getTranslation("PatientPrivacy-questionnaire_response_item_4_1_1"), privacy.getPractitionerRecipientName());
+        responseList.add(item4_1_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2 = createItemBooleanType("4.2", getTranslation("PatientPrivacy-questionnaire_response_item_4_2"), privacy.isOrganizationDataRecipient());
+        responseList.add(item4_2);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item4_2_1 = createItemStringType("4.2.1", getTranslation("PatientPrivacy-questionnaire_response_item_4_2_1"), privacy.getOrganizationRecipientName());
+        responseList.add(item4_2_1);
+    }
+
+    private void dataSensitivityRestrictionsResponse() {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1 = createItemBooleanType("5.1", getTranslation("PatientPrivacy-questionnaire_response_item_5_1"), privacy.isRemoveThem());
+        responseList.add(item5_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_1_1 = createItemBooleanType("5.1.1", getTranslation("PatientPrivacy-questionnaire_response_item_5_1_1"), privacy.isRemoveAllLabeledConfidential());
+        responseList.add(item5_1_1);
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item5_2 = createItemBooleanType("5.2", getTranslation("PatientPrivacy-questionnaire_response_item_5_2"), privacy.isNoPrivacyConcerns());
+        responseList.add(item5_2);
+    }
+
+    private void acceptAndSignResponse() {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item6 = createItemBooleanType("6", getTranslation("PatientPrivacy-questionnaire_response_item_6"), privacy.isAcceptedAndSignaturedCaptured());
+        responseList.add(item6);
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemBooleanType(String linkId, String definition, boolean bool) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new BooleanType(bool)));
+        item.setDefinition(definition);
+        return item;
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemStringType(String linkId, String definition,String string) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new StringType(string)));
+        item.setDefinition(definition);
+        return item;
+    }
+
+    private QuestionnaireResponse.QuestionnaireResponseItemComponent createItemStringArrayType(String linkId, String definition, Set<String> strings) {
+        QuestionnaireResponse.QuestionnaireResponseItemComponent item = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
+        item.setLinkId(linkId);
+        Iterator iter = strings.iterator();
+        while(iter.hasNext()) {
+            String string = (String)iter.next();
+            item.getAnswer().add((new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()).setValue(new StringType(string)));
+        }
+        item.setDefinition(definition);
+        return item;
+    }
+
+    private Extension createPatientPrivacyQuestionnaireResponseExtension() {
+        Extension extension = new Extension();
+        extension.setUrl("http://sdhealthconnect.com/leap/patient-privacy");
+        extension.setValue(new StringType(consentSession.getFhirbase()+questionnaireProvenance));
+        return extension;
+    }
+
+    private void createFHIRProvenance() {
+        try {
+            fhirProvenanceClient.createProvenance(consentProvenance, dateRecordedProvenance, questionnaireProvenance);
+        }
+        catch (Exception ex) {
+            log.warn("Error creating provenance resource. "+ex.getMessage());
+        }
     }
 
     private void resetQuestionNavigation() {

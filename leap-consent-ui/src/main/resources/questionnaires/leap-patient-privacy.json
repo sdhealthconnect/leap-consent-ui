@@ -14,7 +14,7 @@
   "date": "2021",
   "code": [
     {
-      "system": "http://sdhealthconnect.com/leap/patient-privacy/leap-patient-privacy",
+      "system": "http://sdhealthconnect.com/leap/patient-privacy",
       "code": "2021-03-01",
       "display": "Patient Privacy Questionnaire Version 1"
     }
@@ -66,6 +66,16 @@
           "linkId": "1.3.4",
           "text": "10 Years",
           "type": "boolean"
+        },
+        {
+          "linkId": "1.3.5",
+          "text": "Calculated start date and time based on option selection",
+          "type": "string"
+        },
+        {
+          "linkId": "1.3.6",
+          "text": "Calculated end date and time based on option selection",
+          "type": "string"
         }
       ]
     },
@@ -83,22 +93,12 @@
       "item": [
         {
           "linkId": "1.4.1",
-          "text": "Start Date",
+          "text": "Start date and time",
           "type": "string"
         },
         {
           "linkId": "1.4.2",
-          "text": "Start Time",
-          "type": "string"
-        },
-        {
-          "linkId": "1.4.3",
-          "text": "End Date",
-          "type": "string"
-        },
-        {
-          "linkId": "1.4.4",
-          "text": "End Time",
+          "text": "End date and time",
           "type": "string"
         }
       ]
@@ -115,7 +115,7 @@
     },
     {
       "linkId": "2.2",
-      "text": "Allow all types of date to be exchange.",
+      "text": "Allow all types of data to be exchange.",
       "type": "boolean"
     },
     {
