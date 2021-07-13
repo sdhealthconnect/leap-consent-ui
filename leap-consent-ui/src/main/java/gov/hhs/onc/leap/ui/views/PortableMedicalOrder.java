@@ -1580,7 +1580,7 @@ public class PortableMedicalOrder extends ViewFrame {
         polstDirective.getExtension().add(extension);
 
         Consent completedConsent = fhirConsentClient.createConsent(polstDirective);
-        consentProvenance = "Consent/"+completedConsent.getIdElement().getIdPart();
+        consentProvenance = "Consent/"+polstDirective.getId();
     }
 
     private void createFHIRProvenance() {
@@ -1685,7 +1685,7 @@ public class PortableMedicalOrder extends ViewFrame {
 
         questionnaireResponse.setItem(responseList);
         QuestionnaireResponse completedQuestionnaireResponse = fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
-        questionnaireProvenance = "QuestionnaireResponse/"+completedQuestionnaireResponse.getIdElement().getIdPart();
+        questionnaireProvenance = "QuestionnaireResponse/"+questionnaireResponse.getId();
     }
 
     private void doNotResuscitateResponse() {

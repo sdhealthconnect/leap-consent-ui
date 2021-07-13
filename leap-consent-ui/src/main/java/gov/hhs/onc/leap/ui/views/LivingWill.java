@@ -921,7 +921,7 @@ public class LivingWill extends ViewFrame {
         poaDirective.getExtension().add(extension);
 
         Consent completedConsent = fhirConsentClient.createConsent(poaDirective);
-        consentProvenance = "Consent/"+completedConsent.getIdElement().getIdPart();
+        consentProvenance = "Consent/"+poaDirective.getId();
     }
 
     private void createFHIRProvenance() {
@@ -978,7 +978,7 @@ public class LivingWill extends ViewFrame {
 
         questionnaireResponse.setItem(responseList);
         QuestionnaireResponse completedQuestionnaireResponse = fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
-        questionnaireProvenance = "QuestionnaireResponse/"+completedQuestionnaireResponse.getIdElement().getIdPart();
+        questionnaireProvenance = "QuestionnaireResponse/"+questionnaireResponse.getId();
     }
 
     private void lifeSustainingDecisionsResponse() {

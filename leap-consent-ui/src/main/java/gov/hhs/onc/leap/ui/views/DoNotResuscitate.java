@@ -774,7 +774,7 @@ public class DoNotResuscitate extends ViewFrame {
 
 
         Consent completedConsent = fhirConsentClient.createConsent(dnrDirective);
-        consentProvenance = "Consent/"+completedConsent.getIdElement().getIdPart();
+        consentProvenance = "Consent/"+dnrDirective.getId();
     }
 
     private Extension createDoNotResuscitateQuestionnaireResponse() {
@@ -819,7 +819,7 @@ public class DoNotResuscitate extends ViewFrame {
 
         questionnaireResponse.setItem(responseList);
         QuestionnaireResponse completedQuestionnaireResponse = fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
-        questionnaireProvenance = "QuestionnaireResponse/"+completedQuestionnaireResponse.getIdElement().getIdPart();
+        questionnaireProvenance = "QuestionnaireResponse/"+questionnaireResponse.getId();
     }
 
     private void createFHIRProvenance() {

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class FHIRProvenance {
@@ -23,6 +24,7 @@ public class FHIRProvenance {
 
     public Provenance createProvenance(String consentReference, Date recorded, String questionnaireReference) {
         Provenance provenance = new Provenance();
+        provenance.setId(UUID.randomUUID().toString());
         //reference to consent resource
         Reference targetReference = new Reference();
         targetReference.setReference(consentReference);
@@ -43,7 +45,7 @@ public class FHIRProvenance {
 
         Provenance.ProvenanceAgentComponent agentComponent = new Provenance.ProvenanceAgentComponent();
         agentComponent.getType().addCoding(agentCoding);
-        agentComponent.getWho().setReference(PROVENANCE_AGENT);
+        agentComponent.getWho().setDisplay(PROVENANCE_AGENT);
 
         provenance.getAgent().add(agentComponent);
         //entity
