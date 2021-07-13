@@ -10,14 +10,14 @@ import java.util.UUID;
 
 @Service
 public class FHIRProvenance {
-    private String PROVENANCE_AGENT = "LEAP Consent Management Service";
-    private String PROVENANCE_AGENT_SYSTEM = "http://terminology.hl7.org/CodeSystem/provenance-participant-type";
-    private String PROVENANCE_AGENT_CODE = "assembler";
-    private String PROVENANCE_AGENT_DISPLAY = "Assember";
+    private final String PROVENANCE_AGENT = "LEAP Consent Management Service";
+    private final String PROVENANCE_AGENT_SYSTEM = "http://terminology.hl7.org/CodeSystem/provenance-participant-type";
+    private final String PROVENANCE_AGENT_CODE = "assembler";
+    private final String PROVENANCE_AGENT_DISPLAY = "Assember";
 
-    private String PROVENANCE_ACTIVITY_SYSTEM = "http://terminology.hl7.org/CodeSystem/v3-DataOperation";
-    private String PROVENANCE_ACTIVITY_CODE= "CREATE";
-    private String PROVENANCE_ACTIVITY_DISPLAY = "create";
+    private final String PROVENANCE_ACTIVITY_SYSTEM = "http://terminology.hl7.org/CodeSystem/v3-DataOperation";
+    private final String PROVENANCE_ACTIVITY_CODE= "CREATE";
+    private final String PROVENANCE_ACTIVITY_DISPLAY = "create";
 
     @Autowired
     private HapiFhirServer hapiFhirServer;
