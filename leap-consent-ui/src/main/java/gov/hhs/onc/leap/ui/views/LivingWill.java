@@ -21,6 +21,7 @@ import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.adr.model.*;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRProvenance;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
@@ -133,6 +134,11 @@ public class LivingWill extends ViewFrame {
     private String advDirectiveFlowType = "Default";
     private Dialog errorDialog;
 
+    private String consentProvenance;
+    private String questionnaireProvenance;
+    private Date dateRecordedProvenance;
+
+
 
     @Autowired
     private FHIRConsent fhirConsentClient;
@@ -142,6 +148,9 @@ public class LivingWill extends ViewFrame {
 
     @Autowired
     private FHIRQuestionnaireResponse fhirQuestionnaireResponse;
+
+    @Autowired
+    private FHIRProvenance fhirProvenanceClient;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -721,6 +730,7 @@ public class LivingWill extends ViewFrame {
                 consentState = Consent.ConsentState.ACTIVE;
                 createQuestionnaireResponse();
                 createFHIRConsent();
+                createFHIRProvenance();
                 successNotification();
                 //todo test for fhir consent create success
                 resetFormAndNavigation();
@@ -874,7 +884,8 @@ public class LivingWill extends ViewFrame {
         poaDirective.setOrganization(refList);
         Attachment attachment = new Attachment();
         attachment.setContentType("application/pdf");
-        attachment.setCreation(new Date());
+        dateRecordedProvenance = new Date();
+        attachment.setCreation(dateRecordedProvenance);
         attachment.setTitle("LivingWill");
 
 
@@ -909,7 +920,17 @@ public class LivingWill extends ViewFrame {
         Extension extension = createLivingWillQuestionnaireResponse();
         poaDirective.getExtension().add(extension);
 
-        fhirConsentClient.createConsent(poaDirective);
+        Consent completedConsent = fhirConsentClient.createConsent(poaDirective);
+        consentProvenance = "Consent/"+poaDirective.getId();
+    }
+
+    private void createFHIRProvenance() {
+        try {
+            fhirProvenanceClient.createProvenance(consentProvenance, dateRecordedProvenance, questionnaireProvenance);
+        }
+        catch (Exception ex) {
+            log.warn("Error creating provenance resource. "+ex.getMessage());
+        }
     }
 
     private Extension createLivingWillQuestionnaireResponse() {
@@ -956,7 +977,8 @@ public class LivingWill extends ViewFrame {
         signatureRequirementsResponse();
 
         questionnaireResponse.setItem(responseList);
-        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+        QuestionnaireResponse completedQuestionnaireResponse = fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+        questionnaireProvenance = "QuestionnaireResponse/"+questionnaireResponse.getId();
     }
 
     private void lifeSustainingDecisionsResponse() {

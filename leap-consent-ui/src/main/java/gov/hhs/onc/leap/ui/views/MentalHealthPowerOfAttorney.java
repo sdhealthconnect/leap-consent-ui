@@ -21,6 +21,7 @@ import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.adr.model.*;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRProvenance;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
@@ -40,6 +41,8 @@ import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPOAMentalHealthHandler;
 import org.hl7.fhir.r4.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.alejandro.PdfBrowserViewer;
@@ -53,6 +56,8 @@ import java.util.*;
 @PageTitle("Mental Health Care Power of Attorney")
 @Route(value = "mentalhealthpowerofattorney", layout = MainLayout.class)
 public class MentalHealthPowerOfAttorney extends ViewFrame {
+    private static final Logger log = LoggerFactory.getLogger(MentalHealthPowerOfAttorney.class);
+
     private gov.hhs.onc.leap.signature.PDFSigningService PDFSigningService;
     private ConsentSession consentSession;
     private ConsentUser consentUser;
@@ -145,6 +150,11 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
     private String advDirectiveFlowType = "Default";
     private Dialog errorDialog;
 
+    private String consentProvenance;
+    private String questionnaireProvenance;
+    private Date dateRecordedProvenance;
+
+
     @Autowired
     private PDFSigningService pdfSigningService;
 
@@ -153,6 +163,9 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
 
     @Autowired
     private FHIRQuestionnaireResponse fhirQuestionnaireResponse;
+
+    @Autowired
+    private FHIRProvenance fhirProvenanceClient;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -856,6 +869,7 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
             else {
                 createQuestionnaireResponse();
                 createFHIRConsent();
+                createFHIRProvenance();
                 successNotification();
                 //todo test for fhir consent create success
                 resetFormAndNavigation();
@@ -1026,7 +1040,8 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         poaDirective.setOrganization(refList);
         Attachment attachment = new Attachment();
         attachment.setContentType("application/pdf");
-        attachment.setCreation(new Date());
+        dateRecordedProvenance = new Date();
+        attachment.setCreation(dateRecordedProvenance);
         attachment.setTitle("POAMentalHealth");
 
 
@@ -1061,8 +1076,19 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         Extension extension = createPowerOfAttorneyMentalHealthQuestionnaireResponse();
         poaDirective.getExtension().add(extension);
 
-        fhirConsentClient.createConsent(poaDirective);
+        Consent completedConsent = fhirConsentClient.createConsent(poaDirective);
+        consentProvenance = "Consent/"+poaDirective.getId();
     }
+
+    private void createFHIRProvenance() {
+        try {
+            fhirProvenanceClient.createProvenance(consentProvenance, dateRecordedProvenance, questionnaireProvenance);
+        }
+        catch (Exception ex) {
+            log.warn("Error creating provenance resource. "+ex.getMessage());
+        }
+    }
+
 
     private Extension createPowerOfAttorneyMentalHealthQuestionnaireResponse() {
         Extension extension = new Extension();
@@ -1126,8 +1152,8 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         signatureRequirementsResponse();
 
         questionnaireResponse.setItem(responseList);
-        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
-
+        QuestionnaireResponse completedQuestionnaireResponse = fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+        questionnaireProvenance = "QuestionnaireResponse/"+questionnaireResponse.getId();
     }
 
     private void powerOfAttorneyResponse() {

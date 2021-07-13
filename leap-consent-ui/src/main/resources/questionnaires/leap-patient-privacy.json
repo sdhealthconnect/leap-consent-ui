@@ -1,0 +1,246 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "leap-patient-privacy",
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"> <pre>LEAP Patient Privacy Questionnaire\nThe following allows you, the Patient, to create rules to control what, when, and to whom your Personal Healthcare Information can be exchanged with. That exchange may be between your Primary Physician, Regional Hospital, Health Information Exchange, and others. You may choose not to share information that could be sensitive in nature, or choose not to constrain the exchange at all. If you have privacy concerns use the Analyze My Data option to determine if sensitive information exists in your clinical record.\n 1. Set the dates this consent will be in force.\n 2. Control what types of clinical information are exchanged. \n3. The source of information being exchanged. \n4. The Person, or Organization, requesting your information. \n5. If portions of my clinical record are privacy sensitive, I would like to:\n6. This last step will capture your signature and create a human readable pdf of this consent. (Electronic signature captured)</pre></div>"
+  },
+  "url": "http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/Questionnaire/leap-patient-privacy",
+  "status": "active",
+  "experimental": "true",
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2021",
+  "code": [
+    {
+      "system": "http://sdhealthconnect.com/leap/patient-privacy",
+      "code": "2021-03-01",
+      "display": "Patient Privacy Questionnaire Version 1"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "1",
+      "text": "Set the dates this consent will be in force.",
+      "type": "group"
+    },
+    {
+      "linkId": "1.1",
+      "text": "Use Default Option",
+      "type": "boolean"
+    },
+    {
+      "linkId": "1.2",
+      "text": "Custom Date Option",
+      "type": "boolean"
+    },
+    {
+      "linkId": "1.3",
+      "text": "Default date options, beginning today for:",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "1.1",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ],
+      "item": [
+        {
+          "linkId": "1.3.1",
+          "text": "24 Hours",
+          "type": "boolean"
+        },
+        {
+          "linkId": "1.3.2",
+          "text": "1 Year",
+          "type": "boolean"
+        },
+        {
+          "linkId": "1.3.3",
+          "text": "5 years",
+          "type": "boolean"
+        },
+        {
+          "linkId": "1.3.4",
+          "text": "10 Years",
+          "type": "boolean"
+        },
+        {
+          "linkId": "1.3.5",
+          "text": "Calculated start date and time based on option selection",
+          "type": "string"
+        },
+        {
+          "linkId": "1.3.6",
+          "text": "Calculated end date and time based on option selection",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "linkId": "1.4",
+      "text": "Set the dates this consent will be in force.",
+      "type": "group",
+      "enableWhen": [
+        {
+          "question": "1.2",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ],
+      "item": [
+        {
+          "linkId": "1.4.1",
+          "text": "Start date and time",
+          "type": "string"
+        },
+        {
+          "linkId": "1.4.2",
+          "text": "End date and time",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "linkId": "2",
+      "text": "Control what types of clinical information are exchanged.",
+      "type": "group"
+    },
+    {
+      "linkId": "2.1",
+      "text": "Deny access to the following:",
+      "type": "boolean"
+    },
+    {
+      "linkId": "2.2",
+      "text": "Allow all types of data to be exchange.",
+      "type": "boolean"
+    },
+    {
+      "linkId": "2.1.1",
+      "text": "Select from list.",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "2.1",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "3",
+      "text": "The source of information being exchanged.",
+      "type": "group"
+    },
+    {
+      "linkId": "3.1",
+      "text": "Practitioner",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.2",
+      "text": "Organization",
+      "type": "boolean"
+    },
+    {
+      "linkId": "3.1.1",
+      "text": "Practitioner - Custodian (Select from list).",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "3.1",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "3.2.1",
+      "text": "Organization - Custodian (Select from list).",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "3.2",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "4",
+      "text": "The Person, or Organization, requesting your information.",
+      "type": "group"
+    },
+    {
+      "linkId": "4.1",
+      "text": "Practitioner",
+      "type": "boolean"
+    },
+    {
+      "linkId": "4.2",
+      "text": "Organization",
+      "type": "boolean"
+    },
+    {
+      "linkId": "4.1.1",
+      "text": "Practitioner - Recipient (Select from list).",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "4.1",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "4.2.1",
+      "text": "Organization - Recipient (Select from list).",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "4.2",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "5",
+      "text": "If portions of my clinical record are privacy sensitive, I would like to:",
+      "type": "group"
+    },
+    {
+      "linkId": "5.1",
+      "text": "Remove them",
+      "type": "boolean"
+    },
+    {
+      "linkId": "5.2",
+      "text": "I do not have privacy concerns",
+      "type": "boolean"
+    },
+    {
+      "linkId": "5.1.1",
+      "text": "Select All - This will remove all information flagged as confidential",
+      "type": "boolean",
+      "enableWhen": [
+        {
+          "question": "5.1",
+          "operator": "=",
+          "answerBoolean": "true"
+        }
+      ]
+    },
+    {
+      "linkId": "6",
+      "text": "This last step will capture your signature and create a human readable pdf of this consent. (Electronic signature captured)",
+      "type": "boolean"
+    }
+  ]
+}
+
+

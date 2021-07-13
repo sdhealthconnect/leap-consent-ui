@@ -24,6 +24,7 @@ import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.adr.model.POLSTPortableMedicalOrder;
 import gov.hhs.onc.leap.adr.model.QuestionnaireError;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRProvenance;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.session.ConsentSession;
@@ -189,6 +190,10 @@ public class PortableMedicalOrder extends ViewFrame {
     private String advDirectiveFlowType = "Default";
     private Dialog errorDialog;
 
+    private String consentProvenance;
+    private String questionnaireProvenance;
+    private Date dateRecordedProvenance;
+
     @Autowired
     private FHIRConsent fhirConsentClient;
 
@@ -197,6 +202,9 @@ public class PortableMedicalOrder extends ViewFrame {
 
     @Autowired
     private FHIRQuestionnaireResponse fhirQuestionnaireResponse;
+
+    @Autowired
+    private FHIRProvenance fhirProvenanceClient;
 
     @Value("${org-reference:Organization/privacy-consent-scenario-H-healthcurrent}")
     private String orgReference;
@@ -1386,6 +1394,7 @@ public class PortableMedicalOrder extends ViewFrame {
             else {
                 createQuestionnaireResponse();
                 createFHIRConsent();
+                createFHIRProvenance();
                 successNotification();
                 //todo test for fhir consent create success
                 resetFormAndNavigation();
@@ -1534,7 +1543,8 @@ public class PortableMedicalOrder extends ViewFrame {
         polstDirective.setOrganization(refList);
         Attachment attachment = new Attachment();
         attachment.setContentType("application/pdf");
-        attachment.setCreation(new Date());
+        dateRecordedProvenance = new Date();
+        attachment.setCreation(dateRecordedProvenance);
         attachment.setTitle("POLST");
 
 
@@ -1569,7 +1579,17 @@ public class PortableMedicalOrder extends ViewFrame {
         Extension extension = createPortableMedicalOrderQuestionnaireResponse();
         polstDirective.getExtension().add(extension);
 
-        fhirConsentClient.createConsent(polstDirective);
+        Consent completedConsent = fhirConsentClient.createConsent(polstDirective);
+        consentProvenance = "Consent/"+polstDirective.getId();
+    }
+
+    private void createFHIRProvenance() {
+        try {
+            fhirProvenanceClient.createProvenance(consentProvenance, dateRecordedProvenance, questionnaireProvenance);
+        }
+        catch (Exception ex) {
+            log.warn("Error creating provenance resource. "+ex.getMessage());
+        }
     }
 
     private Extension createPortableMedicalOrderQuestionnaireResponse() {
@@ -1664,7 +1684,8 @@ public class PortableMedicalOrder extends ViewFrame {
         assistingIndividualResponse();
 
         questionnaireResponse.setItem(responseList);
-        fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+        QuestionnaireResponse completedQuestionnaireResponse = fhirQuestionnaireResponse.createQuestionnaireResponse(questionnaireResponse);
+        questionnaireProvenance = "QuestionnaireResponse/"+questionnaireResponse.getId();
     }
 
     private void doNotResuscitateResponse() {
