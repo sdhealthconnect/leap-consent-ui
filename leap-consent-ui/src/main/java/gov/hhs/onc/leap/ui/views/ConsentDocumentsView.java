@@ -244,7 +244,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
         else if (consentDocument.getStatus().getName().equals("Revoked")) {
             consentAction.setText(getTranslation("consentDocumentsView-reinstate_consent"));
             consentAction.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.START_COG));
-            if (consentDocument.getPolicyType().contains("adr-") || consentDocument.getPolicyType().equals("treatment")  || consentDocument.getPolicyType().equals("research")) {
+            if (consentDocument.getPolicyType().contains("acd-") || consentDocument.getPolicyType().equals("treatment")  || consentDocument.getPolicyType().equals("research") || consentDocument.getPolicyType().equals("polst")) {
                 consentAction.setEnabled(false);
             }
             else {
@@ -384,10 +384,10 @@ public class ConsentDocumentsView extends SplitViewFrame {
             else {
                 status = ConsentDocument.Status.ACTIVE;
             }
-            String policyType = c.getScope().getCoding().get(0).getCode();
+            String policyType = c.getCategory().get(0).getCoding().get(0).getCode();
             String destination = "N/A";
             try {
-                if (!policyType.equals("adr")) {
+                if (!policyType.equals("acd")) {
                     destination = c.getProvision().getProvision().get(0).getActor().get(0).getReference().getDisplay();
                 }
             }
@@ -423,8 +423,8 @@ public class ConsentDocumentsView extends SplitViewFrame {
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
             }
-            //augment if policy type is adr
-            if (policyType.equals("adr")) {
+            //augment if policy type is acd
+            if (policyType.equals("acd")) {
                 policyType = policyType +"-"+ c.getSourceAttachment().getTitle();
             }
 

@@ -715,8 +715,7 @@ public class DoNotResuscitate extends ViewFrame {
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentcategorycodes");
-        coding.setCode("acd");
-        coding.addChild("DNR");
+        coding.setCode("dnr");
         cConcept.addCoding(coding);
         cList.add(cConcept);
 

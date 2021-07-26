@@ -813,10 +813,10 @@ public class NotificationView extends ViewFrame {
                     status = ConsentNotification.Status.ACTIVE;
                 }
             }
-            String policyType = c.getScope().getCoding().get(0).getCode();
-            if (policyType.equals("adr")) {
+            String policyType = c.getCategory().get(0).getCoding().get(0).getCode();
+            if (policyType.equals("acd")) {
                 String title = c.getSourceAttachment().getTitle();
-                notificationType = "adr - "+title;
+                notificationType = "acd - "+title;
             }
             else {
                 notificationType = policyType;
@@ -841,31 +841,31 @@ public class NotificationView extends ViewFrame {
                     activeExchangeExists = true;
                 }
             }
-            else if (notificationType.equals("adr - LivingWill")) {
+            else if (notificationType.equals("acd - LivingWill")) {
                 adrLivingWillNotification.setStatus(status);
                 if (status.equals(ConsentNotification.Status.ACTIVE)) {
                     adrLivingWillNotification.setActionRequired(getTranslation("NotificationView-none"));
                 }
             }
-            else if (notificationType.equals("adr - POAHealthcare")) {
+            else if (notificationType.equals("acd - POAHealthcare")) {
                 adrPOAHealthCareNotification.setStatus(status);
                 if (status.equals(ConsentNotification.Status.ACTIVE)) {
                     adrPOAHealthCareNotification.setActionRequired(getTranslation("NotificationView-none"));
                 }
             }
-            else if (notificationType.equals("adr - POAMentalHealth")) {
+            else if (notificationType.equals("acd- POAMentalHealth")) {
                 adrPOAMentalHealthNotification.setStatus(status);
                 if (status.equals(ConsentNotification.Status.ACTIVE)) {
                     adrPOAMentalHealthNotification.setActionRequired(getTranslation("NotificationView-none"));
                 }
             }
-            else if (notificationType.equals("adr - DNR")) {
+            else if (notificationType.equals("dnr")) {
                 adrDNRNotification.setStatus(status);
                 if (status.equals(ConsentNotification.Status.ACTIVE)) {
                     adrDNRNotification.setActionRequired(getTranslation("NotificationView-none"));
                 }
             }
-            else if (notificationType.equals("adr - POLST")) {
+            else if (notificationType.equals("polst")) {
                 polstNotification.setStatus(status);
                 if (status.equals(ConsentNotification.Status.ACTIVE)) {
                     polstNotification.setActionRequired(getTranslation("NotificationView-none"));
@@ -1247,13 +1247,16 @@ public class NotificationView extends ViewFrame {
         try { consentDeclined = treatmentDeclined.getValue(); } catch (Exception ex) {}
         if (consentGranted) informedConsent.setStatus(Consent.ConsentState.ACTIVE);
         if (consentDeclined) informedConsent.setStatus(Consent.ConsentState.REJECTED);
+
+        List<CodeableConcept> cList = new ArrayList<>();
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
+        //todo we don't have a category code specific to treatment
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
         coding.setCode("treatment");
         cConcept.addCoding(coding);
-        informedConsent.setScope(cConcept);
-        List<CodeableConcept> cList = new ArrayList<>();
+        cList.add(cConcept);
+
         CodeableConcept cConceptCat = new CodeableConcept();
         Coding codingCat = new Coding();
         codingCat.setSystem("http://loinc.org");
@@ -1261,6 +1264,7 @@ public class NotificationView extends ViewFrame {
         cConceptCat.addCoding(codingCat);
         cList.add(cConceptCat);
         informedConsent.setCategory(cList);
+
         Reference patientRef = new Reference();
         patientRef.setReference("Patient/"+consentSession.getFhirPatientId());
         patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
@@ -1312,9 +1316,10 @@ public class NotificationView extends ViewFrame {
 
         provision.setPeriod(period);
 
-        Consent.provisionComponent purpose = new Consent.provisionComponent();
-
-
+        //set default rule provision[0]
+        Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
+        ruleProvision.setType(Consent.ConsentProvisionType.DENY);
+        provision.addProvision(ruleProvision);
 
             Consent.provisionComponent requestorProvision = new Consent.provisionComponent();
             requestorProvision.setType(Consent.ConsentProvisionType.PERMIT);
@@ -1396,13 +1401,15 @@ public class NotificationView extends ViewFrame {
         try { consentDeclined = participateDeclined.getValue(); } catch (Exception ex) {}
         if (consentGranted) informedConsent.setStatus(Consent.ConsentState.ACTIVE);
         if (consentDeclined) informedConsent.setStatus(Consent.ConsentState.REJECTED);
+
+        List<CodeableConcept> cList = new ArrayList<>();
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
-        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
+        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentcategorycodes");
         coding.setCode("research");
         cConcept.addCoding(coding);
-        informedConsent.setScope(cConcept);
-        List<CodeableConcept> cList = new ArrayList<>();
+        cList.add(cConcept);
+
         CodeableConcept cConceptCat = new CodeableConcept();
         Coding codingCat = new Coding();
         codingCat.setSystem("http://loinc.org");
@@ -1410,6 +1417,7 @@ public class NotificationView extends ViewFrame {
         cConceptCat.addCoding(codingCat);
         cList.add(cConceptCat);
         informedConsent.setCategory(cList);
+
         Reference patientRef = new Reference();
         patientRef.setReference("Patient/"+consentSession.getFhirPatientId());
         patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
@@ -1433,14 +1441,6 @@ public class NotificationView extends ViewFrame {
 
         informedConsent.setSource(attachment);
 
-        //set rule
-        CodeableConcept policyCode = new CodeableConcept();
-        Coding codes = new Coding();
-        codes.setCode("OPTOUT");
-        codes.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode");
-        policyCode.addCoding(codes);
-        informedConsent.setPolicyRule(policyCode);
-
         Consent.provisionComponent provision = new Consent.provisionComponent();
         Period period = new Period();
         LocalDate sDate = LocalDate.now();
@@ -1461,9 +1461,10 @@ public class NotificationView extends ViewFrame {
 
         provision.setPeriod(period);
 
-        Consent.provisionComponent purpose = new Consent.provisionComponent();
-
-
+        //set default rule provision[0]
+        Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
+        ruleProvision.setType(Consent.ConsentProvisionType.DENY);
+        provision.addProvision(ruleProvision);
 
         Consent.provisionComponent requestorProvision = new Consent.provisionComponent();
         requestorProvision.setType(Consent.ConsentProvisionType.PERMIT);
