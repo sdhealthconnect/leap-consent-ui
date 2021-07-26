@@ -769,8 +769,6 @@ public class DoNotResuscitate extends ViewFrame {
         ruleProvision.setType(Consent.ConsentProvisionType.DENY);
         provision.addProvision(ruleProvision);
 
-        provision.addProvision(ruleProvision);
-
         //set emergency access rule
         Consent.provisionComponent eProvision = new Consent.provisionComponent();
         eProvision.setType(Consent.ConsentProvisionType.PERMIT);

@@ -1471,13 +1471,16 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         Consent poaDirective = new Consent();
         poaDirective.setId("POAHealthcare-"+consentSession.getFhirPatientId());
         poaDirective.setStatus(Consent.ConsentState.ACTIVE);
+
+        List<CodeableConcept> cList = new ArrayList<>();
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
-        coding.setCode("adr");
+        coding.setCode("acd");
+        coding.addChild("POAHealthcare");
         cConcept.addCoding(coding);
-        poaDirective.setScope(cConcept);
-        List<CodeableConcept> cList = new ArrayList<>();
+        cList.add(cConcept);
+
         CodeableConcept cConceptCat = new CodeableConcept();
         Coding codingCat = new Coding();
         codingCat.setSystem("http://loinc.org");
@@ -1485,6 +1488,8 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         cConceptCat.addCoding(codingCat);
         cList.add(cConceptCat);
         poaDirective.setCategory(cList);
+
+
         Reference patientRef = new Reference();
         patientRef.setReference("Patient/"+consentSession.getFhirPatientId());
         patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
@@ -1521,13 +1526,21 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
 
         provision.setPeriod(period);
 
+        //set default rule provision[0]
+        Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
+        ruleProvision.setType(Consent.ConsentProvisionType.DENY);
+        provision.addProvision(ruleProvision);
+
+        //set emergency access rule
+        Consent.provisionComponent eProvision = new Consent.provisionComponent();
+        eProvision.setType(Consent.ConsentProvisionType.PERMIT);
         List<Coding> purposeList = new ArrayList<>();
         Coding purposeCoding = new Coding();
         purposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
         purposeCoding.setCode("ETREAT");
         purposeList.add(purposeCoding);
-
-        provision.setPurpose(purposeList);
+        eProvision.setPurpose(purposeList);
+        provision.addProvision(eProvision);
 
         poaDirective.setProvision(provision);
 
