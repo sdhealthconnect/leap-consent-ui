@@ -893,7 +893,9 @@ public class SharePatientDataView extends ViewFrame {
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
         coding.setCode("patient-privacy");
         cConcept.addCoding(coding);
-        patientPrivacyConsent.setScope(cConcept);
+        List<CodeableConcept> categoryList = new ArrayList<>();
+        categoryList.add(cConcept);
+        patientPrivacyConsent.setCategory(categoryList);
 
         List<CodeableConcept> cList = new ArrayList<>();
         CodeableConcept cConceptCat = new CodeableConcept();
@@ -930,14 +932,6 @@ public class SharePatientDataView extends ViewFrame {
         refList.add(orgRef);
         patientPrivacyConsent.setOrganization(refList);
 
-        //set rule
-        CodeableConcept policyCode = new CodeableConcept();
-        Coding codes = new Coding();
-        codes.setCode("OPTIN");
-        codes.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode");
-        policyCode.addCoding(codes);
-        patientPrivacyConsent.setPolicyRule(policyCode);
-
         //set dates
         Consent.provisionComponent provision = new Consent.provisionComponent();
         Period period = new Period();
@@ -954,6 +948,11 @@ public class SharePatientDataView extends ViewFrame {
         purposeList.add(purposeCoding);
 
         provision.setPurpose(purposeList);
+
+        //set default rule provision[0]
+        Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
+        ruleProvision.setType(Consent.ConsentProvisionType.PERMIT);
+        provision.addProvision(ruleProvision);
 
         //create provisions for classes
         if (constrainDataClass.getValue().equals(getTranslation("sharePatient-deny_access_to_following"))) {
