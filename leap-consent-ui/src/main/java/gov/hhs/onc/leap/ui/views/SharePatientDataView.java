@@ -887,17 +887,15 @@ public class SharePatientDataView extends ViewFrame {
 
         patientPrivacyConsent.setDateTime(new Date());
 
-        //set consent scope
+        //set consent categories [0] is core that UI relies on for display purposes
+        List<CodeableConcept> cList = new ArrayList<>();
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
         coding.setCode("patient-privacy");
         cConcept.addCoding(coding);
-        List<CodeableConcept> categoryList = new ArrayList<>();
-        categoryList.add(cConcept);
-        patientPrivacyConsent.setCategory(categoryList);
+        cList.add(cConcept);
 
-        List<CodeableConcept> cList = new ArrayList<>();
         CodeableConcept cConceptCat = new CodeableConcept();
         Coding codingCat = new Coding();
         codingCat.setSystem("http://loinc.org");

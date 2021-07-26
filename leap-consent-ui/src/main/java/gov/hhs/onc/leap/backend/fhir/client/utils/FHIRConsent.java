@@ -29,7 +29,6 @@ public class FHIRConsent {
         return consentRes;
     }
 
-
     public Consent getConsent(String consentId) {
         Bundle bundle = hapiFhirServer.getConsentById(consentId);
         Bundle.BundleEntryComponent comp = bundle.getEntry().get(0);

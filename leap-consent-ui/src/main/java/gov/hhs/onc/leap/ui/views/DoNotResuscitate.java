@@ -709,13 +709,17 @@ public class DoNotResuscitate extends ViewFrame {
         Consent dnrDirective = new Consent();
         dnrDirective.setId("DNR-"+consentSession.getFhirPatientId());
         dnrDirective.setStatus(consentState);
+
+        //set category of consent
+        List<CodeableConcept> cList = new ArrayList<>();
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
-        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
-        coding.setCode("adr");
+        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentcategorycodes");
+        coding.setCode("acd");
+        coding.addChild("DNR");
         cConcept.addCoding(coding);
-        dnrDirective.setScope(cConcept);
-        List<CodeableConcept> cList = new ArrayList<>();
+        cList.add(cConcept);
+
         CodeableConcept cConceptCat = new CodeableConcept();
         Coding codingCat = new Coding();
         codingCat.setSystem("http://loinc.org");
@@ -723,6 +727,7 @@ public class DoNotResuscitate extends ViewFrame {
         cConceptCat.addCoding(codingCat);
         cList.add(cConceptCat);
         dnrDirective.setCategory(cList);
+
         Reference patientRef = new Reference();
         patientRef.setReference("Patient/"+consentSession.getFhirPatientId());
         patientRef.setDisplay(patient.getName().get(0).getFamily()+", "+patient.getName().get(0).getGiven().get(0).toString());
@@ -759,14 +764,24 @@ public class DoNotResuscitate extends ViewFrame {
         
         provision.setPeriod(period);
 
+        //set default rule provision[0]
+        Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
+        ruleProvision.setType(Consent.ConsentProvisionType.DENY);
+        provision.addProvision(ruleProvision);
+
+        provision.addProvision(ruleProvision);
+
+        //set emergency access rule
+        Consent.provisionComponent eProvision = new Consent.provisionComponent();
+        eProvision.setType(Consent.ConsentProvisionType.PERMIT);
         List<Coding> purposeList = new ArrayList<>();
         Coding purposeCoding = new Coding();
         purposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
         purposeCoding.setCode("ETREAT");
         purposeList.add(purposeCoding);
+        eProvision.setPurpose(purposeList);
+        provision.addProvision(eProvision);
 
-        provision.setPurpose(purposeList);
-        
         dnrDirective.setProvision(provision);
 
         Extension extension = createDoNotResuscitateQuestionnaireResponse();
