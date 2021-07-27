@@ -388,7 +388,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
             String destination = "N/A";
             try {
                 if (!policyType.equals("acd")) {
-                    destination = c.getProvision().getProvision().get(0).getActor().get(0).getReference().getDisplay();
+                    destination = c.getProvision().getProvision().get(1).getActor().get(0).getReference().getDisplay();
                 }
             }
             catch (Exception ex) {
@@ -401,15 +401,18 @@ public class ConsentDocumentsView extends SplitViewFrame {
             String constrainDomains = "No";
             try {
                 if (c.getProvision() != null) {
-                    if (c.getProvision().getProvision().get(0).getSecurityLabel().get(0).getCode().equals("R")) {
+                    if (c.getProvision().getProvision().get(1).getSecurityLabel().get(0).getCode().equals("R")) {
                         //if (c.getProvision().getSecurityLabel().get(0).getCode().equals("R")) {
                             constrainSensitivity = "Yes";
                         //}
                     }
+                    if (c.getProvision().getProvision().get(1).getClass_().size() > 0) {
+                        constrainDomains = "Yes";
+                    }
                 }
             }
             catch (Exception ex) {
-
+                log.warn("Error determining Sensitivity and Class Requirements: "+ex.getMessage()+" constrainSensitivity:"+constrainSensitivity+" constrainDomains: "+constrainDomains);
             }
 
             LocalDate localStart = LocalDate.of(2021, 2, 24);

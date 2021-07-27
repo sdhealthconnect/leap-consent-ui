@@ -863,7 +863,6 @@ public class LivingWill extends ViewFrame {
         Coding coding = new Coding();
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentcategorycodes");
         coding.setCode("acd");
-        coding.addChild("LivingWill");
         cConcept.addCoding(coding);
         cList.add(cConcept);
 

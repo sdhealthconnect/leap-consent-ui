@@ -1019,7 +1019,6 @@ public class MentalHealthPowerOfAttorney extends ViewFrame {
         Coding coding = new Coding();
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentcategorycodes");
         coding.setCode("acd");
-        coding.addChild("POAMentalHealth");
         cConcept.addCoding(coding);
         cList.add(cConcept);
 

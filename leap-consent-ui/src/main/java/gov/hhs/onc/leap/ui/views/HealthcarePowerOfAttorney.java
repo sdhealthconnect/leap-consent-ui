@@ -1477,7 +1477,6 @@ public class HealthcarePowerOfAttorney extends ViewFrame {
         Coding coding = new Coding();
         coding.setSystem("http://terminology.hl7.org/CodeSystem/consentcategorycodes");
         coding.setCode("acd");
-        coding.addChild("POAHealthcare");
         cConcept.addCoding(coding);
         cList.add(cConcept);
 

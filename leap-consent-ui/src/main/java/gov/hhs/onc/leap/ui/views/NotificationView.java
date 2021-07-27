@@ -824,8 +824,8 @@ public class NotificationView extends ViewFrame {
 
             String destination = "";
             try {
-                if (c.getProvision().getProvision().get(0).getActor() != null && !c.getProvision().getProvision().get(0).getActor().isEmpty()) {
-                    destination = c.getProvision().getProvision().get(0).getActor().get(0).getReference().getReference();
+                if (c.getProvision().getProvision().get(1).getActor() != null && !c.getProvision().getProvision().get(1).getActor().isEmpty()) {
+                    destination = c.getProvision().getProvision().get(1).getActor().get(0).getReference().getReference();
                 }
             }
             catch (Exception ex) {
