@@ -887,15 +887,15 @@ public class SharePatientDataView extends ViewFrame {
 
         patientPrivacyConsent.setDateTime(new Date());
 
-        //set consent scope
+        //set consent categories [0] is core that UI relies on for display purposes
+        List<CodeableConcept> cList = new ArrayList<>();
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
-        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentscope");
+        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentcategorycodes");
         coding.setCode("patient-privacy");
         cConcept.addCoding(coding);
-        patientPrivacyConsent.setScope(cConcept);
+        cList.add(cConcept);
 
-        List<CodeableConcept> cList = new ArrayList<>();
         CodeableConcept cConceptCat = new CodeableConcept();
         Coding codingCat = new Coding();
         codingCat.setSystem("http://loinc.org");
@@ -930,14 +930,6 @@ public class SharePatientDataView extends ViewFrame {
         refList.add(orgRef);
         patientPrivacyConsent.setOrganization(refList);
 
-        //set rule
-        CodeableConcept policyCode = new CodeableConcept();
-        Coding codes = new Coding();
-        codes.setCode("OPTIN");
-        codes.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode");
-        policyCode.addCoding(codes);
-        patientPrivacyConsent.setPolicyRule(policyCode);
-
         //set dates
         Consent.provisionComponent provision = new Consent.provisionComponent();
         Period period = new Period();
@@ -954,6 +946,11 @@ public class SharePatientDataView extends ViewFrame {
         purposeList.add(purposeCoding);
 
         provision.setPurpose(purposeList);
+
+        //set default rule provision[0]
+        Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
+        ruleProvision.setType(Consent.ConsentProvisionType.PERMIT);
+        provision.addProvision(ruleProvision);
 
         //create provisions for classes
         if (constrainDataClass.getValue().equals(getTranslation("sharePatient-deny_access_to_following"))) {

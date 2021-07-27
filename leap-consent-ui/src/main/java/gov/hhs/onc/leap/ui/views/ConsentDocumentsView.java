@@ -244,7 +244,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
         else if (consentDocument.getStatus().getName().equals("Revoked")) {
             consentAction.setText(getTranslation("consentDocumentsView-reinstate_consent"));
             consentAction.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.START_COG));
-            if (consentDocument.getPolicyType().contains("adr-") || consentDocument.getPolicyType().equals("treatment")  || consentDocument.getPolicyType().equals("research")) {
+            if (consentDocument.getPolicyType().contains("acd-") || consentDocument.getPolicyType().equals("treatment")  || consentDocument.getPolicyType().equals("research") || consentDocument.getPolicyType().equals("polst")) {
                 consentAction.setEnabled(false);
             }
             else {
@@ -384,11 +384,11 @@ public class ConsentDocumentsView extends SplitViewFrame {
             else {
                 status = ConsentDocument.Status.ACTIVE;
             }
-            String policyType = c.getScope().getCoding().get(0).getCode();
+            String policyType = c.getCategory().get(0).getCoding().get(0).getCode();
             String destination = "N/A";
             try {
-                if (!policyType.equals("adr")) {
-                    destination = c.getProvision().getProvision().get(0).getActor().get(0).getReference().getDisplay();
+                if (!policyType.equals("acd")) {
+                    destination = c.getProvision().getProvision().get(1).getActor().get(0).getReference().getDisplay();
                 }
             }
             catch (Exception ex) {
@@ -401,15 +401,18 @@ public class ConsentDocumentsView extends SplitViewFrame {
             String constrainDomains = "No";
             try {
                 if (c.getProvision() != null) {
-                    if (c.getProvision().getProvision().get(0).getSecurityLabel().get(0).getCode().equals("R")) {
+                    if (c.getProvision().getProvision().get(1).getSecurityLabel().get(0).getCode().equals("R")) {
                         //if (c.getProvision().getSecurityLabel().get(0).getCode().equals("R")) {
                             constrainSensitivity = "Yes";
                         //}
                     }
+                    if (c.getProvision().getProvision().get(1).getClass_().size() > 0) {
+                        constrainDomains = "Yes";
+                    }
                 }
             }
             catch (Exception ex) {
-
+                log.warn("Error determining Sensitivity and Class Requirements: "+ex.getMessage()+" constrainSensitivity:"+constrainSensitivity+" constrainDomains: "+constrainDomains);
             }
 
             LocalDate localStart = LocalDate.of(2021, 2, 24);
@@ -423,8 +426,8 @@ public class ConsentDocumentsView extends SplitViewFrame {
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
             }
-            //augment if policy type is adr
-            if (policyType.equals("adr")) {
+            //augment if policy type is acd
+            if (policyType.equals("acd")) {
                 policyType = policyType +"-"+ c.getSourceAttachment().getTitle();
             }
 
