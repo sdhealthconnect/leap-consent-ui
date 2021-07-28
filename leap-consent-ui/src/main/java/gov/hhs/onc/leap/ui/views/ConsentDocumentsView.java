@@ -366,8 +366,8 @@ public class ConsentDocumentsView extends SplitViewFrame {
             //determine state
             ConsentDocument.Status status;
             Consent.ConsentState consentState = c.getStatus();
-            Date startDate = c.getProvision().getPeriod().getStart();
-            Date endDate = c.getProvision().getPeriod().getEnd();
+            Date startDate = c.getProvision().getProvision().get(1).getPeriod().getStart();
+            Date endDate = c.getProvision().getProvision().get(1).getPeriod().getEnd();
             if (endDate != null) {
                 if (endDate.before(new Date()) && consentState.equals(Consent.ConsentState.ACTIVE)) {
                     status = ConsentDocument.Status.EXPIRED;
@@ -401,13 +401,27 @@ public class ConsentDocumentsView extends SplitViewFrame {
             String constrainDomains = "No";
             try {
                 if (c.getProvision() != null) {
-                    if (c.getProvision().getProvision().get(1).getSecurityLabel().get(0).getCode().equals("R")) {
-                        //if (c.getProvision().getSecurityLabel().get(0).getCode().equals("R")) {
-                            constrainSensitivity = "Yes";
-                        //}
-                    }
-                    if (c.getProvision().getProvision().get(1).getClass_().size() > 0) {
-                        constrainDomains = "Yes";
+                    List<Consent.provisionComponent> pList = c.getProvision().getProvision();
+                    Iterator iter2 = pList.iterator();
+                    while (iter2.hasNext()) {
+                        Consent.provisionComponent pC = (Consent.provisionComponent)iter2.next();
+                        try {
+                            try {
+                                if (pC.getSecurityLabel().get(0).getCode().equals("R")) {
+                                    constrainSensitivity = "Yes";
+                                }
+                            }
+                            catch (Exception ex) {}
+                            try {
+                                if (!pC.getClass_().isEmpty()) {
+                                    constrainDomains = "Yes";
+                                }
+                            }
+                            catch (Exception ex) {}
+                        }
+                        catch (Exception ex) {
+                            log.warn("Error determining Sensitivity and Class Requirements: "+ex.getMessage()+" constrainSensitivity:"+constrainSensitivity+" constrainDomains: "+constrainDomains);
+                        }
                     }
                 }
             }

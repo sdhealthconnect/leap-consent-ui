@@ -930,26 +930,34 @@ public class SharePatientDataView extends ViewFrame {
         refList.add(orgRef);
         patientPrivacyConsent.setOrganization(refList);
 
-        //set dates
+        //provision root
         Consent.provisionComponent provision = new Consent.provisionComponent();
+
+        //set period
         Period period = new Period();
         Date startDate = Date.from(provisionStartDateTime.atZone(ZoneId.systemDefault()).toInstant());
         Date endDate = Date.from(provisionEndDateTime.atZone(ZoneId.systemDefault()).toInstant());
         period.setStart(startDate);
         period.setEnd(endDate);
-        provision.setPeriod(period);
-
-        List<Coding> purposeList = new ArrayList<>();
-        Coding purposeCoding = new Coding();
-        purposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
-        purposeCoding.setCode("TREAT");
-        purposeList.add(purposeCoding);
-
-        provision.setPurpose(purposeList);
 
         //set default rule provision[0]
         Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
         ruleProvision.setType(Consent.ConsentProvisionType.PERMIT);
+
+        List<Coding> purposeList = new ArrayList<>();
+
+        Coding tPurposeCoding = new Coding();
+        tPurposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
+        tPurposeCoding.setCode("TREAT");
+        purposeList.add(tPurposeCoding);
+
+        Coding ePurposeCoding = new Coding();
+        ePurposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
+        ePurposeCoding.setCode("ETREAT");
+        purposeList.add(ePurposeCoding);
+
+        ruleProvision.setPurpose(purposeList);
+
         provision.addProvision(ruleProvision);
 
         //create provisions for classes
@@ -968,6 +976,8 @@ public class SharePatientDataView extends ViewFrame {
                 classList.add(classcoding);
             }
             dataClassProvision.setClass_(classList);
+
+            dataClassProvision.setPeriod(period);
 
             //set actor
             Consent.provisionActorComponent actor = new Consent.provisionActorComponent();
@@ -1020,6 +1030,7 @@ public class SharePatientDataView extends ViewFrame {
         if (sensConstraints.getValue().equals(getTranslation("sharePatient-remove_them"))) {
             Consent.provisionComponent sensitivityProvision = new Consent.provisionComponent();
             sensitivityProvision.setType(Consent.ConsentProvisionType.DENY);
+            sensitivityProvision.setPeriod(period);
 
             //security label
             Coding senscoding = new Coding();
