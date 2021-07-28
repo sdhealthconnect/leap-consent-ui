@@ -799,7 +799,7 @@ public class NotificationView extends ViewFrame {
             String notificationType = "";
             ConsentNotification.Status status = ConsentNotification.Status.NOTCOMPLETE;
             Consent.ConsentState consentState = c.getStatus();
-            Date endDate = c.getProvision().getPeriod().getEnd();
+            Date endDate = c.getProvision().getProvision().get(1).getPeriod().getEnd();
             if (endDate != null) {
                 if (endDate.before(new Date()) && consentState.equals(Consent.ConsentState.ACTIVE)) {
                     status = ConsentNotification.Status.EXPIRED;
@@ -1288,15 +1288,10 @@ public class NotificationView extends ViewFrame {
 
         informedConsent.setSource(attachment);
 
-        //set rule
-        CodeableConcept policyCode = new CodeableConcept();
-        Coding codes = new Coding();
-        codes.setCode("OPTOUT");
-        codes.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode");
-        policyCode.addCoding(codes);
-        informedConsent.setPolicyRule(policyCode);
-
+        //root provision
         Consent.provisionComponent provision = new Consent.provisionComponent();
+
+        //set default dates
         Period period = new Period();
         LocalDate sDate = LocalDate.now();
         LocalDate eDate = LocalDate.now().plusYears(10);
@@ -1314,8 +1309,6 @@ public class NotificationView extends ViewFrame {
         period.setStart(startDate);
         period.setEnd(endDate);
 
-        provision.setPeriod(period);
-
         //set default rule provision[0]
         Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
         ruleProvision.setType(Consent.ConsentProvisionType.DENY);
@@ -1323,11 +1316,19 @@ public class NotificationView extends ViewFrame {
 
             Consent.provisionComponent requestorProvision = new Consent.provisionComponent();
             requestorProvision.setType(Consent.ConsentProvisionType.PERMIT);
+            requestorProvision.setPeriod(period);
             List<Coding> purposeList = new ArrayList<>();
+
             Coding purposeCoding = new Coding();
             purposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
             purposeCoding.setCode("TREAT");
             purposeList.add(purposeCoding);
+
+            Coding ePurposeCoding = new Coding();
+            ePurposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
+            ePurposeCoding.setCode("ETREAT");
+            purposeList.add(purposeCoding);
+
             requestorProvision.setPurpose(purposeList);
 
             //actor
@@ -1441,7 +1442,9 @@ public class NotificationView extends ViewFrame {
 
         informedConsent.setSource(attachment);
 
+        //root provision
         Consent.provisionComponent provision = new Consent.provisionComponent();
+
         Period period = new Period();
         LocalDate sDate = LocalDate.now();
         LocalDate eDate = LocalDate.now().plusYears(10);
@@ -1459,8 +1462,6 @@ public class NotificationView extends ViewFrame {
         period.setStart(startDate);
         period.setEnd(endDate);
 
-        provision.setPeriod(period);
-
         //set default rule provision[0]
         Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
         ruleProvision.setType(Consent.ConsentProvisionType.DENY);
@@ -1468,6 +1469,7 @@ public class NotificationView extends ViewFrame {
 
         Consent.provisionComponent requestorProvision = new Consent.provisionComponent();
         requestorProvision.setType(Consent.ConsentProvisionType.PERMIT);
+        requestorProvision.setPeriod(period);
         List<Coding> purposeList = new ArrayList<>();
         Coding purposeCoding = new Coding();
         purposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");

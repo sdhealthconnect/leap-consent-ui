@@ -899,31 +899,39 @@ public class LivingWill extends ViewFrame {
 
         poaDirective.setSource(attachment);
 
+        //provision root
         Consent.provisionComponent provision = new Consent.provisionComponent();
-        Period period = new Period();
-        LocalDate sDate = LocalDate.now();
-        LocalDate eDate = LocalDate.now().plusYears(10);
-        Date startDate = Date.from(sDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date endDate = Date.from(eDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-        period.setStart(startDate);
-        period.setEnd(endDate);
-
-        provision.setPeriod(period);
 
         //set default rule provision[0]
         Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
         ruleProvision.setType(Consent.ConsentProvisionType.DENY);
         provision.addProvision(ruleProvision);
 
-        //set emergency access rule
+        //set treatment and emergency access rule
         Consent.provisionComponent eProvision = new Consent.provisionComponent();
+        Period period = new Period();
+        LocalDate sDate = LocalDate.now();
+        LocalDate eDate = LocalDate.now().plusYears(10);
+        Date startDate = Date.from(sDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(eDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        period.setStart(startDate);
+        period.setEnd(endDate);
+        eProvision.setPeriod(period);
+
         eProvision.setType(Consent.ConsentProvisionType.PERMIT);
+
         List<Coding> purposeList = new ArrayList<>();
-        Coding purposeCoding = new Coding();
-        purposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
-        purposeCoding.setCode("ETREAT");
-        purposeList.add(purposeCoding);
+        //POUs
+        Coding ePurposeCoding = new Coding();
+        ePurposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
+        ePurposeCoding.setCode("ETREAT");
+        purposeList.add(ePurposeCoding);
+
+        Coding tPurposeCoding = new Coding();
+        tPurposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
+        tPurposeCoding.setCode("TREAT");
+        purposeList.add(tPurposeCoding);
+
         eProvision.setPurpose(purposeList);
         provision.addProvision(eProvision);
 
