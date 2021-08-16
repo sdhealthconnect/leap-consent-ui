@@ -241,4 +241,17 @@
             </dropColumn>
         </rollback>
     </changeSet>
+    <changeSet id="00000000000006" author="duane" logicalFilePath="changelog.xml" labels="linkConsentData">
+        <loadUpdateData
+                file="db/data/link_consent_user_v2.csv"
+                separator=";"
+                tableName="user"
+                primaryKey="user_id"
+                onlyUpdate="true">
+            <column name="user_id" type="numeric"/>
+            <column name="fhir_patient_id" type="string"/>
+            <column name="name" type="string"/>
+            <column name="last_name" type="string"/>
+        </loadUpdateData>
+    </changeSet>
 </databaseChangeLog>

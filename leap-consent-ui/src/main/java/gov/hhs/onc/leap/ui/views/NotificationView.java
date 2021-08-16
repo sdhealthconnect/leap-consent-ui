@@ -1252,7 +1252,7 @@ public class NotificationView extends ViewFrame {
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
         //todo we don't have a category code specific to treatment
-        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentcategorycodes");
+        coding.setSystem("http://healthit.gov/leap/CodeSystem/consentcategorycodes");
         coding.setCode("treatment");
         cConcept.addCoding(coding);
         cList.add(cConcept);

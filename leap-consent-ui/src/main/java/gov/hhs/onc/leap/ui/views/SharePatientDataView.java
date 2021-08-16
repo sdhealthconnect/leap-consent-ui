@@ -891,7 +891,7 @@ public class SharePatientDataView extends ViewFrame {
         List<CodeableConcept> cList = new ArrayList<>();
         CodeableConcept cConcept = new CodeableConcept();
         Coding coding = new Coding();
-        coding.setSystem("http://terminology.hl7.org/CodeSystem/consentcategorycodes");
+        coding.setSystem("http://healthit.gov/leap/CodeSystem/consentcategorycodes");
         coding.setCode("patient-privacy");
         cConcept.addCoding(coding);
         cList.add(cConcept);
@@ -899,7 +899,7 @@ public class SharePatientDataView extends ViewFrame {
         CodeableConcept cConceptCat = new CodeableConcept();
         Coding codingCat = new Coding();
         codingCat.setSystem("http://loinc.org");
-        codingCat.setCode("59284-6");
+        codingCat.setCode("59284-0");
         cConceptCat.addCoding(codingCat);
         cList.add(cConceptCat);
         patientPrivacyConsent.setCategory(cList);
