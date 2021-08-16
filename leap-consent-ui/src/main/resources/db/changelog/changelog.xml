@@ -242,6 +242,7 @@
         </rollback>
     </changeSet>
     <changeSet id="00000000000006" author="duane" logicalFilePath="changelog.xml" labels="linkConsentData">
+        <sql>SET FOREIGN_KEY_CHECKS=0;</sql>
         <loadUpdateData
                 file="db/data/consentuser_new_fhir_ids.csv"
                 separator=";"
@@ -262,5 +263,6 @@
             <column name="name" type="string"/>
             <column name="last_name" type="string"/>
         </loadUpdateData>
+        <sql>SET FOREIGN_KEY_CHECKS=1;</sql>
     </changeSet>
 </databaseChangeLog>
