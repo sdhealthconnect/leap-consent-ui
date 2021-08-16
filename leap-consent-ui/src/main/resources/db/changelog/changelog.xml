@@ -243,6 +243,15 @@
     </changeSet>
     <changeSet id="00000000000006" author="duane" logicalFilePath="changelog.xml" labels="linkConsentData">
         <loadUpdateData
+                file="db/data/consentuser_new_fhir_ids.csv"
+                separator=";"
+                tableName="consentuser"
+                primaryKey="id"
+                onlyUpdate="true">
+            <column name="id" type="numeric"/>
+            <column name="fhir_patient_id" type="string"/>
+        </loadUpdateData>
+        <loadUpdateData
                 file="db/data/link_consent_user_v2.csv"
                 separator=";"
                 tableName="user"
