@@ -869,7 +869,7 @@ public class LivingWill extends ViewFrame {
         CodeableConcept cConceptCat = new CodeableConcept();
         Coding codingCat = new Coding();
         codingCat.setSystem("http://loinc.org");
-        codingCat.setCode("59284-6");
+        codingCat.setCode("59284-0");
         cConceptCat.addCoding(codingCat);
         cList.add(cConceptCat);
         poaDirective.setCategory(cList);
