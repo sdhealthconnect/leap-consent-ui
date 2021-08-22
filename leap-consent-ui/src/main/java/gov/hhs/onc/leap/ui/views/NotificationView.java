@@ -853,7 +853,7 @@ public class NotificationView extends ViewFrame {
                     adrPOAHealthCareNotification.setActionRequired(getTranslation("NotificationView-none"));
                 }
             }
-            else if (notificationType.equals("acd- POAMentalHealth")) {
+            else if (notificationType.equals("acd - POAMentalHealth")) {
                 adrPOAMentalHealthNotification.setStatus(status);
                 if (status.equals(ConsentNotification.Status.ACTIVE)) {
                     adrPOAMentalHealthNotification.setActionRequired(getTranslation("NotificationView-none"));
