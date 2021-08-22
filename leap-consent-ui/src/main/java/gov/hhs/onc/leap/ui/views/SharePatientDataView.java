@@ -773,8 +773,12 @@ public class SharePatientDataView extends ViewFrame {
 
                 if (destinationType.getValue().equals(getTranslation("sharePatient-practitioner"))) {
                     recipient = practitionerComboBoxDestination.getValue().getName().get(0).getNameAsSingleString();
+                    privacy.setPractitionerDataRecipient(true);
+                    privacy.setPractitionerRecipientName(recipient);
                 } else if (destinationType.getValue().equals(getTranslation("sharePatient-organization"))) {
                     recipient = organizationComboBoxDestination.getValue().getName();
+                    privacy.setOrganizationDataRecipient(true);
+                    privacy.setOrganizationRecipientName(recipient);
                 } else {
                     errorList.add(new QuestionnaireError(getTranslation("sharePatient-no_recipient_destination_selection_made"), 3));
                 }
