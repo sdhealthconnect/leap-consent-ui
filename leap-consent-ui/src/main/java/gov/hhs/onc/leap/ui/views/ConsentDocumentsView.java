@@ -456,7 +456,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
         ConsentDocument cd = ocd.get();
         Consent consent = cd.getFhirConsentResource();
         fhirConsentClient.revokeConsent(consent);
-        if (consent.getScope().getCoding().get(0).getCode().equals("treatment")) {
+        if (consent.getCategory().get(0).getCoding().get(0).getCode().equals("treatment")) {
             String extensionValue = consent.getExtension().get(0).getValue().toString();
             if (extensionValue.contains("MedicationRequest")) {
                 revokeAndStopMedicationRequest(extensionValue);
@@ -468,7 +468,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
                 log.error("Unable to determine treatment type to be revoked.");
             }
         }
-        else if (consent.getScope().getCoding().get(0).getCode().equals("research")) {
+        else if (consent.getCategory().get(0).getCoding().get(0).getCode().equals("research")) {
             String extensionValue = consent.getExtension().get(0).getValue().toString();
             revokeAndWithdrawResearchSubject(extensionValue);
         }
