@@ -265,4 +265,28 @@
         </loadUpdateData>
         <sql>SET FOREIGN_KEY_CHECKS=1;</sql>
     </changeSet>
+    <changeSet id="00000000000007" author="duane" logicalFilePath="changelog.xml" labels="linkConsentData">
+        <sql>SET FOREIGN_KEY_CHECKS=0;</sql>
+        <loadUpdateData
+                file="db/data/consentuser_new_fhir_ids_v3.csv"
+                separator=";"
+                tableName="consentuser"
+                primaryKey="id"
+                onlyUpdate="true">
+            <column name="id" type="numeric"/>
+            <column name="fhir_patient_id" type="string"/>
+        </loadUpdateData>
+        <loadUpdateData
+                file="db/data/link_consent_user_v3.csv"
+                separator=";"
+                tableName="user"
+                primaryKey="user_id"
+                onlyUpdate="true">
+            <column name="user_id" type="numeric"/>
+            <column name="fhir_patient_id" type="string"/>
+            <column name="name" type="string"/>
+            <column name="last_name" type="string"/>
+        </loadUpdateData>
+        <sql>SET FOREIGN_KEY_CHECKS=1;</sql>
+    </changeSet>
 </databaseChangeLog>
