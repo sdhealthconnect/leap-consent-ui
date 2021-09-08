@@ -1327,7 +1327,7 @@ public class NotificationView extends ViewFrame {
             Coding ePurposeCoding = new Coding();
             ePurposeCoding.setSystem("http://terminology.hl7.org/CodeSystem/v3-ActReason");
             ePurposeCoding.setCode("ETREAT");
-            purposeList.add(purposeCoding);
+            purposeList.add(ePurposeCoding);
 
             requestorProvision.setPurpose(purposeList);
 
