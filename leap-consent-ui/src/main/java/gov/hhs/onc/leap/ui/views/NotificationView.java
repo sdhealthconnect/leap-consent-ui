@@ -799,7 +799,7 @@ public class NotificationView extends ViewFrame {
             String notificationType = "";
             ConsentNotification.Status status = ConsentNotification.Status.NOTCOMPLETE;
             Consent.ConsentState consentState = c.getStatus();
-            Date endDate = c.getProvision().getProvision().get(1).getPeriod().getEnd();
+            Date endDate = c.getProvision().getPeriod().getEnd();
             if (endDate != null) {
                 if (endDate.before(new Date()) && consentState.equals(Consent.ConsentState.ACTIVE)) {
                     status = ConsentNotification.Status.EXPIRED;
