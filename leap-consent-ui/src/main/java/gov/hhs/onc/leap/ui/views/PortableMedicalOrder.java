@@ -1561,13 +1561,7 @@ public class PortableMedicalOrder extends ViewFrame {
         //provision root
         Consent.provisionComponent provision = new Consent.provisionComponent();
 
-        //set default rule provision[0]
-        Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
-        ruleProvision.setType(Consent.ConsentProvisionType.DENY);
-        provision.addProvision(ruleProvision);
-
-        //set treatment and emergency access rule
-        Consent.provisionComponent eProvision = new Consent.provisionComponent();
+        //set default rule provision root
         Period period = new Period();
         LocalDate sDate = LocalDate.now();
         LocalDate eDate = LocalDate.now().plusYears(10);
@@ -1575,6 +1569,12 @@ public class PortableMedicalOrder extends ViewFrame {
         Date endDate = Date.from(eDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
         period.setStart(startDate);
         period.setEnd(endDate);
+        provision.setType(Consent.ConsentProvisionType.DENY);
+        provision.setPeriod(period);
+
+        //set treatment and emergency access rule
+        Consent.provisionComponent eProvision = new Consent.provisionComponent();
+
         eProvision.setPeriod(period);
 
         eProvision.setType(Consent.ConsentProvisionType.PERMIT);
