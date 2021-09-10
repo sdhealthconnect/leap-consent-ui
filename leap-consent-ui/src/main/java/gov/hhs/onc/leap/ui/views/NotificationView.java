@@ -1309,10 +1309,9 @@ public class NotificationView extends ViewFrame {
         period.setStart(startDate);
         period.setEnd(endDate);
 
-        //set default rule provision[0]
-        Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
-        ruleProvision.setType(Consent.ConsentProvisionType.DENY);
-        provision.addProvision(ruleProvision);
+        //set default rule provision root
+        provision.setType(Consent.ConsentProvisionType.DENY);
+        provision.setPeriod(period);
 
             Consent.provisionComponent requestorProvision = new Consent.provisionComponent();
             requestorProvision.setType(Consent.ConsentProvisionType.PERMIT);
@@ -1462,10 +1461,9 @@ public class NotificationView extends ViewFrame {
         period.setStart(startDate);
         period.setEnd(endDate);
 
-        //set default rule provision[0]
-        Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
-        ruleProvision.setType(Consent.ConsentProvisionType.DENY);
-        provision.addProvision(ruleProvision);
+        //set default rule provision root
+        provision.setType(Consent.ConsentProvisionType.DENY);
+        provision.setPeriod(period);
 
         Consent.provisionComponent requestorProvision = new Consent.provisionComponent();
         requestorProvision.setType(Consent.ConsentProvisionType.PERMIT);
