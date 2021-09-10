@@ -944,9 +944,9 @@ public class SharePatientDataView extends ViewFrame {
         period.setStart(startDate);
         period.setEnd(endDate);
 
-        //set default rule provision[0]
-        Consent.provisionComponent ruleProvision = new Consent.provisionComponent();
-        ruleProvision.setType(Consent.ConsentProvisionType.PERMIT);
+        //set default rule at provision root
+
+        provision.setType(Consent.ConsentProvisionType.PERMIT);
 
         List<Coding> purposeList = new ArrayList<>();
 
@@ -960,9 +960,10 @@ public class SharePatientDataView extends ViewFrame {
         ePurposeCoding.setCode("ETREAT");
         purposeList.add(ePurposeCoding);
 
-        ruleProvision.setPurpose(purposeList);
+        provision.setPurpose(purposeList);
 
-        provision.addProvision(ruleProvision);
+        provision.setPeriod(period);
+
 
         //create provisions for classes
         if (constrainDataClass.getValue().equals(getTranslation("sharePatient-deny_access_to_following"))) {
