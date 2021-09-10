@@ -366,8 +366,8 @@ public class ConsentDocumentsView extends SplitViewFrame {
             //determine state
             ConsentDocument.Status status;
             Consent.ConsentState consentState = c.getStatus();
-            Date startDate = c.getProvision().getProvision().get(1).getPeriod().getStart();
-            Date endDate = c.getProvision().getProvision().get(1).getPeriod().getEnd();
+            Date startDate = c.getProvision().getPeriod().getStart();
+            Date endDate = c.getProvision().getPeriod().getEnd();
             if (endDate != null) {
                 if (endDate.before(new Date()) && consentState.equals(Consent.ConsentState.ACTIVE)) {
                     status = ConsentDocument.Status.EXPIRED;
