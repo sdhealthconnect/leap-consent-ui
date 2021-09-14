@@ -1,0 +1,25 @@
+{
+  "hook":"patient-consent-consult",
+  "hookInstance":"b578e0ec-98ab-11eb-a8b3-0242ac130003",
+  "context": {
+    "patientId": [
+      {
+        "system": "http://hl7.org/fhir/sid/us-ssn",
+        "value": "999-59-4308"
+      }
+    ],
+    "category": [
+      {
+        "system": "http://healthit.gov/leap/CodeSystem/consentcategorycodes",
+        "code": "patient-privacy"
+      }
+    ],
+    "purposeOfUse":["ETREAT"],
+    "actor":[
+      {
+        "system": "urn:ietf:rfc:3986",
+        "value": "urn:oid:1.1.8"
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{"hook":"patient-consent-consult",
+  "hookInstance":"b578e0ec-98ab-11eb-a8b3-0242ac130003",
+  "context":
+  {"actor":
+  [
+    {
+      "system": "urn:ietf:rfc:3986",
+      "value": "urn:oid:9.9.9"
+    }
+  ],
+    "purposeOfUse":["COVERAGE"],
+    "category": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/consentcategorycodes",
+        "code": "dnr"
+      }
+    ],
+    "patientId":
+    [
+      {"system": "http://hl7.org/fhir/sid/us-ssn",
+        "value": "999-59-4308"}
+    ]
+  }
+}
