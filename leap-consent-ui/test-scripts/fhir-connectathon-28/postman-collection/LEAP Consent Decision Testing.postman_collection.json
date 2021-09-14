@@ -1,0 +1,1343 @@
+{
+	"info": {
+		"_postman_id": "fa41858c-36ec-4532-a85c-8cf8a7daba8f",
+		"name": "LEAP Consent Decision Testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Test 1: Any-to-Any For Purposes of TREAT",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"hook\":\"patient-consent-consult\",\n    \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n    \"context\": {\n        \"patientId\": [\n        {\n            \"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n            \"value\": \"999-59-4308\"\n        }\n        ],\n        \"category\": [\n        {\n            \"system\": \"http://healthit.gov/leap/CodeSystem/consentcategorycodes\",\n            \"code\": \"patient-privacy\"\n        }\n        ],\n        \"purposeOfUse\":\"TREAT\",\n        \"actor\":[\n        {\n            \"system\": \"urn:ietf:rfc:3986\",\n            \"value\": \"urn:oid:9.9.9\"\n        }\n        ]\n  }\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 2: Any-to-Any For Purposes of ETREAT",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"hook\":\"patient-consent-consult\",\n    \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n    \"context\": {\n        \"patientId\": [\n        {\n            \"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n            \"value\": \"999-59-4308\"\n        }\n        ],\n        \"category\": [\n        {\n            \"system\": \"http://healthit.gov/leap/CodeSystem/consentcategorycodes\",\n            \"code\": \"patient-privacy\"\n        }\n        ],\n        \"purposeOfUse\":\"ETREAT\",\n        \"actor\":[\n        {\n            \"system\": \"urn:ietf:rfc:3986\",\n            \"value\": \"urn:oid:9.9.9\"\n        }\n        ]\n  }\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 3: Any-to-Any For Purposes of COVERAGE",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"NO_CONSENT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"hook\":\"patient-consent-consult\",\n    \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n    \"context\": {\n        \"patientId\": [\n        {\n            \"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n            \"value\": \"999-59-4308\"\n        }\n        ],\n        \"category\": [\n        {\n            \"system\": \"http://healthit.gov/leap/CodeSystem/consentcategorycodes\",\n            \"code\": \"patient-privacy\"\n        }\n        ],\n        \"purposeOfUse\": \"COVERAGE\",\n        \"actor\":[\n        {\n            \"system\": \"urn:ietf:rfc:3986\",\n            \"value\": \"urn:oid:9.9.9\"\n        }\n        ]\n  }\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 4: Mariposa to HealthCurrent for Purposes of TREAT",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"hook\":\"patient-consent-consult\",\n    \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n    \"context\": {\n        \"patientId\": [\n        {\n            \"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n            \"value\": \"999-59-4308\"\n        }\n        ],\n        \"category\": [\n        {\n            \"system\": \"http://healthit.gov/leap/CodeSystem/consentcategorycodes\",\n            \"code\": \"patient-privacy\"\n        }\n        ],\n        \"purposeOfUse\":\"TREAT\",\n        \"actor\":[\n        {\n            \"system\": \"urn:ietf:rfc:3986\",\n            \"value\": \"urn:oid:1.1.8\"\n        }\n        ]\n  }\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 5: Mariposa to HealthCurrent for Purposes of ETREAT",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"hook\":\"patient-consent-consult\",\n    \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n    \"context\": {\n        \"patientId\": [\n        {\n            \"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n            \"value\": \"999-59-4308\"\n        }\n        ],\n        \"category\": [\n        {\n            \"system\": \"http://healthit.gov/leap/CodeSystem/consentcategorycodes\",\n            \"code\": \"patient-privacy\"\n        }\n        ],\n        \"purposeOfUse\":\"ETREAT\",\n        \"actor\":[\n        {\n            \"system\": \"urn:ietf:rfc:3986\",\n            \"value\": \"urn:oid:1.1.8\"\n        }\n        ]\n  }\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 6: Mariposa to HealthCurrent for Purposes of TREAT BodyStructure",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_DENY\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\"system\": \"urn:ietf:rfc:3986\",\n      \"value\": \"urn:oid:1.1.8\"}\n    ],\n    \"purposeOfUse\":\"TREAT\",\n    \"category\": [\n              {\n                \"system\": \"http://healthit.gov/leap/CodeSystem/consentcategorycodes\",\n                \"code\": \"patient-privacy\"\n              }\n        ],\n    \"class\":[\n      {\n        \"system\":\"http://hl7.org/fhir/resource-types\",\n        \"code\":\"BodyStructure\"\n      }\n    ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 7: ACD Any For Purposes of TREAT",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\"system\": \"urn:ietf:rfc:3986\",\n      \"value\": \"urn:oid:9.9.9\"}\n    ],\n    \"purposeOfUse\": [\"TREAT\"],\n    \"category\": [\n            {\n            \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n            \"code\": \"acd\"\n            }\n        ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 8: ACD Any For Purposes of ETREAT",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\"system\": \"urn:ietf:rfc:3986\",\n      \"value\": \"urn:oid:9.9.9\"}\n    ],\n    \"purposeOfUse\":\"ETREAT\",\n    \"category\": [\n          {\n            \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n            \"code\": \"acd\"\n          }\n        ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 9: ACD Any For Purposes of COVERAGE",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_DENY\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\"system\": \"urn:ietf:rfc:3986\",\n      \"value\": \"urn:oid:9.9.9\"}\n    ],\n    \"purposeOfUse\":\"COVERAGE\",\n    \"category\": [\n          {\n            \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n            \"code\": \"acd\"\n        }\n    ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 10: Treatment Any For Purposes of TREAT MedicationRequest",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_DENY\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\"system\": \"urn:ietf:rfc:3986\",\n      \"value\": \"urn:oid:9.9.9\"}\n    ],\n    \"purposeOfUse\":\"TREAT\",\n    \"category\": [\n          {\n            \"system\": \"http://healthit.gov/leap/CodeSystem/consentcategorycodes\",\n            \"code\": \"treatment\"\n          }\n        ],\n    \"class\":[\n      {\n        \"system\":\"http://hl7.org/fhir/resource-types\",\n        \"code\":\"MedicationRequest\"\n      }\n    ],    \n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 11: Treatment Any For Purposes of ETREAT MedicationRequest",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_DENY\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\"system\": \"urn:ietf:rfc:3986\",\n      \"value\": \"urn:oid:9.9.9\"}\n    ],\n    \"purposeOfUse\":\"ETREAT\",\n    \"category\": [\n          {\n            \"system\": \"http://healthit.gov/leap/CodeSystem/consentcategorycodes\",\n            \"code\": \"treatment\"\n          }\n        ],\n    \"class\":[\n      {\n        \"system\":\"http://hl7.org/fhir/resource-types\",\n        \"code\":\"MedicationRequest\"\n      }\n    ],    \n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 12: Treatment AUTHOR For Purposes of TREAT MedicationRequest",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-npi\",\n      \"value\": \"9999964479\"\n      }\n    ],\n    \"purposeOfUse\":\"TREAT\",\n    \"category\": [\n        {\n            \"system\": \"http://healthit.gov/leap/CodeSystem/consentcategorycodes\",\n            \"code\": \"treatment\"\n        }\n        ],\n    \"class\":[\n      {\n        \"system\":\"http://hl7.org/fhir/resource-types\",\n        \"code\":\"MedicationRequest\"\n      }\n    ],    \n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 13: Treatment AUTHOR For Purposes of TREAT MedicationRequest If Declined",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_DENY\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-npi\",\n      \"value\": \"9999964479\"\n      }\n    ],\n    \"purposeOfUse\":\"TREAT\",\n    \"category\": [\n        {\n            \"system\": \"http://healthit.gov/leap/CodeSystem/consentcategorycodes\",\n            \"code\": \"treatment\"\n        }\n    ],\n    \"class\":[\n      {\n        \"system\":\"http://hl7.org/fhir/resource-types\",\n        \"code\":\"MedicationRequest\"\n      }\n    ],    \n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 14: Research Any For Purposes of HRESCH",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_DENY\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\"system\": \"urn:ietf:rfc:3986\",\n      \"value\": \"urn:oid:9.9.9\"\n      }\n    ],\n    \"purposeOfUse\":\"HRESCH\",\n    \"category\": [\n          {\n            \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n            \"code\": \"research\"\n          }\n        ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 15: Research ASU For Purposes of HRESCH No Consent",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_DENY\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\n       \"system\": \"urn:ietf:rfc:3986\",\n       \"value\": \"urn:oid:1.1.1.10\"\n      }\n    ],\n    \"purposeOfUse\":\"HRESCH\",\n    \"category\": [\n        {\n            \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n            \"code\": \"research\"\n        }\n        ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 16: Research ASU For Purposes of HRESCH Consent Granted",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\n       \"system\": \"urn:ietf:rfc:3986\",\n       \"value\": \"urn:oid:1.1.1.10\"\n      }\n    ],\n    \"purposeOfUse\":\"HRESCH\",\n    \"category\": [\n        {\n            \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n            \"code\": \"research\"\n        }\n        ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 17: Research ASU For Purposes of HRESCH Consent Revoked",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_DENY\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\n       \"system\": \"urn:ietf:rfc:3986\",\n       \"value\": \"urn:oid:1.1.1.10\"\n      }\n    ],\n    \"purposeOfUse\":\"HRESCH\",\n    \"category\": [\n        {\n            \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n            \"code\": \"research\"\n        }\n    ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 18: DNR Any For Purposes of TREAT",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\n       \"system\": \"urn:ietf:rfc:3986\",\n       \"value\": \"urn:oid:9.9.9\"\n      }\n    ],\n    \"purposeOfUse\":\"TREAT\",\n    \"category\": [\n          {\n            \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n            \"code\": \"dnr\"\n          }\n        ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 19: DNR Any For Purposes of ETREAT",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\n       \"system\": \"urn:ietf:rfc:3986\",\n       \"value\": \"urn:oid:9.9.9\"\n      }\n    ],\n    \"purposeOfUse\":\"ETREAT\",\n    \"category\": [\n        {\n            \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n            \"code\": \"dnr\"\n        }\n    ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 20: DNR Any For Purposes of COVERAGE",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_DENY\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\n       \"system\": \"urn:ietf:rfc:3986\",\n       \"value\": \"urn:oid:9.9.9\"\n      }\n    ],\n    \"purposeOfUse\":\"COVERAGE\",\n    \"category\": [\n        {\n            \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n            \"code\": \"dnr\"\n        }\n    ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 21: POLST Any For Purposes of TREAT",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\n       \"system\": \"urn:ietf:rfc:3986\",\n       \"value\": \"urn:oid:9.9.9\"\n      }\n    ],\n    \"purposeOfUse\":\"TREAT\",\n    \"category\": [\n        {\n            \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n            \"code\": \"polst\"\n        }\n    ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 22: POLST Any For Purposes of ETREAT",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_PERMIT\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\n       \"system\": \"urn:ietf:rfc:3986\",\n       \"value\": \"urn:oid:9.9.9\"\n      }\n    ],\n    \"purposeOfUse\":\"ETREAT\",\n    \"category\": [\n        {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n                \"code\": \"polst\"\n        }\n    ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test 23: POLST Any For Purposes of COVERAGE",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"CONSENT_DENY\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"hook\":\"patient-consent-consult\",\n  \"hookInstance\":\"b578e0ec-98ab-11eb-a8b3-0242ac130003\",\n  \"context\":\n  {\"actor\":\n    [\n      {\n       \"system\": \"urn:ietf:rfc:3986\",\n       \"value\": \"urn:oid:9.9.9\"\n      }\n    ],\n    \"purposeOfUse\":\"COVERAGE\",\n    \"category\": [\n        {\n                \"system\": \"http://terminology.hl7.org/CodeSystem/consentcategorycodes\",\n                \"code\": \"polst\"\n        }\n    ],\n    \"patientId\":\n    [\n      {\"system\": \"http://hl7.org/fhir/sid/us-ssn\",\n      \"value\": \"999-59-4308\"}\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://sdhc-leap.appspot.com/cds-services/patient-consent-consult",
+					"protocol": "https",
+					"host": [
+						"sdhc-leap",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"cds-services",
+						"patient-consent-consult"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

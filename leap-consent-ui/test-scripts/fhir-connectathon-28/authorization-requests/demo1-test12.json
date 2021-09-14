@@ -1,0 +1,29 @@
+{"hook":"patient-consent-consult",
+  "hookInstance":"b578e0ec-98ab-11eb-a8b3-0242ac130003",
+  "context":
+  {"actor":
+  [
+    {"system": "http://hl7.org/fhir/sid/us-npi",
+      "value": "9999964479"
+    }
+  ],
+    "purposeOfUse":["TREAT"],
+    "category": [
+      {
+        "system": "http://healthit.gov/leap/CodeSystem/consentcategorycodes",
+        "code": "treatment"
+      }
+    ],
+    "class":[
+      {
+        "system":"http://hl7.org/fhir/resource-types",
+        "code":"MedicationRequest"
+      }
+    ],
+    "patientId":
+    [
+      {"system": "http://hl7.org/fhir/sid/us-ssn",
+        "value": "999-59-4308"}
+    ]
+  }
+}
