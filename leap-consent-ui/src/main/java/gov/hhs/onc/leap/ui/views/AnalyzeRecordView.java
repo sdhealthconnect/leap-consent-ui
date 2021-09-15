@@ -245,7 +245,7 @@ public class AnalyzeRecordView extends ViewFrame {
                 String results = sls.requestLabelingSecured(id, orgin, msgSource, msgVersion, msg);
 
                 if (results.contains("RESTRICTED")) sensitivitiesFound = true;
-                noteResults = fhirResourceName +": "+ results + "\n";
+                noteResults = noteResults + fhirResourceName +": "+ results + "\n";
                 notesField.setValue(noteResults);
 
             } catch (Exception ex) {
