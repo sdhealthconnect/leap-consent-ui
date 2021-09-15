@@ -40,7 +40,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
+import java.util.*;
 
 
 @PageTitle("Analyze Your Clinical Record")
@@ -212,46 +212,61 @@ public class AnalyzeRecordView extends ViewFrame {
     }
 
     private void analyzeInstreamFHIR() {
+        // fhir resources to evaluate
+        String[] fhirResourceArray = {"Condition", "DiagnosticReport", "Encounter", "EpisodeOfCare", "Immunization", "MedicationStatement", "Observation", "Procedure"};
+        List<String> fhirResourceList = new ArrayList<>(new ArrayList(Arrays.asList(fhirResourceArray)));
+        boolean sensitivitiesFound = false;
         hieButton.setEnabled(false);
         SLSRequestClient sls = new SLSRequestClient(slsHost);
-        String id = UUID.randomUUID().toString();
-        String orgin = "LEAP Consent UI";
-        String msgSource = "FHIR";
-        String msgVersion = "4.0.1";
-        try {
+        Iterator iter = fhirResourceList.iterator();
+        String fhirResourceName = "";
+        String noteResults = "";
+        while (iter.hasNext()) {
+            fhirResourceName = (String)iter.next();
+            String id = UUID.randomUUID().toString();
+            String orgin = "LEAP Consent UI";
+            String msgSource = "FHIR";
+            String msgVersion = "4.0.1";
+            try {
 
-            String uri = baseURL + "Patient/" + consentSession.getFhirPatientId() + "/$everything";
-
-
-            IGenericClient client = fhirContext.newRestfulGenericClient(baseURL);
-
-            Bundle bundle = client.search().byUrl(uri).returnBundle(Bundle.class).execute();
-
-            IParser parser = fhirContext.newJsonParser();
-
-            String msg = parser.encodeResourceToString(bundle);
+                outcomeField.setValue("Processing FHIR Resource -"+fhirResourceName);
+                String uri = baseURL + fhirResourceName+"?patient=" + consentSession.getFhirPatientId();
 
 
-            String results = sls.requestLabelingSecured(id, orgin, msgSource, msgVersion, msg);
-            if (results.contains("NON-RESTRICTED")){
-                outcomeField.setValue(getTranslation("analyzeRecordView-normal_msg"));
+                IGenericClient client = fhirContext.newRestfulGenericClient(baseURL);
+
+                Bundle bundle = client.search().byUrl(uri).returnBundle(Bundle.class).execute();
+
+                IParser parser = fhirContext.newJsonParser();
+
+                String msg = parser.encodeResourceToString(bundle);
+
+
+                String results = sls.requestLabelingSecured(id, orgin, msgSource, msgVersion, msg);
+
+                if (results.contains("RESTRICTED")) sensitivitiesFound = true;
+                noteResults = fhirResourceName +": "+ results + "\n";
+                notesField.setValue(noteResults);
+
+            } catch (Exception ex) {
+                outcomeField.setValue("ERROR");
+                notesField.setValue(noteResults +fhirResourceName +": Error procession bundle instream " + ex.getMessage() +"\n");
+                clearButton.setEnabled(true);
+                processFileButton.setEnabled(false);
+                ex.printStackTrace();
             }
-            else if (results.contains("RESTRICTED")) {
-                outcomeField.setValue(getTranslation("analyzeRecordView-restricted_msg"));
-            }
-            else {
-                outcomeField.setValue(getTranslation("analyzeRecordView-error_msg"));
-            }
-            notesField.setValue(results);
-            clearButton.setEnabled(true);
-            processFileButton.setEnabled(false);
         }
-        catch (Exception ex) {
-            outcomeField.setValue("ERROR");
-            notesField.setValue("Failed processing Instream FHIR bundle: "+ex.getMessage());
-            clearButton.setEnabled(true);
-            processFileButton.setEnabled(false);
-            ex.printStackTrace();
+        if (!sensitivitiesFound){
+            outcomeField.setValue(getTranslation("analyzeRecordView-normal_msg"));
         }
+        else if (sensitivitiesFound) {
+            outcomeField.setValue(getTranslation("analyzeRecordView-restricted_msg"));
+        }
+        else {
+            outcomeField.setValue(getTranslation("analyzeRecordView-error_msg"));
+        }
+        clearButton.setEnabled(true);
+        processFileButton.setEnabled(false);
     }
+
 }
