@@ -6,7 +6,7 @@ import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.PWA;
 
 
-@PWA(name = "LEAP Consent", shortName = "LEAP Consent", iconPath = "images/logos/healthit-logo.png", backgroundColor = "#233348", themeColor = "#233348")
+@PWA(name = "LEAP Consent", shortName = "LEAP Consent", iconPath = "images/logos/va-logo.png", backgroundColor = "#233348", themeColor = "#233348")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 public class AppShell implements AppShellConfigurator {
 

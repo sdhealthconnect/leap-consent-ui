@@ -70,6 +70,7 @@ public class NaviDrawer extends Div
 
 	private void initMainContent() {
 		mainContent = new Div();
+		mainContent.getStyle().set("background", "blue");
 		mainContent.addClassName(CLASS_NAME + "__content");
 		add(mainContent);
 	}
@@ -89,6 +90,7 @@ public class NaviDrawer extends Div
 
 	private void initMenu() {
 		menu = new NaviMenu();
+		menu.getStyle().set("background", "white");
 		mainContent.add(menu);
 	}
 
@@ -97,6 +99,7 @@ public class NaviDrawer extends Div
 		railButton.addClassName(CLASS_NAME + "__footer");
 		railButton.addClickListener(event -> toggleRailMode());
 		railButton.getElement().setAttribute("aria-label", "Collapse menu");
+		railButton.getStyle().set("background", "white");
 		mainContent.add(railButton);
 	}
 

@@ -8,6 +8,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import gov.hhs.onc.leap.ui.util.UIUtils;
 
 
 @Tag("sa-login-view")
@@ -21,8 +22,8 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 	public LoginView(){
 		login.setAction("login");
 		login.setOpened(true);
-		login.setTitle("FHIR Consent");
-		login.setDescription("A Leading Edge Acceleration Project");
+		login.setTitle("ACORN Project");
+		login.setDescription("HIMSS2022 Demonstrations of SDOH");
 		login.setForgotPasswordButtonVisible(false);
 		getElement().appendChild(login.getElement());
 	}

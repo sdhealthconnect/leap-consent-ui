@@ -109,7 +109,7 @@ public class NaviItem extends ListItem {
 		subItems.add(item);
 	}
 
-	private void setSubItemsVisible(boolean visible) {
+	public void setSubItemsVisible(boolean visible) {
 		if (level == 0) {
 			expandCollapse.setIcon(new Icon(visible ? VaadinIcon.CARET_UP : VaadinIcon.CARET_DOWN));
 		}
