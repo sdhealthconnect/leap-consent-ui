@@ -158,15 +158,7 @@ public class MainLayout extends FlexBoxLayout
 	private void initNaviItems() {
 		NaviMenu menu = naviDrawer.getMenu();
 		menu.addNaviItem(VaadinIcon.HOME, getTranslation("mainLayout-menu-home"), Home.class);
-		NaviItem acornNav = menu.addNaviItem(VaadinIcon.FAMILY, "ACORN", AcornHome.class);
-		menu.addNaviItem(acornNav, "Food Security", FoodSecurity.class);
-		menu.addNaviItem(acornNav, "Housing Insecurity", HousingInsecurity.class);
-		menu.addNaviItem(acornNav, "Utility Needs", UtilityNeeds.class);
-		menu.addNaviItem(acornNav, "Transportation Access", TransportationAccess.class);
-		menu.addNaviItem(acornNav, "Personal Safety", PersonalSafety.class);
-		menu.addNaviItem(acornNav, "Social Support", SocialSupport.class);
-		menu.addNaviItem(acornNav, "Employment and Education", EmploymentAndEducation.class);
-		menu.addNaviItem(acornNav, "Legal Support", LegalSupport.class);
+		menu.addNaviItem(VaadinIcon.FAMILY, "ACORN", AcornHome.class);
 		menu.addNaviItem(VaadinIcon.RECORDS, getTranslation("mainLayout-menu-my_consent_documents"), ConsentDocumentsView.class);
 		menu.addNaviItem(VaadinIcon.COGS, getTranslation("mainLayout-menu-analyze_my_data"), AnalyzeRecordView.class);
 		menu.addNaviItem(VaadinIcon.SHARE, getTranslation("mainLayout-menu-share_my_data"), SharePatientDataView.class);

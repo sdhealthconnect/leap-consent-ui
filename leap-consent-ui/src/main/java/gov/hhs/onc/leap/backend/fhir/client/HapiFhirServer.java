@@ -499,4 +499,9 @@ public class HapiFhirServer {
                 .execute();
         return bundle;
     }
+
+    public Collection<MedicationStatement> getMedicationStatementByPatientid(String patientId) {
+        Collection<MedicationStatement> mList = new ArrayList<>();
+        return mList;
+    }
 }

@@ -289,4 +289,61 @@
         </loadUpdateData>
         <sql>SET FOREIGN_KEY_CHECKS=1;</sql>
     </changeSet>
+    <changeSet id="00000000000008" author="duane" logicalFilePath="changelog.xml" labels="createSDOHOrganization">
+        <createTable tableName="sdohorganization">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="type" type="varchar(80)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="city" type="varchar(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="postalcode" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phonenumber" type="varchar(13)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="emailaddress" type="varchar(80)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="daysopen" type="varchar(250)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="hoursofoperation" type="varchar(250)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="parentorganizationid" type="varchar(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parentorganizationname" type="varchar(200)">
+                    <constraints nullable="false"/>
+            </column>
+            <column name="statewide" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="00000000000009" author="duane" logicalFilePath="changelog.xml" labels="createSDOHOrganization">
+        <addColumn tableName="sdohorganization">
+            <column name="county" type="varchar(100)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="00000000000010" author="duane" logicalFilePath="changelog.xml" labels="createSDOHOrganization">
+        <addColumn tableName="sdohorganization">
+            <column name="programname" type="varchar(100)"/>
+            <column name="website" type="varchar(150)"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
