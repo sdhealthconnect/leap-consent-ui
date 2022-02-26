@@ -3,15 +3,22 @@ package gov.hhs.onc.leap.ui.views.acorn;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
+import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
+import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -24,6 +31,9 @@ import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.backend.model.SDOHOrganization;
 import gov.hhs.onc.leap.backend.repository.SDOHOrganizationRepository;
+import gov.hhs.onc.leap.sdoh.data.ACORNDisplayData;
+import gov.hhs.onc.leap.sdoh.model.QuestionnaireItem;
+import gov.hhs.onc.leap.sdoh.model.QuestionnaireSection;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -68,6 +78,31 @@ public class AcornHome extends ViewFrame {
     private String currentType = "Housing";
 
     private FlexBoxLayout introPage;
+
+    //questionnaire layouts
+    private FlexBoxLayout qLivingSituation1Layout;
+    private FlexBoxLayout qLivingSituation2Layout;
+    private FlexBoxLayout qFoodLayout1;
+    private FlexBoxLayout qFoodLayout2;
+    private FlexBoxLayout qTransportationAccessLayout1;
+    private FlexBoxLayout qUtilitiesLayout;
+    private FlexBoxLayout qSafetyLayout1;
+    private FlexBoxLayout qSafetyLayout2;
+    private FlexBoxLayout qSafetyLayout3;
+    private FlexBoxLayout qSafetyLayout4;
+    private FlexBoxLayout qFinancialStrainLayout;
+    private FlexBoxLayout qEmploymentLayout;
+    private FlexBoxLayout qFamilyCommunitySupportLayout1;
+    private FlexBoxLayout qFamilyCommunitySupportLayout2;
+    private FlexBoxLayout qEducationLayout1;
+    private FlexBoxLayout qEducationLayout2;
+    private FlexBoxLayout qLegal;
+
+
+
+
+
+    //referral select layouts
     private FlexBoxLayout housingInsecurityLayout;
     private FlexBoxLayout foodSecurityLayout;
     private FlexBoxLayout utilityNeedsLayout;
@@ -93,8 +128,14 @@ public class AcornHome extends ViewFrame {
     private Dialog docDialog;
     private byte[] consentPDFAsByteArray;
 
+    private boolean questionnaireComplete = false;
+
+    private CheckboxGroup<QuestionnaireItem> q2Group;
+    private Checkbox noneOfAboveBox;
+
     private List<SDOHOrganization> selectedSDOHOrganizations = new ArrayList<>();
 
+    private ACORNDisplayData displayData;
 
 
     @Autowired
@@ -110,6 +151,7 @@ public class AcornHome extends ViewFrame {
         setId("acornhome");
         this.consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
         this.consentUser = consentSession.getConsentUser();
+        this.displayData = new ACORNDisplayData();
         setViewContent(createViewContent());
         setViewFooter(getFooter());
     }
@@ -127,8 +169,30 @@ public class AcornHome extends ViewFrame {
         createEmploymentEductionAction();
         createLegalSupportAction();
         createSignatureRequirements();
+        createLivingSituation1();
+        createLivingSituation2();
+        createFood1();
+        createFood2();
+        createTransportation();
+        createUtilitiesNeeds();
+        createPersonalSafety1();
+        createPersonalSafety2();
+        createPersonalSafety3();
+        createPersonalSafety4();
+        createFinancialStrain();
+        createEmployment();
+        createEducation1();
+        createEducation2();
+        createFamilySupport1();
+        createFamilySupport2();
+        createLegalSupport();
 
-        FlexBoxLayout content = new FlexBoxLayout(introPage, housingInsecurityLayout, foodSecurityLayout, utilityNeedsLayout, transportationAccessLayout, personalSafetyLayout, socialSupportLayout, employmentEducationLayout, legalSupportLayout, signatureRequirements);
+        FlexBoxLayout content = new FlexBoxLayout(introPage, qLivingSituation1Layout,
+                qLivingSituation2Layout, qFoodLayout1, qFoodLayout2, qTransportationAccessLayout1,
+                qUtilitiesLayout, qSafetyLayout1, qSafetyLayout2, qSafetyLayout3, qSafetyLayout4,
+                qFinancialStrainLayout, qEmploymentLayout, qEducationLayout1, qEducationLayout2,
+                qFamilyCommunitySupportLayout1, qFamilyCommunitySupportLayout2, qLegal,
+                housingInsecurityLayout, foodSecurityLayout, utilityNeedsLayout, transportationAccessLayout, personalSafetyLayout, socialSupportLayout, employmentEducationLayout, legalSupportLayout, signatureRequirements);
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -458,196 +522,680 @@ public class AcornHome extends ViewFrame {
     }
 
     private void evalNavigation() {
-        switch (questionPosition) {
-            case 0:
-                beginQuestionnaire.setVisible(true);
-                returnButton.setVisible(false);
-                forwardButton.setVisible(false);
-                declineButton.setVisible(false);
-                introPage.setVisible(true);
-                housingInsecurityLayout.setVisible(false);
-                foodSecurityLayout.setVisible(false);
-                utilityNeedsLayout.setVisible(false);
-                transportationAccessLayout.setVisible(false);
-                personalSafetyLayout.setVisible(false);
-                socialSupportLayout.setVisible(false);
-                employmentEducationLayout.setVisible(false);
-                legalSupportLayout.setVisible(false);
-                signatureRequirements.setVisible(false);
-                break;
-            case 1:
-                beginQuestionnaire.setVisible(false);
-                returnButton.setVisible(true);
-                forwardButton.setVisible(true);
-                declineButton.setVisible(true);
-                introPage.setVisible(false);
-                housingInsecurityLayout.setVisible(true);
-                foodSecurityLayout.setVisible(false);
-                utilityNeedsLayout.setVisible(false);
-                transportationAccessLayout.setVisible(false);
-                personalSafetyLayout.setVisible(false);
-                socialSupportLayout.setVisible(false);
-                employmentEducationLayout.setVisible(false);
-                legalSupportLayout.setVisible(false);
-                signatureRequirements.setVisible(false);
-                break;
-            case 2:
-                beginQuestionnaire.setVisible(false);
-                returnButton.setVisible(true);
-                forwardButton.setVisible(true);
-                declineButton.setVisible(true);
-                introPage.setVisible(false);
-                housingInsecurityLayout.setVisible(false);
-                foodSecurityLayout.setVisible(true);
-                utilityNeedsLayout.setVisible(false);
-                transportationAccessLayout.setVisible(false);
-                personalSafetyLayout.setVisible(false);
-                socialSupportLayout.setVisible(false);
-                employmentEducationLayout.setVisible(false);
-                legalSupportLayout.setVisible(false);
-                signatureRequirements.setVisible(false);
-                break;
-            case 3:
-                beginQuestionnaire.setVisible(false);
-                returnButton.setVisible(true);
-                forwardButton.setVisible(true);
-                declineButton.setVisible(true);
-                introPage.setVisible(false);
-                housingInsecurityLayout.setVisible(false);
-                foodSecurityLayout.setVisible(false);
-                utilityNeedsLayout.setVisible(true);
-                transportationAccessLayout.setVisible(false);
-                personalSafetyLayout.setVisible(false);
-                socialSupportLayout.setVisible(false);
-                employmentEducationLayout.setVisible(false);
-                legalSupportLayout.setVisible(false);
-                signatureRequirements.setVisible(false);
-                break;
-            case 4:
-                beginQuestionnaire.setVisible(false);
-                returnButton.setVisible(true);
-                forwardButton.setVisible(true);
-                declineButton.setVisible(true);
-                introPage.setVisible(false);
-                housingInsecurityLayout.setVisible(false);
-                foodSecurityLayout.setVisible(false);
-                utilityNeedsLayout.setVisible(false);
-                transportationAccessLayout.setVisible(true);
-                personalSafetyLayout.setVisible(false);
-                socialSupportLayout.setVisible(false);
-                employmentEducationLayout.setVisible(false);
-                legalSupportLayout.setVisible(false);
-                signatureRequirements.setVisible(false);
-                break;
-            case 5:
-                beginQuestionnaire.setVisible(false);
-                returnButton.setVisible(true);
-                forwardButton.setVisible(true);
-                declineButton.setVisible(true);
-                introPage.setVisible(false);
-                housingInsecurityLayout.setVisible(false);
-                foodSecurityLayout.setVisible(false);
-                utilityNeedsLayout.setVisible(false);
-                transportationAccessLayout.setVisible(false);
-                personalSafetyLayout.setVisible(true);
-                socialSupportLayout.setVisible(false);
-                employmentEducationLayout.setVisible(false);
-                legalSupportLayout.setVisible(false);
-                signatureRequirements.setVisible(false);
-                break;
-            case 6:
-                beginQuestionnaire.setVisible(false);
-                returnButton.setVisible(true);
-                forwardButton.setVisible(true);
-                declineButton.setVisible(true);
-                introPage.setVisible(false);
-                housingInsecurityLayout.setVisible(false);
-                foodSecurityLayout.setVisible(false);
-                utilityNeedsLayout.setVisible(false);
-                transportationAccessLayout.setVisible(false);
-                personalSafetyLayout.setVisible(false);
-                socialSupportLayout.setVisible(true);
-                employmentEducationLayout.setVisible(false);
-                legalSupportLayout.setVisible(false);
-                signatureRequirements.setVisible(false);
-                break;
-            case 7:
-                beginQuestionnaire.setVisible(false);
-                returnButton.setVisible(true);
-                forwardButton.setVisible(true);
-                declineButton.setVisible(true);
-                introPage.setVisible(false);
-                housingInsecurityLayout.setVisible(false);
-                foodSecurityLayout.setVisible(false);
-                utilityNeedsLayout.setVisible(false);
-                transportationAccessLayout.setVisible(false);
-                personalSafetyLayout.setVisible(false);
-                socialSupportLayout.setVisible(false);
-                employmentEducationLayout.setVisible(true);
-                legalSupportLayout.setVisible(false);
-                signatureRequirements.setVisible(false);
-                break;
-            case 8:
-                beginQuestionnaire.setVisible(false);
-                returnButton.setVisible(true);
-                forwardButton.setVisible(true);
-                declineButton.setVisible(true);
-                introPage.setVisible(false);
-                housingInsecurityLayout.setVisible(false);
-                foodSecurityLayout.setVisible(false);
-                utilityNeedsLayout.setVisible(false);
-                transportationAccessLayout.setVisible(false);
-                personalSafetyLayout.setVisible(false);
-                socialSupportLayout.setVisible(false);
-                employmentEducationLayout.setVisible(false);
-                legalSupportLayout.setVisible(true);
-                signatureRequirements.setVisible(false);
-                break;
-            case 9:
-                beginQuestionnaire.setVisible(false);
-                returnButton.setVisible(true);
-                forwardButton.setVisible(false);
-                declineButton.setVisible(false);
-                introPage.setVisible(false);
-                housingInsecurityLayout.setVisible(false);
-                foodSecurityLayout.setVisible(false);
-                utilityNeedsLayout.setVisible(false);
-                transportationAccessLayout.setVisible(false);
-                personalSafetyLayout.setVisible(false);
-                socialSupportLayout.setVisible(false);
-                employmentEducationLayout.setVisible(false);
-                legalSupportLayout.setVisible(false);
-                signatureRequirements.setVisible(true);
-                break;
+        if (!questionnaireComplete) {
+            forwardButton.setText("Next");
+            housingInsecurityLayout.setVisible(false);
+            foodSecurityLayout.setVisible(false);
+            utilityNeedsLayout.setVisible(false);
+            transportationAccessLayout.setVisible(false);
+            personalSafetyLayout.setVisible(false);
+            socialSupportLayout.setVisible(false);
+            employmentEducationLayout.setVisible(false);
+            legalSupportLayout.setVisible(false);
+            signatureRequirements.setVisible(false);
+            switch (questionPosition) {
+                case 0:
+                    beginQuestionnaire.setVisible(true);
+                    returnButton.setVisible(false);
+                    forwardButton.setVisible(false);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(true);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 1:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(true);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    break;
+                case 2:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(true);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 3:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(true);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 4:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(true);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 5:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(true);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 6:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(true);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 7:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(true);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 8:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(true);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 9:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(true);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 10:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(true);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 11:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(true);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 12:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(true);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 13:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(true);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 14:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(true);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 15:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(true);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+                    break;
+                case 16:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(true);
+                    qLegal.setVisible(false);
+                    break;
+                case 17:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(true);
+                    break;
+                case 18:
+                    Notification notification = Notification.show("Congrats! You've completed the ACORN questionnaire.");
+                    notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+                    forwardButton.setText("Accept");
+                    questionnaireComplete = true;
+                    questionPosition = 0;
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(true);
+                    beginQuestionnaire.setVisible(false);
+                    introPage.setVisible(false);
+                    qLivingSituation1Layout.setVisible(false);
+                    qLivingSituation2Layout.setVisible(false);
+                    qFoodLayout1.setVisible(false);
+                    qFoodLayout2.setVisible(false);
+                    qTransportationAccessLayout1.setVisible(false);
+                    qUtilitiesLayout.setVisible(false);
+                    qSafetyLayout1.setVisible(false);
+                    qSafetyLayout2.setVisible(false);
+                    qSafetyLayout3.setVisible(false);
+                    qSafetyLayout4.setVisible(false);
+                    qFinancialStrainLayout.setVisible(false);
+                    qEmploymentLayout.setVisible(false);
+                    qEducationLayout1.setVisible(false);
+                    qEducationLayout2.setVisible(false);
+                    qFamilyCommunitySupportLayout1.setVisible(false);
+                    qFamilyCommunitySupportLayout2.setVisible(false);
+                    qLegal.setVisible(false);
+
+                    housingInsecurityLayout.setVisible(true);
+                    foodSecurityLayout.setVisible(false);
+                    utilityNeedsLayout.setVisible(false);
+                    transportationAccessLayout.setVisible(false);
+                    personalSafetyLayout.setVisible(false);
+                    socialSupportLayout.setVisible(false);
+                    employmentEducationLayout.setVisible(false);
+                    legalSupportLayout.setVisible(false);
+                    signatureRequirements.setVisible(false);
+                    break;
+            }
+        }
+        else {
+            forwardButton.setText("Accept");
+            beginQuestionnaire.setVisible(false);
+            introPage.setVisible(false);
+            qLivingSituation1Layout.setVisible(false);
+            qLivingSituation2Layout.setVisible(false);
+            qFoodLayout1.setVisible(false);
+            qFoodLayout2.setVisible(false);
+            qTransportationAccessLayout1.setVisible(false);
+            qUtilitiesLayout.setVisible(false);
+            qSafetyLayout1.setVisible(false);
+            qSafetyLayout2.setVisible(false);
+            qSafetyLayout3.setVisible(false);
+            qSafetyLayout4.setVisible(false);
+            qFinancialStrainLayout.setVisible(false);
+            qEmploymentLayout.setVisible(false);
+            qEducationLayout1.setVisible(false);
+            qEducationLayout2.setVisible(false);
+            qFamilyCommunitySupportLayout1.setVisible(false);
+            qFamilyCommunitySupportLayout2.setVisible(false);
+            qLegal.setVisible(false);
+            switch (questionPosition) {
+                case 0:
+                    returnButton.setVisible(false);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(true);
+                    housingInsecurityLayout.setVisible(true);
+                    foodSecurityLayout.setVisible(false);
+                    utilityNeedsLayout.setVisible(false);
+                    transportationAccessLayout.setVisible(false);
+                    personalSafetyLayout.setVisible(false);
+                    socialSupportLayout.setVisible(false);
+                    employmentEducationLayout.setVisible(false);
+                    legalSupportLayout.setVisible(false);
+                    signatureRequirements.setVisible(false);
+                    break;
+                case 1:
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(true);
+                    housingInsecurityLayout.setVisible(false);
+                    foodSecurityLayout.setVisible(true);
+                    utilityNeedsLayout.setVisible(false);
+                    transportationAccessLayout.setVisible(false);
+                    personalSafetyLayout.setVisible(false);
+                    socialSupportLayout.setVisible(false);
+                    employmentEducationLayout.setVisible(false);
+                    legalSupportLayout.setVisible(false);
+                    signatureRequirements.setVisible(false);
+                    break;
+                case 2:
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(true);
+                    housingInsecurityLayout.setVisible(false);
+                    foodSecurityLayout.setVisible(false);
+                    utilityNeedsLayout.setVisible(true);
+                    transportationAccessLayout.setVisible(false);
+                    personalSafetyLayout.setVisible(false);
+                    socialSupportLayout.setVisible(false);
+                    employmentEducationLayout.setVisible(false);
+                    legalSupportLayout.setVisible(false);
+                    signatureRequirements.setVisible(false);
+                    break;
+                case 3:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(true);
+                    housingInsecurityLayout.setVisible(false);
+                    foodSecurityLayout.setVisible(false);
+                    utilityNeedsLayout.setVisible(false);
+                    transportationAccessLayout.setVisible(true);
+                    personalSafetyLayout.setVisible(false);
+                    socialSupportLayout.setVisible(false);
+                    employmentEducationLayout.setVisible(false);
+                    legalSupportLayout.setVisible(false);
+                    signatureRequirements.setVisible(false);
+                    break;
+                case 4:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(true);
+                    housingInsecurityLayout.setVisible(false);
+                    foodSecurityLayout.setVisible(false);
+                    utilityNeedsLayout.setVisible(false);
+                    transportationAccessLayout.setVisible(false);
+                    personalSafetyLayout.setVisible(true);
+                    socialSupportLayout.setVisible(false);
+                    employmentEducationLayout.setVisible(false);
+                    legalSupportLayout.setVisible(false);
+                    signatureRequirements.setVisible(false);
+                    break;
+                case 5:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(true);
+                    housingInsecurityLayout.setVisible(false);
+                    foodSecurityLayout.setVisible(false);
+                    utilityNeedsLayout.setVisible(false);
+                    transportationAccessLayout.setVisible(false);
+                    personalSafetyLayout.setVisible(false);
+                    socialSupportLayout.setVisible(true);
+                    employmentEducationLayout.setVisible(false);
+                    legalSupportLayout.setVisible(false);
+                    signatureRequirements.setVisible(false);
+                    break;
+                case 6:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(true);
+                    housingInsecurityLayout.setVisible(false);
+                    foodSecurityLayout.setVisible(false);
+                    utilityNeedsLayout.setVisible(false);
+                    transportationAccessLayout.setVisible(false);
+                    personalSafetyLayout.setVisible(false);
+                    socialSupportLayout.setVisible(false);
+                    employmentEducationLayout.setVisible(true);
+                    legalSupportLayout.setVisible(false);
+                    signatureRequirements.setVisible(false);
+                    break;
+                case 7:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(true);
+                    declineButton.setVisible(true);
+                    housingInsecurityLayout.setVisible(false);
+                    foodSecurityLayout.setVisible(false);
+                    utilityNeedsLayout.setVisible(false);
+                    transportationAccessLayout.setVisible(false);
+                    personalSafetyLayout.setVisible(false);
+                    socialSupportLayout.setVisible(false);
+                    employmentEducationLayout.setVisible(false);
+                    legalSupportLayout.setVisible(true);
+                    signatureRequirements.setVisible(false);
+                    break;
+                case 8:
+                    beginQuestionnaire.setVisible(false);
+                    returnButton.setVisible(true);
+                    forwardButton.setVisible(false);
+                    declineButton.setVisible(false);
+                    housingInsecurityLayout.setVisible(false);
+                    foodSecurityLayout.setVisible(false);
+                    utilityNeedsLayout.setVisible(false);
+                    transportationAccessLayout.setVisible(false);
+                    personalSafetyLayout.setVisible(false);
+                    socialSupportLayout.setVisible(false);
+                    employmentEducationLayout.setVisible(false);
+                    legalSupportLayout.setVisible(false);
+                    signatureRequirements.setVisible(true);
+                    break;
+            }
         }
     }
 
     private void evalDecline() {
-        switch(questionPosition) {
-            case 1:
-                housinggrid.getSelectionModel().deselectAll();
-                break;
-            case 2:
-                foodgrid.getSelectionModel().deselectAll();
-                break;
-            case 3:
-                utilitygrid.getSelectionModel().deselectAll();
-                break;
-            case 4:
-                transportationgrid.getSelectionModel().deselectAll();
-                break;
-            case 5:
-                personalgrid.getSelectionModel().deselectAll();
-                break;
-            case 6:
-                socialgrid.getSelectionModel().deselectAll();
-                break;
-            case 7:
-                employgrid.getSelectionModel().deselectAll();
-                break;
-            case 8:
-                legalgrid.getSelectionModel().deselectAll();
-                break;
+        if (!questionnaireComplete) {
+
+        }
+        else {
+            switch (questionPosition) {
+                case 1:
+                    housinggrid.getSelectionModel().deselectAll();
+                    break;
+                case 2:
+                    foodgrid.getSelectionModel().deselectAll();
+                    break;
+                case 3:
+                    utilitygrid.getSelectionModel().deselectAll();
+                    break;
+                case 4:
+                    transportationgrid.getSelectionModel().deselectAll();
+                    break;
+                case 5:
+                    personalgrid.getSelectionModel().deselectAll();
+                    break;
+                case 6:
+                    socialgrid.getSelectionModel().deselectAll();
+                    break;
+                case 7:
+                    employgrid.getSelectionModel().deselectAll();
+                    break;
+                case 8:
+                    legalgrid.getSelectionModel().deselectAll();
+                    break;
+            }
         }
     }
 
@@ -797,5 +1345,433 @@ public class AcornHome extends ViewFrame {
             SDOHOrganization legal = ocd8.get();
             selectedSDOHOrganizations.add(legal);
         }
+    }
+
+    private void createLivingSituation1() {
+        QuestionnaireSection section = displayData.getLivingSituation1();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qLivingSituation1Layout = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qLivingSituation1Layout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qLivingSituation1Layout.setBoxSizing(BoxSizing.BORDER_BOX);
+        qLivingSituation1Layout.setHeightFull();
+        qLivingSituation1Layout.setBackgroundColor("white");
+        qLivingSituation1Layout.setShadow(Shadow.S);
+        qLivingSituation1Layout.setBorderRadius(BorderRadius.S);
+        qLivingSituation1Layout.getStyle().set("margin-bottom", "10px");
+        qLivingSituation1Layout.getStyle().set("margin-right", "10px");
+        qLivingSituation1Layout.getStyle().set("margin-left", "10px");
+        qLivingSituation1Layout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qLivingSituation1Layout.setVisible(false);
+    }
+
+    private void createLivingSituation2() {
+        QuestionnaireSection section = displayData.getLivingSituation2();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        q2Group = new CheckboxGroup<QuestionnaireItem>();
+        q2Group.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
+        q2Group.setItems(selections);
+        q2Group.setItemLabelGenerator(questionnaireItem -> questionnaireItem.getDisplay());
+        q2Group.addValueChangeListener(event -> {
+           if (event.getValue().size() > 0) {
+               noneOfAboveBox.setValue(false);
+           }
+        });
+
+        noneOfAboveBox = new Checkbox("None of the above");
+        noneOfAboveBox.addValueChangeListener(event ->{
+           if (event.getValue()) {
+               q2Group.deselectAll();
+               noneOfAboveBox.setValue(true);
+           }
+        });
+
+
+        qLivingSituation2Layout = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), q2Group, noneOfAboveBox);
+        qLivingSituation2Layout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qLivingSituation2Layout.setBoxSizing(BoxSizing.BORDER_BOX);
+        qLivingSituation2Layout.setHeightFull();
+        qLivingSituation2Layout.setBackgroundColor("white");
+        qLivingSituation2Layout.setShadow(Shadow.S);
+        qLivingSituation2Layout.setBorderRadius(BorderRadius.S);
+        qLivingSituation2Layout.getStyle().set("margin-bottom", "10px");
+        qLivingSituation2Layout.getStyle().set("margin-right", "10px");
+        qLivingSituation2Layout.getStyle().set("margin-left", "10px");
+        qLivingSituation2Layout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qLivingSituation2Layout.setVisible(false);
+    }
+
+    private void createFood1() {
+        QuestionnaireSection section = displayData.getFood1();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qFoodLayout1 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qFoodLayout1.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qFoodLayout1.setBoxSizing(BoxSizing.BORDER_BOX);
+        qFoodLayout1.setHeightFull();
+        qFoodLayout1.setBackgroundColor("white");
+        qFoodLayout1.setShadow(Shadow.S);
+        qFoodLayout1.setBorderRadius(BorderRadius.S);
+        qFoodLayout1.getStyle().set("margin-bottom", "10px");
+        qFoodLayout1.getStyle().set("margin-right", "10px");
+        qFoodLayout1.getStyle().set("margin-left", "10px");
+        qFoodLayout1.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qFoodLayout1.setVisible(false);
+    }
+
+    private void createFood2() {
+        QuestionnaireSection section = displayData.getFood2();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qFoodLayout2 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qFoodLayout2.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qFoodLayout2.setBoxSizing(BoxSizing.BORDER_BOX);
+        qFoodLayout2.setHeightFull();
+        qFoodLayout2.setBackgroundColor("white");
+        qFoodLayout2.setShadow(Shadow.S);
+        qFoodLayout2.setBorderRadius(BorderRadius.S);
+        qFoodLayout2.getStyle().set("margin-bottom", "10px");
+        qFoodLayout2.getStyle().set("margin-right", "10px");
+        qFoodLayout2.getStyle().set("margin-left", "10px");
+        qFoodLayout2.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qFoodLayout2.setVisible(false);
+    }
+
+    private void createTransportation() {
+        QuestionnaireSection section = displayData.getTransportation1();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qTransportationAccessLayout1 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qTransportationAccessLayout1.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qTransportationAccessLayout1.setBoxSizing(BoxSizing.BORDER_BOX);
+        qTransportationAccessLayout1.setHeightFull();
+        qTransportationAccessLayout1.setBackgroundColor("white");
+        qTransportationAccessLayout1.setShadow(Shadow.S);
+        qTransportationAccessLayout1.setBorderRadius(BorderRadius.S);
+        qTransportationAccessLayout1.getStyle().set("margin-bottom", "10px");
+        qTransportationAccessLayout1.getStyle().set("margin-right", "10px");
+        qTransportationAccessLayout1.getStyle().set("margin-left", "10px");
+        qTransportationAccessLayout1.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qTransportationAccessLayout1.setVisible(false);
+    }
+
+    private void createUtilitiesNeeds() {
+            QuestionnaireSection section = displayData.getUtilities1();
+            List<QuestionnaireItem> selections = section.getItemList();
+
+            Html question = new Html(section.getQuestion());
+            RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+            qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+            qGroup.setItems(selections);
+            qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+            qUtilitiesLayout = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+            qUtilitiesLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+            qUtilitiesLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+            qUtilitiesLayout.setHeightFull();
+            qUtilitiesLayout.setBackgroundColor("white");
+            qUtilitiesLayout.setShadow(Shadow.S);
+            qUtilitiesLayout.setBorderRadius(BorderRadius.S);
+            qUtilitiesLayout.getStyle().set("margin-bottom", "10px");
+            qUtilitiesLayout.getStyle().set("margin-right", "10px");
+            qUtilitiesLayout.getStyle().set("margin-left", "10px");
+            qUtilitiesLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+            qUtilitiesLayout.setVisible(false);
+    }
+
+    private void createPersonalSafety1() {
+        QuestionnaireSection section = displayData.getSafety1();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qSafetyLayout1 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qSafetyLayout1.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qSafetyLayout1.setBoxSizing(BoxSizing.BORDER_BOX);
+        qSafetyLayout1.setHeightFull();
+        qSafetyLayout1.setBackgroundColor("white");
+        qSafetyLayout1.setShadow(Shadow.S);
+        qSafetyLayout1.setBorderRadius(BorderRadius.S);
+        qSafetyLayout1.getStyle().set("margin-bottom", "10px");
+        qSafetyLayout1.getStyle().set("margin-right", "10px");
+        qSafetyLayout1.getStyle().set("margin-left", "10px");
+        qSafetyLayout1.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qSafetyLayout1.setVisible(false);
+    }
+
+    private void createPersonalSafety2() {
+        QuestionnaireSection section = displayData.getSafety2();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qSafetyLayout2 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qSafetyLayout2.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qSafetyLayout2.setBoxSizing(BoxSizing.BORDER_BOX);
+        qSafetyLayout2.setHeightFull();
+        qSafetyLayout2.setBackgroundColor("white");
+        qSafetyLayout2.setShadow(Shadow.S);
+        qSafetyLayout2.setBorderRadius(BorderRadius.S);
+        qSafetyLayout2.getStyle().set("margin-bottom", "10px");
+        qSafetyLayout2.getStyle().set("margin-right", "10px");
+        qSafetyLayout2.getStyle().set("margin-left", "10px");
+        qSafetyLayout2.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qSafetyLayout2.setVisible(false);
+    }
+
+    private void createPersonalSafety3() {
+        QuestionnaireSection section = displayData.getSafety3();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qSafetyLayout3 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qSafetyLayout3.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qSafetyLayout3.setBoxSizing(BoxSizing.BORDER_BOX);
+        qSafetyLayout3.setHeightFull();
+        qSafetyLayout3.setBackgroundColor("white");
+        qSafetyLayout3.setShadow(Shadow.S);
+        qSafetyLayout3.setBorderRadius(BorderRadius.S);
+        qSafetyLayout3.getStyle().set("margin-bottom", "10px");
+        qSafetyLayout3.getStyle().set("margin-right", "10px");
+        qSafetyLayout3.getStyle().set("margin-left", "10px");
+        qSafetyLayout3.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qSafetyLayout3.setVisible(false);
+    }
+
+    private void createPersonalSafety4() {
+        QuestionnaireSection section = displayData.getSafety4();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qSafetyLayout4 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qSafetyLayout4.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qSafetyLayout4.setBoxSizing(BoxSizing.BORDER_BOX);
+        qSafetyLayout4.setHeightFull();
+        qSafetyLayout4.setBackgroundColor("white");
+        qSafetyLayout4.setShadow(Shadow.S);
+        qSafetyLayout4.setBorderRadius(BorderRadius.S);
+        qSafetyLayout4.getStyle().set("margin-bottom", "10px");
+        qSafetyLayout4.getStyle().set("margin-right", "10px");
+        qSafetyLayout4.getStyle().set("margin-left", "10px");
+        qSafetyLayout4.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qSafetyLayout4.setVisible(false);
+    }
+
+    private void createFinancialStrain() {
+        QuestionnaireSection section = displayData.getFinancialStrain1();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qFinancialStrainLayout = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qFinancialStrainLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qFinancialStrainLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        qFinancialStrainLayout.setHeightFull();
+        qFinancialStrainLayout.setBackgroundColor("white");
+        qFinancialStrainLayout.setShadow(Shadow.S);
+        qFinancialStrainLayout.setBorderRadius(BorderRadius.S);
+        qFinancialStrainLayout.getStyle().set("margin-bottom", "10px");
+        qFinancialStrainLayout.getStyle().set("margin-right", "10px");
+        qFinancialStrainLayout.getStyle().set("margin-left", "10px");
+        qFinancialStrainLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qFinancialStrainLayout.setVisible(false);
+    }
+
+    private void createEmployment() {
+        QuestionnaireSection section = displayData.getEmployment1();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qEmploymentLayout = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qEmploymentLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qEmploymentLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        qEmploymentLayout.setHeightFull();
+        qEmploymentLayout.setBackgroundColor("white");
+        qEmploymentLayout.setShadow(Shadow.S);
+        qEmploymentLayout.setBorderRadius(BorderRadius.S);
+        qEmploymentLayout.getStyle().set("margin-bottom", "10px");
+        qEmploymentLayout.getStyle().set("margin-right", "10px");
+        qEmploymentLayout.getStyle().set("margin-left", "10px");
+        qEmploymentLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qEmploymentLayout.setVisible(false);
+    }
+
+    private void createEducation1() {
+        QuestionnaireSection section = displayData.getEducation1();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qEducationLayout1 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qEducationLayout1.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qEducationLayout1.setBoxSizing(BoxSizing.BORDER_BOX);
+        qEducationLayout1.setHeightFull();
+        qEducationLayout1.setBackgroundColor("white");
+        qEducationLayout1.setShadow(Shadow.S);
+        qEducationLayout1.setBorderRadius(BorderRadius.S);
+        qEducationLayout1.getStyle().set("margin-bottom", "10px");
+        qEducationLayout1.getStyle().set("margin-right", "10px");
+        qEducationLayout1.getStyle().set("margin-left", "10px");
+        qEducationLayout1.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qEducationLayout1.setVisible(false);
+    }
+
+    private void createFamilySupport1() {
+        QuestionnaireSection section = displayData.getFamilyCommunitySupport1();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qFamilyCommunitySupportLayout1 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qFamilyCommunitySupportLayout1.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qFamilyCommunitySupportLayout1.setBoxSizing(BoxSizing.BORDER_BOX);
+        qFamilyCommunitySupportLayout1.setHeightFull();
+        qFamilyCommunitySupportLayout1.setBackgroundColor("white");
+        qFamilyCommunitySupportLayout1.setShadow(Shadow.S);
+        qFamilyCommunitySupportLayout1.setBorderRadius(BorderRadius.S);
+        qFamilyCommunitySupportLayout1.getStyle().set("margin-bottom", "10px");
+        qFamilyCommunitySupportLayout1.getStyle().set("margin-right", "10px");
+        qFamilyCommunitySupportLayout1.getStyle().set("margin-left", "10px");
+        qFamilyCommunitySupportLayout1.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qFamilyCommunitySupportLayout1.setVisible(false);
+    }
+
+    private void createFamilySupport2() {
+        QuestionnaireSection section = displayData.getFamilyCommunitySupport2();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qFamilyCommunitySupportLayout2 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qFamilyCommunitySupportLayout2.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qFamilyCommunitySupportLayout2.setBoxSizing(BoxSizing.BORDER_BOX);
+        qFamilyCommunitySupportLayout2.setHeightFull();
+        qFamilyCommunitySupportLayout2.setBackgroundColor("white");
+        qFamilyCommunitySupportLayout2.setShadow(Shadow.S);
+        qFamilyCommunitySupportLayout2.setBorderRadius(BorderRadius.S);
+        qFamilyCommunitySupportLayout2.getStyle().set("margin-bottom", "10px");
+        qFamilyCommunitySupportLayout2.getStyle().set("margin-right", "10px");
+        qFamilyCommunitySupportLayout2.getStyle().set("margin-left", "10px");
+        qFamilyCommunitySupportLayout2.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qFamilyCommunitySupportLayout2.setVisible(false);
+    }
+    private void createEducation2() {
+        QuestionnaireSection section = displayData.getEducation2();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qEducationLayout2 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qEducationLayout2.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qEducationLayout2.setBoxSizing(BoxSizing.BORDER_BOX);
+        qEducationLayout2.setHeightFull();
+        qEducationLayout2.setBackgroundColor("white");
+        qEducationLayout2.setShadow(Shadow.S);
+        qEducationLayout2.setBorderRadius(BorderRadius.S);
+        qEducationLayout2.getStyle().set("margin-bottom", "10px");
+        qEducationLayout2.getStyle().set("margin-right", "10px");
+        qEducationLayout2.getStyle().set("margin-left", "10px");
+        qEducationLayout2.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qEducationLayout2.setVisible(false);
+    }
+
+    private void createLegalSupport() {
+        QuestionnaireSection section = displayData.getLegal();
+        List<QuestionnaireItem> selections = section.getItemList();
+
+        Html question = new Html(section.getQuestion());
+        RadioButtonGroup<QuestionnaireItem> qGroup = new RadioButtonGroup<QuestionnaireItem>();
+        qGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
+        qGroup.setItems(selections);
+        qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
+
+        qLegal = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qLegal.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        qLegal.setBoxSizing(BoxSizing.BORDER_BOX);
+        qLegal.setHeightFull();
+        qLegal.setBackgroundColor("white");
+        qLegal.setShadow(Shadow.S);
+        qLegal.setBorderRadius(BorderRadius.S);
+        qLegal.getStyle().set("margin-bottom", "10px");
+        qLegal.getStyle().set("margin-right", "10px");
+        qLegal.getStyle().set("margin-left", "10px");
+        qLegal.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        qLegal.setVisible(false);
+    }
+
+
+    private Component createQuestionItem(QuestionnaireItem qItem) {
+        ListItem item = new ListItem(qItem.getDisplay());
+        item.setPadding(Vertical.XS);
+        return item;
     }
 }
