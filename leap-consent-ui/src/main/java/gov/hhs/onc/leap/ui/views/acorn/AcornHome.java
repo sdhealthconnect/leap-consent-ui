@@ -207,13 +207,18 @@ public class AcornHome extends ViewFrame {
         String fullFormPath = UIUtils.IMG_PATH + "logos";
         Image logo = UIUtils.createImage(fullFormPath,"acornproject.png", "");
         H1 header = new H1("Veterans Facing Health-Related Social Needs");
-        Html intro = new Html("<p><b>The ACORN initiative uses an 11 question assessment</b> to screen Veterans for " +
+        Html intro = new Html("<p>This <b>HIMSS 2022</b> interoperability demonstration of " +
+                "US Department of Veterans Affairs <b>ACORN initiative</b> utilizes a <b>FHIR Questionnaire</b>" +
+                " to screen Veterans for " +
                 "non-clinical needs to provide resources at the point of clinical care. The assessment " +
                 "currently screens for the following nine domains of health-related social needs: food, " +
                 "housing security; utility, transportation, legal, " +
                 "educational, and employment needs; and " +
                 "personal safety and social support.");
-        introPage = new FlexBoxLayout(logo, header, intro);
+        Html intro2 = new Html("<p>Various social determinants interact with other behavioral, environmental, " +
+                "and economic factors to contribute up to <b>80% of overall health outcomes.</b>  Addressing a Veteran's " +
+                "unmet health-related social needs can have a positive impact on their health and quality of life.</p>");
+        introPage = new FlexBoxLayout(logo, header, intro, intro2);
         introPage.setBoxSizing(BoxSizing.BORDER_BOX);
         introPage.setHeightFull();
         introPage.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
@@ -1348,6 +1353,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createLivingSituation1() {
+        Html domainIntro = new Html(displayData.getHousingInsecurityInfo());
         QuestionnaireSection section = displayData.getLivingSituation1();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1357,7 +1363,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qLivingSituation1Layout = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qLivingSituation1Layout = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qLivingSituation1Layout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qLivingSituation1Layout.setBoxSizing(BoxSizing.BORDER_BOX);
         qLivingSituation1Layout.setHeightFull();
@@ -1372,6 +1378,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createLivingSituation2() {
+        Html domainIntro = new Html(displayData.getHousingInsecurityInfo());
         QuestionnaireSection section = displayData.getLivingSituation2();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1395,7 +1402,7 @@ public class AcornHome extends ViewFrame {
         });
 
 
-        qLivingSituation2Layout = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), q2Group, noneOfAboveBox);
+        qLivingSituation2Layout = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), q2Group, noneOfAboveBox);
         qLivingSituation2Layout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qLivingSituation2Layout.setBoxSizing(BoxSizing.BORDER_BOX);
         qLivingSituation2Layout.setHeightFull();
@@ -1410,6 +1417,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createFood1() {
+        Html domainIntro = new Html(displayData.getFoodSecurityInfo());
         QuestionnaireSection section = displayData.getFood1();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1419,7 +1427,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qFoodLayout1 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qFoodLayout1 = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qFoodLayout1.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qFoodLayout1.setBoxSizing(BoxSizing.BORDER_BOX);
         qFoodLayout1.setHeightFull();
@@ -1434,6 +1442,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createFood2() {
+        Html domainIntro = new Html(displayData.getFoodSecurityInfo());
         QuestionnaireSection section = displayData.getFood2();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1443,7 +1452,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qFoodLayout2 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qFoodLayout2 = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qFoodLayout2.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qFoodLayout2.setBoxSizing(BoxSizing.BORDER_BOX);
         qFoodLayout2.setHeightFull();
@@ -1458,6 +1467,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createTransportation() {
+        Html domainIntro = new Html(displayData.getTransportationAccessInfo());
         QuestionnaireSection section = displayData.getTransportation1();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1467,7 +1477,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qTransportationAccessLayout1 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qTransportationAccessLayout1 = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qTransportationAccessLayout1.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qTransportationAccessLayout1.setBoxSizing(BoxSizing.BORDER_BOX);
         qTransportationAccessLayout1.setHeightFull();
@@ -1482,6 +1492,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createUtilitiesNeeds() {
+            Html domainIntro = new Html(displayData.getUtilityNeedsInfo());
             QuestionnaireSection section = displayData.getUtilities1();
             List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1491,7 +1502,7 @@ public class AcornHome extends ViewFrame {
             qGroup.setItems(selections);
             qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-            qUtilitiesLayout = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+            qUtilitiesLayout = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
             qUtilitiesLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
             qUtilitiesLayout.setBoxSizing(BoxSizing.BORDER_BOX);
             qUtilitiesLayout.setHeightFull();
@@ -1506,6 +1517,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createPersonalSafety1() {
+        Html domainIntro = new Html(displayData.getPersonalSafetyInfo());
         QuestionnaireSection section = displayData.getSafety1();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1515,7 +1527,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qSafetyLayout1 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qSafetyLayout1 = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qSafetyLayout1.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qSafetyLayout1.setBoxSizing(BoxSizing.BORDER_BOX);
         qSafetyLayout1.setHeightFull();
@@ -1530,6 +1542,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createPersonalSafety2() {
+        Html domainIntro = new Html(displayData.getPersonalSafetyInfo());
         QuestionnaireSection section = displayData.getSafety2();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1539,7 +1552,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qSafetyLayout2 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qSafetyLayout2 = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qSafetyLayout2.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qSafetyLayout2.setBoxSizing(BoxSizing.BORDER_BOX);
         qSafetyLayout2.setHeightFull();
@@ -1554,6 +1567,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createPersonalSafety3() {
+        Html domainIntro = new Html(displayData.getPersonalSafetyInfo());
         QuestionnaireSection section = displayData.getSafety3();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1563,7 +1577,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qSafetyLayout3 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qSafetyLayout3 = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qSafetyLayout3.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qSafetyLayout3.setBoxSizing(BoxSizing.BORDER_BOX);
         qSafetyLayout3.setHeightFull();
@@ -1578,6 +1592,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createPersonalSafety4() {
+        Html domainIntro = new Html(displayData.getPersonalSafetyInfo());
         QuestionnaireSection section = displayData.getSafety4();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1587,7 +1602,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qSafetyLayout4 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qSafetyLayout4 = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qSafetyLayout4.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qSafetyLayout4.setBoxSizing(BoxSizing.BORDER_BOX);
         qSafetyLayout4.setHeightFull();
@@ -1602,6 +1617,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createFinancialStrain() {
+        Html domainIntro = new Html(displayData.getEmploymentAndEducationInfo());
         QuestionnaireSection section = displayData.getFinancialStrain1();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1611,7 +1627,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qFinancialStrainLayout = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qFinancialStrainLayout = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qFinancialStrainLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qFinancialStrainLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         qFinancialStrainLayout.setHeightFull();
@@ -1626,6 +1642,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createEmployment() {
+        Html domainIntro = new Html(displayData.getEmploymentAndEducationInfo());
         QuestionnaireSection section = displayData.getEmployment1();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1635,7 +1652,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qEmploymentLayout = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qEmploymentLayout = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qEmploymentLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qEmploymentLayout.setBoxSizing(BoxSizing.BORDER_BOX);
         qEmploymentLayout.setHeightFull();
@@ -1650,6 +1667,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createEducation1() {
+        Html domainIntro = new Html(displayData.getEmploymentAndEducationInfo());
         QuestionnaireSection section = displayData.getEducation1();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1659,7 +1677,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qEducationLayout1 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qEducationLayout1 = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qEducationLayout1.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qEducationLayout1.setBoxSizing(BoxSizing.BORDER_BOX);
         qEducationLayout1.setHeightFull();
@@ -1674,6 +1692,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createFamilySupport1() {
+        Html domainIntro = new Html(displayData.getSocialSupportInfo());
         QuestionnaireSection section = displayData.getFamilyCommunitySupport1();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1683,7 +1702,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qFamilyCommunitySupportLayout1 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qFamilyCommunitySupportLayout1 = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qFamilyCommunitySupportLayout1.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qFamilyCommunitySupportLayout1.setBoxSizing(BoxSizing.BORDER_BOX);
         qFamilyCommunitySupportLayout1.setHeightFull();
@@ -1698,6 +1717,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createFamilySupport2() {
+        Html domainIntro = new Html(displayData.getSocialSupportInfo());
         QuestionnaireSection section = displayData.getFamilyCommunitySupport2();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1707,7 +1727,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qFamilyCommunitySupportLayout2 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qFamilyCommunitySupportLayout2 = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qFamilyCommunitySupportLayout2.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qFamilyCommunitySupportLayout2.setBoxSizing(BoxSizing.BORDER_BOX);
         qFamilyCommunitySupportLayout2.setHeightFull();
@@ -1721,6 +1741,7 @@ public class AcornHome extends ViewFrame {
         qFamilyCommunitySupportLayout2.setVisible(false);
     }
     private void createEducation2() {
+        Html domainIntro = new Html(displayData.getEmploymentAndEducationInfo());
         QuestionnaireSection section = displayData.getEducation2();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1730,7 +1751,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qEducationLayout2 = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qEducationLayout2 = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qEducationLayout2.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qEducationLayout2.setBoxSizing(BoxSizing.BORDER_BOX);
         qEducationLayout2.setHeightFull();
@@ -1745,6 +1766,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createLegalSupport() {
+        Html domainIntro = new Html(displayData.getLegalSupportInfo());
         QuestionnaireSection section = displayData.getLegal();
         List<QuestionnaireItem> selections = section.getItemList();
 
@@ -1754,7 +1776,7 @@ public class AcornHome extends ViewFrame {
         qGroup.setItems(selections);
         qGroup.setRenderer(new ComponentRenderer<>(this::createQuestionItem));
 
-        qLegal = new FlexBoxLayout(createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
+        qLegal = new FlexBoxLayout(domainIntro, createHeader(VaadinIcon.USERS, section.getTitle()),question, new BasicDivider(), qGroup);
         qLegal.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         qLegal.setBoxSizing(BoxSizing.BORDER_BOX);
         qLegal.setHeightFull();

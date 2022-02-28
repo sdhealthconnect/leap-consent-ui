@@ -1,9 +1,15 @@
 package gov.hhs.onc.leap.sdoh.data;
 
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
 import gov.hhs.onc.leap.sdoh.model.QuestionnaireItem;
 import gov.hhs.onc.leap.sdoh.model.QuestionnaireSection;
+import org.hl7.fhir.r4.model.*;
+import org.mozilla.javascript.NativeArray;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -26,6 +32,17 @@ public class ACORNDisplayData {
     private QuestionnaireSection education1;
     private QuestionnaireSection education2;
     private QuestionnaireSection legal;
+
+    private String foodSecurityInfo;
+    private String housingInsecurityInfo;
+    private String utilityNeedsInfo;
+    private String transportationAccessInfo;
+    private String personalSafetyInfo;
+    private String socialSupportInfo;
+    private String employmentAndEducationInfo;
+    private String legalSupportInfo;
+
+    private List<Questionnaire.QuestionnaireItemComponent> questionList = new ArrayList<>();
 
 
     public QuestionnaireSection getLivingSituation1() {
@@ -147,9 +164,9 @@ public class ACORNDisplayData {
         utilities1.setQuestion("<p><b>6. In the past 12 months has the electric, gas, oil, or water company threatened to shut " +
                 "off services in your home?</b></p>");
         List<QuestionnaireItem> itemList = new ArrayList<>();
-        QuestionnaireItem item1 = new QuestionnaireItem("5.1", "Yes", null, "boolean", 1);
-        QuestionnaireItem item2 = new QuestionnaireItem("5.2", "No", null, "boolean", 0);
-        QuestionnaireItem item3 = new QuestionnaireItem("5.3", "Already shut off", null, "boolean", 2);
+        QuestionnaireItem item1 = new QuestionnaireItem("6.1", "Yes", null, "boolean", 1);
+        QuestionnaireItem item2 = new QuestionnaireItem("6.2", "No", null, "boolean", 0);
+        QuestionnaireItem item3 = new QuestionnaireItem("6.3", "Already shut off", null, "boolean", 2);
 
         itemList.add(item1);
         itemList.add(item2);
@@ -410,4 +427,174 @@ public class ACORNDisplayData {
     public void setLegal(QuestionnaireSection legal) {
         this.legal = legal;
     }
+
+    public String getFoodSecurityInfo() {
+        foodSecurityInfo = "<p><b>Food Security</b> is the disruption of typical eating habits due to " +
+                "lack of income and other resources.  Nearly one-quarter of Veterans receiving care in the " +
+                "VA Healthcare System report experiencing food insecurity, double the rate for the " +
+                "US population of 12%.</p>";
+        return foodSecurityInfo;
+    }
+
+    public void setFoodSecurityInfo(String foodSecurityInfo) {
+        this.foodSecurityInfo = foodSecurityInfo;
+    }
+
+    public String getHousingInsecurityInfo() {
+        housingInsecurityInfo = "<p><b>Housing Insecurity</b> encompasses a number of challenges, including " +
+                "homelessness.  Over 40,000 Veterans experience homelessness on any given day, and are more " +
+                "likely to experience poorer physical and mental health outcomes that the general US " +
+                "population who are homeless.</p>";
+        return housingInsecurityInfo;
+    }
+
+    public void setHousingInsecurityInfo(String housingInsecurityInfo) {
+        this.housingInsecurityInfo = housingInsecurityInfo;
+    }
+
+    public String getUtilityNeedsInfo() {
+        utilityNeedsInfo = "<p><b>Utility Needs</b> With nearly 1.4 million Veterans at risk for homelessness, " +
+                "utility bill assistance is an essential benefit for Veterans with financial burderns.  Over " +
+                "666,000 Veterans in low-income households paid more that half their income for rent and utilites in 2017.</p>";
+        return utilityNeedsInfo;
+    }
+
+    public void setUtilityNeedsInfo(String utilityNeedsInfo) {
+        this.utilityNeedsInfo = utilityNeedsInfo;
+    }
+
+    public String getTransportationAccessInfo() {
+        transportationAccessInfo = "<p><b>Transportation Access</b> Whether it be age, disability, or income-related.  " +
+                "Veterans may face several barriers to travel, requiring the need for increased access to " +
+                "transportation resources and assistance to get to medical appointments, work, and other " +
+                "things needed for daily living.</p>";
+
+        return transportationAccessInfo;
+    }
+
+    public void setTransportationAccessInfo(String transportationAccessInfo) {
+        this.transportationAccessInfo = transportationAccessInfo;
+    }
+
+    public String getPersonalSafetyInfo() {
+        personalSafetyInfo = "<p><b>Personal Safety</b> Exposure to abuse and violence includes intimate partner " +
+                "violence (IPV) and elder abuse, amongy other forms of exposure to violence from friends and loved " +
+                "ones.  In addition to immediate safety concerns and physical injuries, exposure to abuse and violence " +
+                "can promote emotional and mental health conditions like depression and PTSD.</p>";
+        return personalSafetyInfo;
+    }
+
+    public void setPersonalSafetyInfo(String personalSafetyInfo) {
+        this.personalSafetyInfo = personalSafetyInfo;
+    }
+
+    public String getSocialSupportInfo() {
+        socialSupportInfo = "<p><b>Social Support</b> The more a Veteran can identify sources of support in their life, " +
+                "the higher the likelihood of them having positive perceptions of belonging and experiencing lower " +
+                "rates of isolation.  With the Veteran suicide rate being 1.5 times the rate for the US general " +
+                "population, the presence of a social support system is closely linked to a Veteran's mental " +
+                "wellbeing and behaviors.</p>";
+        return socialSupportInfo;
+    }
+
+    public void setSocialSupportInfo(String socialSupportInfo) {
+        this.socialSupportInfo = socialSupportInfo;
+    }
+
+    public String getEmploymentAndEducationInfo() {
+        employmentAndEducationInfo = "<p><b>Employment and Education</b> Transferring the skills and knowledge " +
+                "learned during their military service can prove difficult for Veterans, requiring many to " +
+                "complete additional schooling to meet civilian certification standards.  Difficulty finding " +
+                "employment can further exacerbate financial strain, making it difficult to afford basic " +
+                "needs such as food, housing, utilities, and healthcare costs.</p>";
+        return employmentAndEducationInfo;
+    }
+
+    public void setEmploymentAndEducationInfo(String employmentAndEducationInfo) {
+        this.employmentAndEducationInfo = employmentAndEducationInfo;
+    }
+
+    public String getLegalSupportInfo() {
+        legalSupportInfo = "<p><b>Legal Support</b> is often and overlooked area of need for the Veterans, " +
+                "who may have difficulties addressing legal issues such as divorce, child support/custody, " +
+                "benefit appeals, and resolving disputes, among others.  Needing and using legal services " +
+                "can be a significant stressor for Veterans, and increase mental distress and negatively " +
+                "impact the quality of life.</p>";
+        return legalSupportInfo;
+    }
+
+    public void setLegalSupportInfo(String legalSupportInfo) {
+        this.legalSupportInfo = legalSupportInfo;
+    }
+
+    public Questionnaire createFHIRQuestionnaire() {
+        Questionnaire acorn = new Questionnaire();
+        acorn.setDate(new Date());
+        acorn.setId("acorn-himss2022-demonstration");
+        List<Coding> codingList = new ArrayList<>();
+        Coding coding = new Coding();
+        coding.setDisplay("HIMSS 2022 VA ACORN Interoperability Demonstration");
+        coding.setCode("2022-2-27");
+        coding.setSystem("https://va.gov");
+        codingList.add(coding);
+        acorn.setCode(codingList);
+        List<CodeType> codeTypes = new ArrayList<>();
+        CodeType codeType = new CodeType();
+        codeType.setSystem("Patient");
+        codeTypes.add(codeType);
+        acorn.setSubjectType(codeTypes);
+        acorn.setExperimental(true);
+        acorn.setStatus(Enumerations.PublicationStatus.ACTIVE);
+
+        questionList = new ArrayList<>();
+        processSection(getLivingSituation1());
+        processSection(getLivingSituation2());
+        processSection(getFood1());
+        processSection(getFood2());
+        processSection(getUtilities1());
+        processSection(getTransportation1());
+        processSection(getSafety1());
+        processSection(getSafety2());
+        processSection(getSafety3());
+        processSection(getSafety4());
+        processSection(getFinancialStrain1());
+        processSection(getEmployment1());
+        processSection(getEducation1());
+        processSection(getEducation2());
+        processSection(getFamilyCommunitySupport1());
+        processSection(getFamilyCommunitySupport2());
+        processSection(getLegal());
+
+        acorn.setItem(questionList);
+
+        FhirContext ctx = FhirContext.forR4();
+
+        IParser parser = ctx.newJsonParser();
+
+        parser.setPrettyPrint(true);
+        String serialized = parser.encodeResourceToString(acorn);
+        System.out.println(serialized);
+
+        return acorn;
+    }
+
+    private void processSection(QuestionnaireSection qSection) {
+        Questionnaire.QuestionnaireItemComponent questionnaireItemComponent = new Questionnaire.QuestionnaireItemComponent();
+        questionnaireItemComponent.setLinkId(qSection.getLinkId());
+        questionnaireItemComponent.setText(qSection.getQuestion());
+        questionnaireItemComponent.setType(Questionnaire.QuestionnaireItemType.GROUP);
+        questionList.add(questionnaireItemComponent);
+
+        List<QuestionnaireItem> answerList = qSection.getItemList();
+        Iterator iter = answerList.iterator();
+        while (iter.hasNext()) {
+            QuestionnaireItem answer = (QuestionnaireItem)iter.next();
+            Questionnaire.QuestionnaireItemComponent answerComponent = new Questionnaire.QuestionnaireItemComponent();
+            answerComponent.setLinkId(answer.getLink());
+            answerComponent.setText(answer.getDisplay());
+            answerComponent.setType(Questionnaire.QuestionnaireItemType.BOOLEAN);
+            questionList.add(answerComponent);
+         }
+    }
+
 }
