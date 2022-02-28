@@ -551,8 +551,8 @@ public class ACORNDisplayData {
         processSection(getLivingSituation2());
         processSection(getFood1());
         processSection(getFood2());
-        processSection(getUtilities1());
         processSection(getTransportation1());
+        processSection(getUtilities1());
         processSection(getSafety1());
         processSection(getSafety2());
         processSection(getSafety3());

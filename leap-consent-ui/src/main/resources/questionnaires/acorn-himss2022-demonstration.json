@@ -3,7 +3,7 @@
   "id": "acorn-himss2022-demonstration",
   "status": "active",
   "experimental": true,
-  "date": "2022-02-27T21:50:35-07:00",
+  "date": "2022-02-27T22:02:34-07:00",
   "code": [
     {
       "system": "https://va.gov",
@@ -113,6 +113,21 @@
       "type": "boolean"
     },
     {
+      "linkId": "5",
+      "text": "<p><b>5. In the past 12 months, has lack of reliable transportation kept you from medical appointments, meetings, work or from getting things needed for daily living?</b></p>",
+      "type": "group"
+    },
+    {
+      "linkId": "5.1",
+      "text": "Yes",
+      "type": "boolean"
+    },
+    {
+      "linkId": "5.2",
+      "text": "No",
+      "type": "boolean"
+    },
+    {
       "linkId": "6",
       "text": "<p><b>6. In the past 12 months has the electric, gas, oil, or water company threatened to shut off services in your home?</b></p>",
       "type": "group"
@@ -130,21 +145,6 @@
     {
       "linkId": "6.3",
       "text": "Already shut off",
-      "type": "boolean"
-    },
-    {
-      "linkId": "5",
-      "text": "<p><b>5. In the past 12 months, has lack of reliable transportation kept you from medical appointments, meetings, work or from getting things needed for daily living?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "5.1",
-      "text": "Yes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "5.2",
-      "text": "No",
       "type": "boolean"
     },
     {
