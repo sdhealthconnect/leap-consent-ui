@@ -527,74 +527,23 @@ public class ACORNDisplayData {
         this.legalSupportInfo = legalSupportInfo;
     }
 
-    public Questionnaire createFHIRQuestionnaire() {
-        Questionnaire acorn = new Questionnaire();
-        acorn.setDate(new Date());
-        acorn.setId("acorn-himss2022-demonstration");
-        List<Coding> codingList = new ArrayList<>();
-        Coding coding = new Coding();
-        coding.setDisplay("HIMSS 2022 VA ACORN Interoperability Demonstration");
-        coding.setCode("2022-2-27");
-        coding.setSystem("https://va.gov");
-        codingList.add(coding);
-        acorn.setCode(codingList);
-        List<CodeType> codeTypes = new ArrayList<>();
-        CodeType codeType = new CodeType();
-        codeType.setSystem("Patient");
-        codeTypes.add(codeType);
-        acorn.setSubjectType(codeTypes);
-        acorn.setExperimental(true);
-        acorn.setStatus(Enumerations.PublicationStatus.ACTIVE);
-
-        questionList = new ArrayList<>();
-        processSection(getLivingSituation1());
-        processSection(getLivingSituation2());
-        processSection(getFood1());
-        processSection(getFood2());
-        processSection(getTransportation1());
-        processSection(getUtilities1());
-        processSection(getSafety1());
-        processSection(getSafety2());
-        processSection(getSafety3());
-        processSection(getSafety4());
-        processSection(getFinancialStrain1());
-        processSection(getEmployment1());
-        processSection(getEducation1());
-        processSection(getEducation2());
-        processSection(getFamilyCommunitySupport1());
-        processSection(getFamilyCommunitySupport2());
-        processSection(getLegal());
-
-        acorn.setItem(questionList);
-
-        FhirContext ctx = FhirContext.forR4();
-
-        IParser parser = ctx.newJsonParser();
-
-        parser.setPrettyPrint(true);
-        String serialized = parser.encodeResourceToString(acorn);
-        System.out.println(serialized);
-
-        return acorn;
+    public QuestionnaireSection getFHIRQuestionnaireSection(Questionnaire acornQuestionnaire, String linkId, String sectionTitle) {
+        QuestionnaireSection res = new QuestionnaireSection();
+        List<QuestionnaireItem> itemList = new ArrayList<>();
+        res.setLinkId(linkId);
+        res.setTitle(sectionTitle);
+        Questionnaire.QuestionnaireItemComponent item = acornQuestionnaire.getQuestion(linkId);
+        res.setQuestion(item.getText());
+        List<Questionnaire.QuestionnaireItemComponent> questions = item.getItem();
+        Iterator iter = questions.iterator();
+        while(iter.hasNext()) {
+            Questionnaire.QuestionnaireItemComponent comp = (Questionnaire.QuestionnaireItemComponent) iter.next();
+            QuestionnaireItem question = new QuestionnaireItem(comp.getLinkId(), comp.getText(), null, comp.getType().getDisplay(), 0);
+            itemList.add(question);
+        }
+        res.setItemList(itemList);
+        return res;
     }
 
-    private void processSection(QuestionnaireSection qSection) {
-        Questionnaire.QuestionnaireItemComponent questionnaireItemComponent = new Questionnaire.QuestionnaireItemComponent();
-        questionnaireItemComponent.setLinkId(qSection.getLinkId());
-        questionnaireItemComponent.setText(qSection.getQuestion());
-        questionnaireItemComponent.setType(Questionnaire.QuestionnaireItemType.GROUP);
-        questionList.add(questionnaireItemComponent);
-
-        List<QuestionnaireItem> answerList = qSection.getItemList();
-        Iterator iter = answerList.iterator();
-        while (iter.hasNext()) {
-            QuestionnaireItem answer = (QuestionnaireItem)iter.next();
-            Questionnaire.QuestionnaireItemComponent answerComponent = new Questionnaire.QuestionnaireItemComponent();
-            answerComponent.setLinkId(answer.getLink());
-            answerComponent.setText(answer.getDisplay());
-            answerComponent.setType(Questionnaire.QuestionnaireItemType.BOOLEAN);
-            questionList.add(answerComponent);
-         }
-    }
 
 }

@@ -28,6 +28,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.ConsentDocument;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaire;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.backend.model.SDOHOrganization;
 import gov.hhs.onc.leap.backend.repository.SDOHOrganizationRepository;
@@ -53,6 +54,7 @@ import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFACORNHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPatientPrivacyHandler;
 import gov.hhs.onc.leap.ui.views.ViewFrame;
+import org.hl7.fhir.r4.model.Questionnaire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
@@ -137,6 +139,10 @@ public class AcornHome extends ViewFrame {
 
     private ACORNDisplayData displayData;
 
+    private Questionnaire acornQuestionnaire;
+
+    @Autowired
+    private FHIRQuestionnaire fhirQuestionnaire;
 
     @Autowired
     private SDOHOrganizationRepository sdohOrganizationRepository;
@@ -156,9 +162,13 @@ public class AcornHome extends ViewFrame {
         setViewFooter(getFooter());
     }
 
+    private void getAcornQuestionnaire() {
+        acornQuestionnaire = fhirQuestionnaire.getQuestionnaire("acorn-himss2022-demonstration");
+    }
+
     private Component createViewContent() {
         //Html intro = new Html("<p><b>Accessing Circumstances Offering Resources for Needs</b></p>");
-
+        getAcornQuestionnaire();
         createIntroPage();
         createHousingAction();
         createFoodSecurityAction();
@@ -1176,28 +1186,28 @@ public class AcornHome extends ViewFrame {
         }
         else {
             switch (questionPosition) {
-                case 1:
+                case 0:
                     housinggrid.getSelectionModel().deselectAll();
                     break;
-                case 2:
+                case 1:
                     foodgrid.getSelectionModel().deselectAll();
                     break;
-                case 3:
+                case 2:
                     utilitygrid.getSelectionModel().deselectAll();
                     break;
-                case 4:
+                case 3:
                     transportationgrid.getSelectionModel().deselectAll();
                     break;
-                case 5:
+                case 4:
                     personalgrid.getSelectionModel().deselectAll();
                     break;
-                case 6:
+                case 5:
                     socialgrid.getSelectionModel().deselectAll();
                     break;
-                case 7:
+                case 6:
                     employgrid.getSelectionModel().deselectAll();
                     break;
-                case 8:
+                case 7:
                     legalgrid.getSelectionModel().deselectAll();
                     break;
             }
@@ -1260,6 +1270,7 @@ public class AcornHome extends ViewFrame {
             return;
         }
         docDialog = new Dialog();
+        docDialog.setModal(true);
 
         streamResource.setContentType("application/pdf");
 
@@ -1268,8 +1279,11 @@ public class AcornHome extends ViewFrame {
         viewer.setWidth("840px");
 
 
-        Button closeButton = new Button(getTranslation("sharePatient-cancel"), e -> docDialog.close());
+        Button closeButton = new Button(getTranslation("sharePatient-cancel"));
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
+        closeButton.addClickListener(event -> {
+            docDialog.close();
+        });
 
         Button acceptButton = new Button(getTranslation("sharePatient-accept_and_submit"));
         acceptButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_PROCESS));
@@ -1354,7 +1368,7 @@ public class AcornHome extends ViewFrame {
 
     private void createLivingSituation1() {
         Html domainIntro = new Html(displayData.getHousingInsecurityInfo());
-        QuestionnaireSection section = displayData.getLivingSituation1();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "1", "Housing Insecurity");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1379,7 +1393,7 @@ public class AcornHome extends ViewFrame {
 
     private void createLivingSituation2() {
         Html domainIntro = new Html(displayData.getHousingInsecurityInfo());
-        QuestionnaireSection section = displayData.getLivingSituation2();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "2", "Housing Insecurity");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1418,7 +1432,7 @@ public class AcornHome extends ViewFrame {
 
     private void createFood1() {
         Html domainIntro = new Html(displayData.getFoodSecurityInfo());
-        QuestionnaireSection section = displayData.getFood1();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "3", "Food Security");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1443,7 +1457,7 @@ public class AcornHome extends ViewFrame {
 
     private void createFood2() {
         Html domainIntro = new Html(displayData.getFoodSecurityInfo());
-        QuestionnaireSection section = displayData.getFood2();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "4", "Food Security");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1468,7 +1482,8 @@ public class AcornHome extends ViewFrame {
 
     private void createTransportation() {
         Html domainIntro = new Html(displayData.getTransportationAccessInfo());
-        QuestionnaireSection section = displayData.getTransportation1();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "5", "Transportation Access");
+
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1493,7 +1508,7 @@ public class AcornHome extends ViewFrame {
 
     private void createUtilitiesNeeds() {
             Html domainIntro = new Html(displayData.getUtilityNeedsInfo());
-            QuestionnaireSection section = displayData.getUtilities1();
+            QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "6", "Utility Needs");
             List<QuestionnaireItem> selections = section.getItemList();
 
             Html question = new Html(section.getQuestion());
@@ -1518,7 +1533,7 @@ public class AcornHome extends ViewFrame {
 
     private void createPersonalSafety1() {
         Html domainIntro = new Html(displayData.getPersonalSafetyInfo());
-        QuestionnaireSection section = displayData.getSafety1();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "7", "Personal Safety");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1543,7 +1558,7 @@ public class AcornHome extends ViewFrame {
 
     private void createPersonalSafety2() {
         Html domainIntro = new Html(displayData.getPersonalSafetyInfo());
-        QuestionnaireSection section = displayData.getSafety2();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "8", "Personal Safety");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1568,7 +1583,7 @@ public class AcornHome extends ViewFrame {
 
     private void createPersonalSafety3() {
         Html domainIntro = new Html(displayData.getPersonalSafetyInfo());
-        QuestionnaireSection section = displayData.getSafety3();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "9", "Personal Safety");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1593,7 +1608,7 @@ public class AcornHome extends ViewFrame {
 
     private void createPersonalSafety4() {
         Html domainIntro = new Html(displayData.getPersonalSafetyInfo());
-        QuestionnaireSection section = displayData.getSafety4();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "10", "Personal Safety");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1618,7 +1633,7 @@ public class AcornHome extends ViewFrame {
 
     private void createFinancialStrain() {
         Html domainIntro = new Html(displayData.getEmploymentAndEducationInfo());
-        QuestionnaireSection section = displayData.getFinancialStrain1();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "11", "Employment and Education");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1643,7 +1658,7 @@ public class AcornHome extends ViewFrame {
 
     private void createEmployment() {
         Html domainIntro = new Html(displayData.getEmploymentAndEducationInfo());
-        QuestionnaireSection section = displayData.getEmployment1();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "12", "Employment and Education");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1668,7 +1683,7 @@ public class AcornHome extends ViewFrame {
 
     private void createEducation1() {
         Html domainIntro = new Html(displayData.getEmploymentAndEducationInfo());
-        QuestionnaireSection section = displayData.getEducation1();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "13", "Employment and Education");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1693,7 +1708,7 @@ public class AcornHome extends ViewFrame {
 
     private void createFamilySupport1() {
         Html domainIntro = new Html(displayData.getSocialSupportInfo());
-        QuestionnaireSection section = displayData.getFamilyCommunitySupport1();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "15", "Social Support");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1718,7 +1733,7 @@ public class AcornHome extends ViewFrame {
 
     private void createFamilySupport2() {
         Html domainIntro = new Html(displayData.getSocialSupportInfo());
-        QuestionnaireSection section = displayData.getFamilyCommunitySupport2();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "16", "Social Support");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1742,7 +1757,7 @@ public class AcornHome extends ViewFrame {
     }
     private void createEducation2() {
         Html domainIntro = new Html(displayData.getEmploymentAndEducationInfo());
-        QuestionnaireSection section = displayData.getEducation2();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "14", "Employment and Education");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());
@@ -1767,7 +1782,7 @@ public class AcornHome extends ViewFrame {
 
     private void createLegalSupport() {
         Html domainIntro = new Html(displayData.getLegalSupportInfo());
-        QuestionnaireSection section = displayData.getLegal();
+        QuestionnaireSection section = displayData.getFHIRQuestionnaireSection(acornQuestionnaire, "17", "Legal Support");
         List<QuestionnaireItem> selections = section.getItemList();
 
         Html question = new Html(section.getQuestion());

@@ -8,7 +8,7 @@ import javax.persistence.*;
 public class SDOHOrganization {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
+    @Column(name = "sdohorganization_id")
     private Long id;
     @Column(name = "type")
     private String type;

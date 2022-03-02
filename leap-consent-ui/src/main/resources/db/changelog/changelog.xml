@@ -291,7 +291,7 @@
     </changeSet>
     <changeSet id="00000000000008" author="duane" logicalFilePath="changelog.xml" labels="createSDOHOrganization">
         <createTable tableName="sdohorganization">
-            <column name="id" type="bigint">
+            <column name="sdohorganization_id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="type" type="varchar(80)">
@@ -345,5 +345,29 @@
             <column name="programname" type="varchar(100)"/>
             <column name="website" type="varchar(150)"/>
         </addColumn>
+    </changeSet>
+    <changeSet id="00000000000011" author="duane" logicalFilePath="changelog.xml" labels="createSDOHOrganization">
+        <loadData
+                file="db/data/sdohorganization.csv"
+                separator=";"
+                tableName="sdohorganization">
+            <column name="sdohorganization_id" type="numeric"/>
+            <column name="type" type="string"/>
+            <column name="name" type="string"/>
+            <column name="address" type="string"/>
+            <column name="city" type="string"/>
+            <column name="state" type="string"/>
+            <column name="postalcode" type="string"/>
+            <column name="phonenumber" type="string"/>
+            <column name="emailaddress" type="string"/>
+            <column name="daysopen" type="string"/>
+            <column name="hoursofoperation" type="string"/>
+            <column name="parentorganizationid" type="string"/>
+            <column name="parentorganizationname" type="string"/>
+            <column name="statewide" type="boolean"/>
+            <column name="county" type="string"/>
+            <column name="programname" type="string"/>
+            <column name="website" type="string"/>
+        </loadData>
     </changeSet>
 </databaseChangeLog>

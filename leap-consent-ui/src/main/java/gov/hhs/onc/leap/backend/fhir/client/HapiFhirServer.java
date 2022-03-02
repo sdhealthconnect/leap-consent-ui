@@ -500,6 +500,23 @@ public class HapiFhirServer {
         return bundle;
     }
 
+    public Questionnaire getQuestionnaire(String id) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Questionnaire.class)
+                .where(Resource.RES_ID.exactly().code(id))
+                .returnBundle(Bundle.class)
+                .execute();
+        Questionnaire res = null;
+        try {
+            res = (Questionnaire) bundle.getEntry().get(0).getResource();
+        }
+        catch (Exception ex) {
+            log.info("Questionnaire note found");
+        }
+        return res;
+    }
+
     public Collection<MedicationStatement> getMedicationStatementByPatientid(String patientId) {
         Collection<MedicationStatement> mList = new ArrayList<>();
         return mList;
