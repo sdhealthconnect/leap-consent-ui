@@ -23,4 +23,9 @@ public class FHIRQuestionnaireResponse {
         QuestionnaireResponse questionnaireResponseResult = (QuestionnaireResponse) bundle.getEntry().get(0).getResource();
         return questionnaireResponseResult;
     }
+
+    public QuestionnaireResponse getQuestionnaireResponseById(String questionnaireResponseId) {
+        QuestionnaireResponse resp = hapiFhirServer.getQuestionnaireResponseById(questionnaireResponseId);
+        return resp;
+    }
 }

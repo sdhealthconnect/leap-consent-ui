@@ -261,6 +261,11 @@
             <artifactId>rapidpm-functional-reactive</artifactId>
             <version>01.00.07-RPM</version>
         </dependency>
+        <dependency>
+            <groupId>gov.va.idiq</groupId>
+            <artifactId>sdc-questionnaire</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
     <build>
