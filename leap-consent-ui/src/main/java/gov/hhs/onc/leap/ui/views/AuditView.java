@@ -2,6 +2,7 @@ package gov.hhs.onc.leap.ui.views;
 
 import ca.uhn.fhir.context.FhirContext;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
@@ -11,6 +12,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -64,9 +66,25 @@ public class AuditView extends SplitViewFrame {
     @PostConstruct
     public void setup() {
         setId("auditview");
+        //disable this for himss
+        /**
         setViewContent(createViewContent());
         setViewDetails(createDetailsDrawer());
         setViewFooter(getFooter());
+         **/
+        Html notice = new Html("<p>This function has been disabled during the HIMSS 2022 demonstrations.</p>");
+        FlexBoxLayout himssLayout = new FlexBoxLayout(createHeader(VaadinIcon.FILE, "Audit Logs"), notice);
+        himssLayout.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        himssLayout.setBoxSizing(BoxSizing.BORDER_BOX);
+        himssLayout.setHeightFull();
+        himssLayout.setBackgroundColor("white");
+        himssLayout.setShadow(Shadow.S);
+        himssLayout.setBorderRadius(BorderRadius.S);
+        himssLayout.getStyle().set("margin-bottom", "10px");
+        himssLayout.getStyle().set("margin-right", "10px");
+        himssLayout.getStyle().set("margin-left", "10px");
+        himssLayout.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        setViewContent(himssLayout);
     }
 
     private Component createViewContent() {
