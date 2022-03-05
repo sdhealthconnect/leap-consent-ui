@@ -21,6 +21,7 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -61,7 +62,7 @@ import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFACORNHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPatientPrivacyHandler;
 import gov.hhs.onc.leap.ui.views.ViewFrame;
-import gov.va.idiq.himms2022.BasicSDCQuestionnaireProcessor;
+import gov.hhs.onc.leap.sdc.BasicSDCQuestionnaireProcessor;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
@@ -253,14 +254,12 @@ public class AcornHome extends ViewFrame {
         String fullFormPath = UIUtils.IMG_PATH + "logos";
         Image logo = UIUtils.createImage(fullFormPath,"acornproject.png", "");
         H1 header = new H1("Veterans Facing Health-Related Social Needs");
-        Html intro = new Html("<p>This <b>HIMSS 2022</b> interoperability demonstration of " +
-                "US Department of Veterans Affairs <b>ACORN initiative</b> utilizes a <b>FHIR Questionnaire</b>" +
-                " to screen Veterans for " +
-                "non-clinical needs to provide resources at the point of clinical care. The assessment " +
-                "currently screens for the following nine domains of health-related social needs: food, " +
-                "housing security, utility, transportation, legal, " +
-                "educational, employment needs, " +
-                "personal safety and social support.</p>");
+        Html intro = new Html("<p>This <b>FHIR Questionnaire</b>" +
+                " screens Veterans for non-clinical needs to provide resources at the point of clinical care. The assessment " +
+                "currently screens for the following nine domains of health-related social needs: food, housing security, " +
+                "utility, transportation, legal, educational, employment needs, personal safety and social support.  " +
+                "The Veteran's responses are captured in a <b>FHIR QuestionnaireResponse</b> resource.  Those responses are then " +
+                "processed and social needs are calcuated using mechanisms described in the <b>FHIR Implentation Guide</b> for <b>Structured Data Capture (SDC)</b>.</p>");
         Html intro2 = new Html("<p>Various social determinants interact with other behavioral, environmental, " +
                 "and economic factors to contribute up to <b>80% of overall health outcomes.</b>  Addressing a Veteran's " +
                 "unmet health-related social needs can have a positive impact on their health and quality of life.</p>");
@@ -675,11 +674,17 @@ public class AcornHome extends ViewFrame {
                     Notification notification = Notification.show("Congrats! You've completed the ACORN questionnaire.");
                     notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                     notification.setPosition(Notification.Position.MIDDLE);
+                    notification.setDuration(1000);
                     processAnswers();
-                    forwardButton.setText("Accept");
-                    questionnaireComplete = true;
-                    questionPosition = 0;
-                    displayFoodSecurity();
+                    if (!doAnyNeedsExist()) {
+                        noSocialNeedsDetermined();
+                    }
+                    else {
+                        forwardButton.setText("Accept");
+                        questionnaireComplete = true;
+                        questionPosition = 0;
+                        displayFoodSecurity();
+                    }
                     break;
             }
         }
@@ -1787,6 +1792,18 @@ public class AcornHome extends ViewFrame {
         }
         return res;
     }
+    private boolean doAnyNeedsExist() {
+        boolean res = false;
+        Iterator iter = sdohNeeds.iterator();
+        while (iter.hasNext()) {
+            SDOHNeed need = (SDOHNeed)iter.next();
+            if (need.isNeeded()) {
+                res = true;
+                break;
+            }
+        }
+        return res;
+    }
     
     private void createFHIRConsent() {
         Patient patient = consentSession.getFhirPatient();
@@ -1933,5 +1950,19 @@ public class AcornHome extends ViewFrame {
         notification.setPosition(Notification.Position.MIDDLE);
 
         notification.open();
+    }
+
+    private void noSocialNeedsDetermined() {
+        VerticalLayout v = new VerticalLayout();
+        Html l1 = new Html("<p>Based on you responses no unmet health-related social need with determined.</p>");
+        Html l2 = new Html("<p>You can at anytime retake the ACORN Questionnaire.</p>");
+        v.add(l1,l2);
+        v.setAlignItems(FlexComponent.Alignment.CENTER);
+        Notification notification = new Notification();
+        notification.addThemeVariants(NotificationVariant.LUMO_PRIMARY);
+        notification.setDuration(5000);
+        notification.add(v);
+        notification.open();
+        UI.getCurrent().navigate("consentdocumentview");
     }
 }

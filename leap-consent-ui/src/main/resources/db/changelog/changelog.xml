@@ -346,7 +346,6 @@
             <column name="website" type="varchar(150)"/>
         </addColumn>
     </changeSet>
-    <!--
     <changeSet id="00000000000011" author="duane" logicalFilePath="changelog.xml" labels="createSDOHOrganization">
         <loadData
                 file="db/data/sdohorganization.csv"
@@ -371,5 +370,4 @@
             <column name="website" type="string"/>
         </loadData>
     </changeSet>
-    -->
 </databaseChangeLog>
