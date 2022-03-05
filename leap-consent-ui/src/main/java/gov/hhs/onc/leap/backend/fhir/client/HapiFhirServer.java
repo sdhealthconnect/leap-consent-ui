@@ -347,6 +347,18 @@ public class HapiFhirServer {
         return bundle;
     }
 
+    public QuestionnaireResponse getQuestionnaireResponseById(String questionnaireResponseId) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(QuestionnaireResponse.class)
+                .where(QuestionnaireResponse.RES_ID.exactly().code(questionnaireResponseId))
+                .returnBundle(Bundle.class)
+                .execute();
+        QuestionnaireResponse resp = (QuestionnaireResponse) bundle.getEntry().get(0).getResource();
+
+        return resp;
+    }
+
     public Bundle getPatientBundle(String id) {
         Bundle bundle = hapiClient
                 .search()
@@ -498,5 +510,27 @@ public class HapiFhirServer {
                 .returnBundle(Bundle.class)
                 .execute();
         return bundle;
+    }
+
+    public Questionnaire getQuestionnaire(String id) {
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Questionnaire.class)
+                .where(Resource.RES_ID.exactly().code(id))
+                .returnBundle(Bundle.class)
+                .execute();
+        Questionnaire res = null;
+        try {
+            res = (Questionnaire) bundle.getEntry().get(0).getResource();
+        }
+        catch (Exception ex) {
+            log.info("Questionnaire note found");
+        }
+        return res;
+    }
+
+    public Collection<MedicationStatement> getMedicationStatementByPatientid(String patientId) {
+        Collection<MedicationStatement> mList = new ArrayList<>();
+        return mList;
     }
 }

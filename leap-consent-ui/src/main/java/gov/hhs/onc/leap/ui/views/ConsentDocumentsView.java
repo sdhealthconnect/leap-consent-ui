@@ -388,11 +388,20 @@ public class ConsentDocumentsView extends SplitViewFrame {
             String destination = "N/A";
             try {
                 if (!policyType.equals("acd")) {
-                    destination = c.getProvision().getProvision().get(1).getActor().get(0).getReference().getDisplay();
+                    if (policyType.equals("sdoh")) {
+                        if (c.getProvision().getProvision().size() > 1) {
+                            destination = "Multiple Organizations";
+                        } else {
+                            destination = c.getProvision().getProvision().get(0).getActor().get(0).getReference().getDisplay();
+                        }
+                    }
+                    else {
+                        destination = c.getProvision().getProvision().get(1).getActor().get(0).getReference().getDisplay();
+                    }
                 }
             }
             catch (Exception ex) {
-                log.warn("No Destination for patient-privacy scoped consent");
+                log.warn(policyType + " No Destination for patient-privacy scoped consent");
             }
 
             String source = c.getOrganization().get(0).getDisplay();

@@ -1,8 +1,8 @@
 sls:
-  url: ${SLS_HOST_URL:http://34.94.253.50:9091}
+  url: ${SLS_HOST_URL:http://sdhc-sls-leap.uc.r.appspot.com}
 
 hapi-fhir:
-  url: ${HAPI_FHIR_URL:http://34.94.253.50:8080/hapi-fhir-jpaserver/fhir/}
+  url: ${HAPI_FHIR_URL:https://sdhc-hapi-fhir-leap-wafxyq4bza-uc.a.run.app/fhir/}
 
 datasource:
   url: jdbc:mysql://${DB_NAME:localhost:3306/leap_consent?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&jdbcCompliantTruncation=false&createDatabaseIfNotExist=true}
