@@ -259,7 +259,7 @@ public class AcornHome extends ViewFrame {
                 "currently screens for the following nine domains of health-related social needs: food, housing security, " +
                 "utility, transportation, legal, educational, employment needs, personal safety and social support.  " +
                 "The Veteran's responses are captured in a <b>FHIR QuestionnaireResponse</b> resource.  Those responses are then " +
-                "processed and social needs are calcuated using mechanisms described in the <b>FHIR Implentation Guide</b> for <b>Structured Data Capture (SDC)</b>.</p>");
+                "processed and social needs are calcuated using mechanisms described in the <b>FHIR Implementation Guide</b> for <b>Structured Data Capture (SDC)</b>.</p>");
         Html intro2 = new Html("<p>Various social determinants interact with other behavioral, environmental, " +
                 "and economic factors to contribute up to <b>80% of overall health outcomes.</b>  Addressing a Veteran's " +
                 "unmet health-related social needs can have a positive impact on their health and quality of life.</p>");
