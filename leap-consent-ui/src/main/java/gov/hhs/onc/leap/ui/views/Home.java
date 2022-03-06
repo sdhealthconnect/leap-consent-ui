@@ -18,7 +18,7 @@ import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BorderRadius;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 
-@PageTitle("LEAP FHIR Consent - Home")
+@PageTitle("Home")
 @Route(value = "", layout = MainLayout.class)
 public class Home extends ViewFrame {
 	private Image logo;
@@ -33,7 +33,7 @@ public class Home extends ViewFrame {
 
 
 		String fullFormPath = UIUtils.IMG_PATH + "logos";
-		logo = UIUtils.createImage(fullFormPath,"aboutimage.png", "");
+		logo = UIUtils.createImage(fullFormPath,"aboutimage.jpeg", "");
 		logo.getStyle().set("background", "blue");
 
 
