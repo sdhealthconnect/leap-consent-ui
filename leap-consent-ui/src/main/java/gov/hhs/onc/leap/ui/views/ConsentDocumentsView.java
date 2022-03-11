@@ -6,9 +6,12 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
@@ -21,6 +24,8 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRMedicationRequest;
@@ -41,6 +46,10 @@ import gov.hhs.onc.leap.ui.util.UIUtils;
 import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.WhiteSpace;
 import org.apache.commons.io.IOUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageTree;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Consent;
 import org.hl7.fhir.r4.model.MedicationRequest;
@@ -50,8 +59,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import javax.imageio.ImageIO;
+import javax.imageio.stream.IIOByteBuffer;
+import javax.imageio.stream.ImageOutputStream;
+import java.io.*;
+import java.nio.ByteOrder;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -65,6 +77,9 @@ public class ConsentDocumentsView extends SplitViewFrame {
     private DetailsDrawer detailsDrawer;
     private MemoryBuffer uploadBuffer;
     private Upload upload;
+    private Tabs tabs;
+    private Tab details;
+    private Tab attachments;
 
     @Autowired
     private FHIRConsent fhirConsentClient;
@@ -111,7 +126,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
 
         grid = new Grid<>();
         grid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
+        grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresentOrElse(this::showDetails, this::hideDetail));
         grid.setDataProvider(dataProvider);
         grid.setHeightFull();
 
@@ -174,11 +189,11 @@ public class ConsentDocumentsView extends SplitViewFrame {
         detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
 
         // Header
-        Tab details = new Tab(getTranslation("consentDocumentsView-details"));
-        Tab attachments = new Tab(getTranslation("consentDocumentsView-attachments"));
+        details = new Tab(getTranslation("consentDocumentsView-details"));
+        attachments = new Tab(getTranslation("consentDocumentsView-attachments"));
 
 
-        Tabs tabs = new Tabs(details, attachments);
+        tabs = new Tabs(details, attachments);
         tabs.addThemeVariants(TabsVariant.LUMO_EQUAL_WIDTH_TABS);
         tabs.addSelectedChangeListener(e -> {
             Tab selectedTab = tabs.getSelectedTab();
@@ -347,6 +362,7 @@ public class ConsentDocumentsView extends SplitViewFrame {
     }
 
     private void showDetails(ConsentDocument consentDocument) {
+        tabs.setSelectedTab(details);
         detailsDrawer.setContent(createDetails(consentDocument));
         detailsDrawer.show();
     }
@@ -543,28 +559,64 @@ public class ConsentDocumentsView extends SplitViewFrame {
         byte[] docB = consent.getSourceAttachment().getData();
         byte[] docBdecoded = Base64.getDecoder().decode(docB);
         ByteArrayInputStream bais = new ByteArrayInputStream(docBdecoded);
-
-        StreamResource streamResource = new StreamResource(
-                docTitle, () -> {
-            try {
-                return new ByteArrayInputStream(docBdecoded);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        });
+        PdfBrowserViewer viewer = null;
+        //if mobile use image layout
+        //VerticalLayout imageLayout = new VerticalLayout();
+        //imageLayout.setHeight("600px");
+        //imageLayout.setWidth("640px");
+        //imageLayout.setPadding(true);
         docDialog = new Dialog();
+        Scroller scroller = new Scroller();
+        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        Div div = new Div();
+        if (isMobileDevice()) {
+            try {
+                PDDocument pdf = PDDocument.load(docBdecoded);
+                PDFRenderer renderer = new PDFRenderer(pdf);
+                int pageSize = pdf.getNumberOfPages();
+                for (int i = 0; i < pageSize; i++) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(renderer.renderImageWithDPI(i, 96), "png", baos);
+                    StreamResource stream = new StreamResource(docTitle+"-"+ i +".jpg", () -> new ByteArrayInputStream(baos.toByteArray()));
+                    Image image = new Image(stream, docTitle+"-"+i);
+                    image.setWidthFull();
+                    div.add(image);
+                }
+                scroller.setContent(div);
+                pdf.close();
+            }
+            catch (Exception ex) {
+                log.error("Failed to create pdf image array for display. "+ex.getMessage());
+            }
+        }
+        else {
+            StreamResource streamResource = new StreamResource(
+                    docTitle, () -> {
+                try {
+                    return new ByteArrayInputStream(docBdecoded);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            });
 
-        streamResource.setContentType("application/pdf");
 
-        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
-        viewer.setHeight("800px");
-        viewer.setWidth("840px");
+            streamResource.setContentType("application/pdf");
 
+            viewer = new PdfBrowserViewer(streamResource);
+            viewer.setHeight("800px");
+            viewer.setWidth("840px");
+        }
         Button closeButton = new Button("Close", e -> docDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
-        FlexBoxLayout content = new FlexBoxLayout(viewer, closeButton);
+        FlexBoxLayout content;
+        if (isMobileDevice()) {
+            content = new FlexBoxLayout(scroller, closeButton);
+        }
+        else {
+            content = new FlexBoxLayout(viewer, closeButton);
+        }
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -599,5 +651,19 @@ public class ConsentDocumentsView extends SplitViewFrame {
            log.error("Failed to revoke consent and withdraw research subject "+ex.getMessage());
        }
        return res;
+    }
+
+    private  boolean isMobileDevice() {
+       boolean res = false;
+        WebBrowser webB = VaadinSession.getCurrent().getBrowser();
+        System.out.println(webB.isMacOSX() +" "+webB.isSafari()+" "+webB.isAndroid()+" "+webB.isIPhone()+" "+webB.isWindowsPhone());
+        System.out.println(webB.getBrowserApplication());
+        if ((webB.isMacOSX() && webB.isSafari()) || webB.isAndroid() || webB.isIPhone() || webB.isWindowsPhone() || (webB.getBrowserApplication().indexOf("iPad") > -1))  {
+            res = true;
+        }
+        else {
+            res = false;
+        }
+        return res;
     }
 }

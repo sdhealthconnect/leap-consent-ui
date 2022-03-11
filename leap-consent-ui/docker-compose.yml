@@ -10,5 +10,6 @@ services:
     environment:
       SLS-HOST-URL: ${SLS-HOST-URL}
       HAPI-FHIR-URL: ${HAPI-FHIR-URL}
+      SH-API-URL: ${SH-API-URL}
     ports:
       - 8080:8080

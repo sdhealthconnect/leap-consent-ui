@@ -1,3 +1,6 @@
+sh:
+  url: ${SH_API_URL}
+
 sls:
   url: ${SLS_HOST_URL}
 

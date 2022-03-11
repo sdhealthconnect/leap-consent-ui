@@ -11,6 +11,7 @@ import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -18,10 +19,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.*;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -31,6 +29,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
@@ -61,13 +60,21 @@ import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFACORNHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPatientPrivacyHandler;
+import gov.hhs.onc.leap.ui.views.ConsentDocumentsView;
 import gov.hhs.onc.leap.ui.views.ViewFrame;
 import gov.hhs.onc.leap.sdc.BasicSDCQuestionnaireProcessor;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.hl7.fhir.r4.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
 import javax.annotation.PostConstruct;
+import javax.imageio.ImageIO;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -75,7 +82,7 @@ import java.util.*;
 @PageTitle("ACORN Project - Home")
 @Route(value = "acornhome", layout = MainLayout.class)
 public class AcornHome extends ViewFrame {
-
+    private static final Logger log = LoggerFactory.getLogger(AcornHome.class);
     private ConsentSession consentSession;
     private ConsentUser consentUser;
     private Button beginQuestionnaire;
@@ -1059,17 +1066,43 @@ public class AcornHome extends ViewFrame {
     private void getHumanReadable() {
         getSelectedOrganizations();
         StreamResource streamResource = setFieldsCreatePDF();
+        String docTitle = "acorn";
+        PdfBrowserViewer viewer = null;
         if (streamResource == null) {
             return;
         }
         docDialog = new Dialog();
-        docDialog.setModal(true);
+        Scroller scroller = new Scroller();
+        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        Div div = new Div();
+        if (isMobileDevice()) {
+            try {
+                PDDocument pdf = PDDocument.load(consentPDFAsByteArray);
+                PDFRenderer renderer = new PDFRenderer(pdf);
+                int pageSize = pdf.getNumberOfPages();
+                for (int i = 0; i < pageSize; i++) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(renderer.renderImageWithDPI(i, 96), "png", baos);
+                    StreamResource stream = new StreamResource(docTitle+"-"+ i +".jpg", () -> new ByteArrayInputStream(baos.toByteArray()));
+                    Image image = new Image(stream, docTitle+"-"+i);
+                    image.setWidthFull();
+                    div.add(image);
+                }
+                scroller.setContent(div);
+                pdf.close();
+            }
+            catch (Exception ex) {
+                log.error("Failed to create pdf image array for display. "+ex.getMessage());
+            }
+        }
+        else {
 
-        streamResource.setContentType("application/pdf");
+            streamResource.setContentType("application/pdf");
 
-        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
-        viewer.setHeight("800px");
-        viewer.setWidth("840px");
+            viewer = new PdfBrowserViewer(streamResource);
+            viewer.setHeight("800px");
+            viewer.setWidth("840px");
+        }
 
 
         Button closeButton = new Button(getTranslation("sharePatient-cancel"));
@@ -1094,7 +1127,13 @@ public class AcornHome extends ViewFrame {
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
 
 
-        FlexBoxLayout content = new FlexBoxLayout(viewer, hLayout);
+        FlexBoxLayout content;
+        if (isMobileDevice()) {
+            content = new FlexBoxLayout(scroller, hLayout);
+        }
+        else {
+            content = new FlexBoxLayout(viewer, hLayout);
+        }
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -1964,5 +2003,19 @@ public class AcornHome extends ViewFrame {
         notification.add(v);
         notification.open();
         UI.getCurrent().navigate("consentdocumentview");
+    }
+
+    private  boolean isMobileDevice() {
+        boolean res = false;
+        WebBrowser webB = VaadinSession.getCurrent().getBrowser();
+        System.out.println(webB.isMacOSX() +" "+webB.isSafari()+" "+webB.isAndroid()+" "+webB.isIPhone()+" "+webB.isWindowsPhone());
+        System.out.println(webB.getBrowserApplication());
+        if ((webB.isMacOSX() && webB.isSafari()) || webB.isAndroid() || webB.isIPhone() || webB.isWindowsPhone() || (webB.getBrowserApplication().indexOf("iPad") > -1))  {
+            res = true;
+        }
+        else {
+            res = false;
+        }
+        return res;
     }
 }

@@ -10,6 +10,8 @@ hapi-fhir:
   url: https://sdhc-hapi-fhir-leap-wafxyq4bza-uc.a.run.app/fhir/
   org-reference: Organization/privacy-consent-scenario-H-healthcurrent
   org-display: HealthCurrent FHIR Connectathon
+sh:
+  url: ${SH_API_URL:https://stronghold-ui-api-jmiahzqi2a-uw.a.run.app}
 
 spring:
   liquibase:

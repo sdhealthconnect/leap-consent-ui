@@ -7,6 +7,8 @@ steps:
            '--build-arg',
            'ARG_HAPI_FHIR_URL=${_HAPI_FHIR_URL}',
            '--build-arg',
+           'ARG_SH_API_URL=${_SH_API_URL}',
+           '--build-arg',
            'GITHUB_USERNAME=${_GITHUB_USERNAME}',
            '--build-arg',
            'GITHUB_PWD=${_GITHUB_PWD}',

@@ -159,6 +159,7 @@ public class MainLayout extends FlexBoxLayout
 		NaviMenu menu = naviDrawer.getMenu();
 		menu.addNaviItem(VaadinIcon.HOME, getTranslation("mainLayout-menu-home"), Home.class);
 		menu.addNaviItem(VaadinIcon.FAMILY, "ACORN", AcornHome.class);
+		menu.addNaviItem(VaadinIcon.CHECK_SQUARE, "MED Reconciliation", MedReconciliation.class);
 		menu.addNaviItem(VaadinIcon.RECORDS, getTranslation("mainLayout-menu-my_consent_documents"), ConsentDocumentsView.class);
 		menu.addNaviItem(VaadinIcon.COGS, getTranslation("mainLayout-menu-analyze_my_data"), AnalyzeRecordView.class);
 		menu.addNaviItem(VaadinIcon.SHARE, getTranslation("mainLayout-menu-share_my_data"), SharePatientDataView.class);
