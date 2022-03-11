@@ -61,8 +61,7 @@ public class MedReconciliation extends ViewFrame {
 
     private ConsentSession consentSession;
     private ConsentUser consentUser;
-    @Value("${sh.url:http://localhost:8081}")
-    private String shHost;
+    private String shHost = "https://stronghold-ui-api-jmiahzqi2a-uw.a.run.app";
     private Grid activeMedicationsGrid;
     private FlexBoxLayout activeMedicationsLayout;
     private Button resetButton;
