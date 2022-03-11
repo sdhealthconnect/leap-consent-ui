@@ -1,3 +1,6 @@
+sh:
+  url: ${SH_API_URL:https://stronghold-ui-api-jmiahzqi2a-uw.a.run.app}
+
 sls:
   url: ${SLS_HOST_URL:http://sdhc-sls-leap.uc.r.appspot.com}
 

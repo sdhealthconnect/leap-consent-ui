@@ -1,0 +1,50 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "medrec-himss2022-demonstration",
+  "status": "active",
+  "experimental": true,
+  "date": "2022-02-27T22:02:34-07:00",
+  "code": [
+    {
+      "system": "https://saperi.io",
+      "code": "2022-2-27",
+      "display": "HIMSS 2022 Med Rec Interoperability Demonstration"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "active-medication-reconciliation",
+      "text": "Patient reconciliation of active medications",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "1",
+          "text": "Yes - I am taking this medication as written",
+          "type": "boolean"
+        },
+        {
+          "linkId": "2",
+          "text": "No - I am no longer taking this medication",
+          "type": "boolean"
+        },
+        {
+          "linkId": "3",
+          "text": "Edit - I need to indicate how I am taking this medication",
+          "type": "boolean"
+        },
+        {
+          "linkId": "4",
+          "text": "Change/Comments",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "3",
+              "operator": "=",
+              "answerBoolean": "true"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

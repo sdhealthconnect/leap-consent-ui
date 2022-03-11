@@ -9,12 +9,15 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
@@ -25,6 +28,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.ConsentDocument;
 import gov.hhs.onc.leap.backend.ConsentNotification;
@@ -49,6 +53,8 @@ import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFInformedConsentHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFResearchStudyHandler;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
@@ -58,6 +64,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
 import javax.annotation.PostConstruct;
+import javax.imageio.ImageIO;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -1012,14 +1021,41 @@ public class NotificationView extends ViewFrame {
     private Dialog createInfoDialog() {
         PDFInformedConsentHandler pdfHandler = new PDFInformedConsentHandler(pdfSigningService);
         StreamResource streamResource = pdfHandler.retrievePDFForm("antidepressants");
-
+        consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
+        String docTitle = "antidepressants";
+        PdfBrowserViewer viewer = null;
         Dialog infoDialog = new Dialog();
+        Scroller scroller = new Scroller();
+        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        Div div = new Div();
+        if (isMobileDevice()) {
+            try {
+                PDDocument pdf = PDDocument.load(consentPDFAsByteArray);
+                PDFRenderer renderer = new PDFRenderer(pdf);
+                int pageSize = pdf.getNumberOfPages();
+                for (int i = 0; i < pageSize; i++) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(renderer.renderImageWithDPI(i, 96), "png", baos);
+                    StreamResource stream = new StreamResource(docTitle+"-"+ i +".jpg", () -> new ByteArrayInputStream(baos.toByteArray()));
+                    Image image = new Image(stream, docTitle+"-"+i);
+                    image.setWidthFull();
+                    div.add(image);
+                }
+                scroller.setContent(div);
+                pdf.close();
+            }
+            catch (Exception ex) {
+                log.error("Failed to create pdf image array for display. "+ex.getMessage());
+            }
+        }
+        else {
 
-        streamResource.setContentType("application/pdf");
+            streamResource.setContentType("application/pdf");
 
-        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
-        viewer.setHeight("800px");
-        viewer.setWidth("840px");
+            viewer = new PdfBrowserViewer(streamResource);
+            viewer.setHeight("800px");
+            viewer.setWidth("840px");
+        }
 
         Button closeButton = new Button(getTranslation("NotificationView-close"));
         closeButton.addClickListener(event -> {
@@ -1029,7 +1065,13 @@ public class NotificationView extends ViewFrame {
         });
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
-        FlexBoxLayout content = new FlexBoxLayout(viewer, closeButton);
+        FlexBoxLayout content;
+        if (isMobileDevice()) {
+            content = new FlexBoxLayout(scroller, closeButton);
+        }
+        else {
+            content = new FlexBoxLayout(viewer, closeButton);
+        }
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -1046,14 +1088,41 @@ public class NotificationView extends ViewFrame {
 
     private Dialog createRSInfoDialog() {
         StreamResource streamResource = setRSFieldsCreatePDF();
+        String docTitle = "ResearchSubject";
+        PdfBrowserViewer viewer = null;
 
         Dialog infoDialog = new Dialog();
+        Scroller scroller = new Scroller();
+        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        Div div = new Div();
+        if (isMobileDevice()) {
+            try {
+                PDDocument pdf = PDDocument.load(consentPDFAsByteArray);
+                PDFRenderer renderer = new PDFRenderer(pdf);
+                int pageSize = pdf.getNumberOfPages();
+                for (int i = 0; i < pageSize; i++) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(renderer.renderImageWithDPI(i, 96), "png", baos);
+                    StreamResource stream = new StreamResource(docTitle+"-"+ i +".jpg", () -> new ByteArrayInputStream(baos.toByteArray()));
+                    Image image = new Image(stream, docTitle+"-"+i);
+                    image.setWidthFull();
+                    div.add(image);
+                }
+                scroller.setContent(div);
+                pdf.close();
+            }
+            catch (Exception ex) {
+                log.error("Failed to create pdf image array for display. "+ex.getMessage());
+            }
+        }
+        else {
 
-        streamResource.setContentType("application/pdf");
+            streamResource.setContentType("application/pdf");
 
-        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
-        viewer.setHeight("800px");
-        viewer.setWidth("840px");
+            viewer = new PdfBrowserViewer(streamResource);
+            viewer.setHeight("800px");
+            viewer.setWidth("840px");
+        }
 
         Button closeButton = new Button("Close");
         closeButton.addClickListener(event -> {
@@ -1063,7 +1132,13 @@ public class NotificationView extends ViewFrame {
         });
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
-        FlexBoxLayout content = new FlexBoxLayout(viewer, closeButton);
+        FlexBoxLayout content;
+        if (isMobileDevice()) {
+            content = new FlexBoxLayout(scroller, closeButton);
+        }
+        else {
+            content = new FlexBoxLayout(viewer, closeButton);
+        }
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -1079,13 +1154,44 @@ public class NotificationView extends ViewFrame {
     }
     private void createHumanReadable() {
         StreamResource streamResource = setFieldsCreatePDF();
+        String docTitle = "MedicationRequest";
+        PdfBrowserViewer viewer = null;
+        if (streamResource == null) {
+            return;
+        }
         docDialog = new Dialog();
 
-        streamResource.setContentType("application/pdf");
+        Scroller scroller = new Scroller();
+        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        Div div = new Div();
+        if (isMobileDevice()) {
+            try {
+                PDDocument pdf = PDDocument.load(consentPDFAsByteArray);
+                PDFRenderer renderer = new PDFRenderer(pdf);
+                int pageSize = pdf.getNumberOfPages();
+                for (int i = 0; i < pageSize; i++) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(renderer.renderImageWithDPI(i, 96), "png", baos);
+                    StreamResource stream = new StreamResource(docTitle+"-"+ i +".jpg", () -> new ByteArrayInputStream(baos.toByteArray()));
+                    Image image = new Image(stream, docTitle+"-"+i);
+                    image.setWidthFull();
+                    div.add(image);
+                }
+                scroller.setContent(div);
+                pdf.close();
+            }
+            catch (Exception ex) {
+                log.error("Failed to create pdf image array for display. "+ex.getMessage());
+            }
+        }
+        else {
 
-        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
-        viewer.setHeight("800px");
-        viewer.setWidth("840px");
+            streamResource.setContentType("application/pdf");
+
+            viewer = new PdfBrowserViewer(streamResource);
+            viewer.setHeight("800px");
+            viewer.setWidth("840px");
+        }
 
 
         Button closeButton = new Button(getTranslation("NotificationView-cancel"), e -> docDialog.close());
@@ -1106,7 +1212,13 @@ public class NotificationView extends ViewFrame {
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
 
 
-        FlexBoxLayout content = new FlexBoxLayout(viewer, hLayout);
+        FlexBoxLayout content;
+        if (isMobileDevice()) {
+            content = new FlexBoxLayout(scroller, hLayout);
+        }
+        else {
+            content = new FlexBoxLayout(viewer, hLayout);
+        }
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -1121,14 +1233,43 @@ public class NotificationView extends ViewFrame {
 
     private void createRSHumanReadable() {
         StreamResource streamResource = setRSFieldsCreatePDF();
+        String docTitle = "ResearchSubject";
+        PdfBrowserViewer viewer = null;
+        if (streamResource == null) {
+            return;
+        }
         docDialog = new Dialog();
+        Scroller scroller = new Scroller();
+        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        Div div = new Div();
+        if (isMobileDevice()) {
+            try {
+                PDDocument pdf = PDDocument.load(consentPDFAsByteArray);
+                PDFRenderer renderer = new PDFRenderer(pdf);
+                int pageSize = pdf.getNumberOfPages();
+                for (int i = 0; i < pageSize; i++) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(renderer.renderImageWithDPI(i, 96), "png", baos);
+                    StreamResource stream = new StreamResource(docTitle+"-"+ i +".jpg", () -> new ByteArrayInputStream(baos.toByteArray()));
+                    Image image = new Image(stream, docTitle+"-"+i);
+                    image.setWidthFull();
+                    div.add(image);
+                }
+                scroller.setContent(div);
+                pdf.close();
+            }
+            catch (Exception ex) {
+                log.error("Failed to create pdf image array for display. "+ex.getMessage());
+            }
+        }
+        else {
 
-        streamResource.setContentType("application/pdf");
+            streamResource.setContentType("application/pdf");
 
-        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
-        viewer.setHeight("800px");
-        viewer.setWidth("840px");
-
+            viewer = new PdfBrowserViewer(streamResource);
+            viewer.setHeight("800px");
+            viewer.setWidth("840px");
+        }
 
         Button closeButton = new Button(getTranslation("NotificationView-cancel"), e -> docDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
@@ -1146,7 +1287,13 @@ public class NotificationView extends ViewFrame {
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
 
 
-        FlexBoxLayout content = new FlexBoxLayout(viewer, hLayout);
+        FlexBoxLayout content;
+        if (isMobileDevice()) {
+            content = new FlexBoxLayout(scroller, hLayout);
+        }
+        else {
+            content = new FlexBoxLayout(viewer, hLayout);
+        }
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -1621,5 +1768,19 @@ public class NotificationView extends ViewFrame {
 
     public void setNctNumber(String nctNumber) {
         this.nctNumber = nctNumber;
+    }
+
+    private  boolean isMobileDevice() {
+        boolean res = false;
+        WebBrowser webB = VaadinSession.getCurrent().getBrowser();
+        System.out.println(webB.isMacOSX() +" "+webB.isSafari()+" "+webB.isAndroid()+" "+webB.isIPhone()+" "+webB.isWindowsPhone());
+        System.out.println(webB.getBrowserApplication());
+        if ((webB.isMacOSX() && webB.isSafari()) || webB.isAndroid() || webB.isIPhone() || webB.isWindowsPhone() || (webB.getBrowserApplication().indexOf("iPad") > -1))  {
+            res = true;
+        }
+        else {
+            res = false;
+        }
+        return res;
     }
 }

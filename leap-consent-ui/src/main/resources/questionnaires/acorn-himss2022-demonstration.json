@@ -1,411 +1,552 @@
 {
   "resourceType": "Questionnaire",
   "id": "acorn-himss2022-demonstration",
+  "meta": {
+    "versionId": "7",
+    "lastUpdated": "2022-03-03T20:26:29.764+00:00",
+    "source": "#MMQnkNQuWyikkz4r"
+  },
+  "extension": [ {
+    "url": "http://hl7.org/fhir/StructureDefinition/variable",
+    "valueExpression": {
+      "name": "housing-security-need",
+      "language": "text/fhirpath",
+      "expression": "%resource.descendants().where(linkId.startsWith('1.2') or linkId.startsWith('1.3') or linkId.startsWith('2.1') or linkId.startsWith('2.2') or linkId.startsWith('2.3') or linkId.startsWith('2.4') or linkId.startsWith('2.5') or linkId.startsWith('2.6') or linkId.startsWith('2.7')).answer.value.value.anyTrue()"
+    }
+  }, {
+    "url": "http://hl7.org/fhir/StructureDefinition/variable",
+    "valueExpression": {
+      "name": "food-security-need",
+      "language": "text/fhirpath",
+      "expression": "%resource.descendants().where(linkId.startsWith('3.1') or linkId.startsWith('3.2') or linkId.startsWith('4.1') or linkId.startsWith('4.2')).answer.value.value.anyTrue()"
+    }
+  }, {
+    "url": "http://hl7.org/fhir/StructureDefinition/variable",
+    "valueExpression": {
+      "name": "transportation-access-need",
+      "language": "text/fhirpath",
+      "expression": "%resource.descendants().where(linkId.startsWith('5.1')).answer.value.value.anyTrue()"
+    }
+  }, {
+    "url": "http://hl7.org/fhir/StructureDefinition/variable",
+    "valueExpression": {
+      "name": "utility-access-need",
+      "language": "text/fhirpath",
+      "expression": "%resource.descendants().where(linkId.startsWith('6.1') or linkId.startsWith('6.3')).answer.value.value.anyTrue()"
+    }
+  }, {
+    "url": "http://hl7.org/fhir/StructureDefinition/variable",
+    "valueExpression": {
+      "name": "personal-safety-need",
+      "language": "text/fhirpath",
+      "expression": "%resource.descendants().where(linkId.startsWith('7.') and answer.value=true).linkId.select(substring(2,1).toInteger()).first() + %resource.descendants().where(linkId.startsWith('8.') and answer.value=true).linkId.select(substring(2,1).toInteger()).first() + %resource.descendants().where(linkId.startsWith('9.') and answer.value=true).linkId.select(substring(2,1).toInteger()).first() + %resource.descendants().where(linkId.startsWith('10.') and answer.value=true).linkId.select(substring(3,1).toInteger()).first() > 10"
+    }
+  }, {
+    "url": "http://hl7.org/fhir/StructureDefinition/variable",
+    "valueExpression": {
+      "name": "employment-and-education-need",
+      "language": "text/fhirpath",
+      "expression": "%resource.descendants().where(linkId.startsWith('11.1') or linkId.startsWith('11.2') or linkId.startsWith('12.1') or linkId.startsWith('12.2') or linkId.startsWith('13.1') or linkId.startsWith('14.1')).answer.value.value.anyTrue()"
+    }
+  }, {
+    "url": "http://hl7.org/fhir/StructureDefinition/variable",
+    "valueExpression": {
+      "name": "social-support-need",
+      "language": "text/fhirpath",
+      "expression": "%resource.descendants().where(linkId.startsWith('15.3') or linkId.startsWith('15.4') or linkId.startsWith('16.4') or linkId.startsWith('16.5')).answer.value.value.anyTrue()"
+    }
+  }, {
+    "url": "http://hl7.org/fhir/StructureDefinition/variable",
+    "valueExpression": {
+      "name": "legal-support-need",
+      "language": "text/fhirpath",
+      "expression": "%resource.descendants().where(linkId.startsWith('17.1')).answer.value.value.anyTrue()"
+    }
+  } ],
   "status": "active",
   "experimental": true,
   "date": "2022-02-27T22:02:34-07:00",
-  "code": [
-    {
-      "system": "https://va.gov",
-      "code": "2022-2-27",
-      "display": "HIMSS 2022 VA ACORN Interoperability Demonstration"
-    }
-  ],
-  "item": [
-    {
+  "code": [ {
+    "system": "https://va.gov",
+    "code": "2022-2-27",
+    "display": "HIMSS 2022 VA ACORN Interoperability Demonstration"
+  } ],
+  "item": [ {
+    "linkId": "housing-security",
+    "text": "Housing Security",
+    "type": "group",
+    "item": [ {
       "linkId": "1",
-      "text": "<p><b>1.  What is your living situation today?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "1.1",
-      "text": "I have a steady place to live",
-      "type": "boolean"
-    },
-    {
-      "linkId": "1.2",
-      "text": "I have a place to live today, but I am worried about losing it in the future",
-      "type": "boolean"
-    },
-    {
-      "linkId": "1.3",
-      "text": "I do not have a steady place to live (I am temporarily staying with others, in a hotel, in a\nshelter, living outside on the street, on a beach, in a car, abandoned building, bus or\ntrain station, or in a park)",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>What is your living situation today?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "1.1",
+        "text": "I have a steady place to live",
+        "type": "boolean"
+      }, {
+        "linkId": "1.2",
+        "text": "I have a place to live today, but I am worried about losing it in the future",
+        "type": "boolean"
+      }, {
+        "linkId": "1.3",
+        "text": "I do not have a steady place to live (I am temporarily staying with others, in a hotel, in a\nshelter, living outside on the street, on a beach, in a car, abandoned building, bus or\ntrain station, or in a park)",
+        "type": "boolean"
+      } ]
+    }, {
       "linkId": "2",
-      "text": "<p><b>2. Think about the place you live. Do you have problems with any of the following? </b>CHOOSE ALL THAT APPLY</p>",
-      "type": "group"
-    },
-    {
-      "linkId": "2.1",
-      "text": "Pests such as bugs, ants, or mice",
-      "type": "boolean"
-    },
-    {
-      "linkId": "2.2",
-      "text": "Mold",
-      "type": "boolean"
-    },
-    {
-      "linkId": "2.3",
-      "text": "Lead paint or pipes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "2.4",
-      "text": "Lack of heat",
-      "type": "boolean"
-    },
-    {
-      "linkId": "2.5",
-      "text": "Oven or stove not working",
-      "type": "boolean"
-    },
-    {
-      "linkId": "2.6",
-      "text": "Smoke detectors missing or not working",
-      "type": "boolean"
-    },
-    {
-      "linkId": "2.7",
-      "text": "Water leaks",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>Think about the place you live. Do you have problems with any of the following? </b>CHOOSE ALL THAT APPLY</p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "2.1",
+        "text": "Pests such as bugs, ants, or mice",
+        "type": "boolean"
+      }, {
+        "linkId": "2.2",
+        "text": "Mold",
+        "type": "boolean"
+      }, {
+        "linkId": "2.3",
+        "text": "Lead paint or pipes",
+        "type": "boolean"
+      }, {
+        "linkId": "2.4",
+        "text": "Lack of heat",
+        "type": "boolean"
+      }, {
+        "linkId": "2.5",
+        "text": "Oven or stove not working",
+        "type": "boolean"
+      }, {
+        "linkId": "2.6",
+        "text": "Smoke detectors missing or not working",
+        "type": "boolean"
+      }, {
+        "linkId": "2.7",
+        "text": "Water leaks",
+        "type": "boolean"
+      } ]
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+        "valueExpression": {
+          "description": "Housing Security Need",
+          "language": "text/fhirpath",
+          "expression": "%housing-security-need"
+        }
+      } ],
+      "linkId": "housing-security-need",
+      "text": "Housing Security Need",
+      "type": "boolean",
+      "readOnly": true
+    } ]
+  }, {
+    "linkId": "food-security",
+    "text": "Food Security",
+    "type": "group",
+    "item": [ {
       "linkId": "3",
-      "text": "<p><b>3. Within the past 12 months, you worried that your food would run out before you got money to buy more.</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "3.1",
-      "text": "Often true",
-      "type": "boolean"
-    },
-    {
-      "linkId": "3.2",
-      "text": "Sometimes true",
-      "type": "boolean"
-    },
-    {
-      "linkId": "3.3",
-      "text": "Never true",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>Within the past 12 months, you worried that your food would run out before you got money to buy more.</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "3.1",
+        "text": "Often true",
+        "type": "boolean"
+      }, {
+        "linkId": "3.2",
+        "text": "Sometimes true",
+        "type": "boolean"
+      }, {
+        "linkId": "3.3",
+        "text": "Never true",
+        "type": "boolean"
+      } ]
+    }, {
       "linkId": "4",
-      "text": "<p><b>4. Within the past 12 months, the food you bought just didn't last and you didn't have money to get more.</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "4.1",
-      "text": "Often true",
-      "type": "boolean"
-    },
-    {
-      "linkId": "4.2",
-      "text": "Sometimes true",
-      "type": "boolean"
-    },
-    {
-      "linkId": "4.3",
-      "text": "Never true",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>Within the past 12 months, the food you bought just didn't last and you didn't have money to get more.</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "4.1",
+        "text": "Often true",
+        "type": "boolean"
+      }, {
+        "linkId": "4.2",
+        "text": "Sometimes true",
+        "type": "boolean"
+      }, {
+        "linkId": "4.3",
+        "text": "Never true",
+        "type": "boolean"
+      } ]
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+        "valueExpression": {
+          "description": "Food Security Need",
+          "language": "text/fhirpath",
+          "expression": "%food-security-need"
+        }
+      } ],
+      "linkId": "food-security-need",
+      "text": "Food Security Need",
+      "type": "boolean",
+      "readOnly": true
+    } ]
+  }, {
+    "linkId": "transportation-access",
+    "text": "Transportation Access",
+    "type": "group",
+    "item": [ {
       "linkId": "5",
-      "text": "<p><b>5. In the past 12 months, has lack of reliable transportation kept you from medical appointments, meetings, work or from getting things needed for daily living?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "5.1",
-      "text": "Yes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "5.2",
-      "text": "No",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>In the past 12 months, has lack of reliable transportation kept you from medical appointments, meetings, work or from getting things needed for daily living?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "5.1",
+        "text": "Yes",
+        "type": "boolean"
+      }, {
+        "linkId": "5.2",
+        "text": "No",
+        "type": "boolean"
+      } ]
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+        "valueExpression": {
+          "description": "Transportation Access Need",
+          "language": "text/fhirpath",
+          "expression": "%transportation-access-need"
+        }
+      } ],
+      "linkId": "transportation-access-need",
+      "text": "Transportation Access Need",
+      "type": "boolean",
+      "readOnly": true
+    } ]
+  }, {
+    "linkId": "utility-access",
+    "text": "Utility Access",
+    "type": "group",
+    "item": [ {
       "linkId": "6",
-      "text": "<p><b>6. In the past 12 months has the electric, gas, oil, or water company threatened to shut off services in your home?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "6.1",
-      "text": "Yes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "6.2",
-      "text": "No",
-      "type": "boolean"
-    },
-    {
-      "linkId": "6.3",
-      "text": "Already shut off",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>In the past 12 months has the electric, gas, oil, or water company threatened to shut off services in your home?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "6.1",
+        "text": "Yes",
+        "type": "boolean"
+      }, {
+        "linkId": "6.2",
+        "text": "No",
+        "type": "boolean"
+      }, {
+        "linkId": "6.3",
+        "text": "Already shut off",
+        "type": "boolean"
+      } ]
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+        "valueExpression": {
+          "description": "Utility Access Need",
+          "language": "text/fhirpath",
+          "expression": "%utility-access-need"
+        }
+      } ],
+      "linkId": "utility-access-need",
+      "text": "Utility Need",
+      "type": "boolean",
+      "readOnly": true
+    } ]
+  }, {
+    "linkId": "personal-safety",
+    "text": "Personal Safety",
+    "type": "group",
+    "item": [ {
       "linkId": "7",
-      "text": "<p><b>7. How often does anyone, including family and friends, physically hurt you?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "7.1",
-      "text": "Never",
-      "type": "boolean"
-    },
-    {
-      "linkId": "7.2",
-      "text": "Rarely",
-      "type": "boolean"
-    },
-    {
-      "linkId": "7.3",
-      "text": "Sometimes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "7.4",
-      "text": "Fairly often",
-      "type": "boolean"
-    },
-    {
-      "linkId": "7.5",
-      "text": "Frequently",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>How often does anyone, including family and friends, physically hurt you?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "7.1",
+        "text": "Never",
+        "type": "boolean"
+      }, {
+        "linkId": "7.2",
+        "text": "Rarely",
+        "type": "boolean"
+      }, {
+        "linkId": "7.3",
+        "text": "Sometimes",
+        "type": "boolean"
+      }, {
+        "linkId": "7.4",
+        "text": "Fairly often",
+        "type": "boolean"
+      }, {
+        "linkId": "7.5",
+        "text": "Frequently",
+        "type": "boolean"
+      } ]
+    }, {
       "linkId": "8",
-      "text": "<p><b>8. How often does anyone, including family and friends, insult or talk down to you?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "8.1",
-      "text": "Never",
-      "type": "boolean"
-    },
-    {
-      "linkId": "8.2",
-      "text": "Rarely",
-      "type": "boolean"
-    },
-    {
-      "linkId": "8.3",
-      "text": "Sometimes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "8.4",
-      "text": "Fairly often",
-      "type": "boolean"
-    },
-    {
-      "linkId": "8.5",
-      "text": "Frequently",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>How often does anyone, including family and friends, insult or talk down to you?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "8.1",
+        "text": "Never",
+        "type": "boolean"
+      }, {
+        "linkId": "8.2",
+        "text": "Rarely",
+        "type": "boolean"
+      }, {
+        "linkId": "8.3",
+        "text": "Sometimes",
+        "type": "boolean"
+      }, {
+        "linkId": "8.4",
+        "text": "Fairly often",
+        "type": "boolean"
+      }, {
+        "linkId": "8.5",
+        "text": "Frequently",
+        "type": "boolean"
+      } ]
+    }, {
       "linkId": "9",
-      "text": "<p><b>9. How often does anyone, including family and friends, threaten you with harm?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "9.1",
-      "text": "Never",
-      "type": "boolean"
-    },
-    {
-      "linkId": "9.2",
-      "text": "Rarely",
-      "type": "boolean"
-    },
-    {
-      "linkId": "9.3",
-      "text": "Sometimes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "9.4",
-      "text": "Fairly often",
-      "type": "boolean"
-    },
-    {
-      "linkId": "9.5",
-      "text": "Frequently",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>How often does anyone, including family and friends, threaten you with harm?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "9.1",
+        "text": "Never",
+        "type": "boolean"
+      }, {
+        "linkId": "9.2",
+        "text": "Rarely",
+        "type": "boolean"
+      }, {
+        "linkId": "9.3",
+        "text": "Sometimes",
+        "type": "boolean"
+      }, {
+        "linkId": "9.4",
+        "text": "Fairly often",
+        "type": "boolean"
+      }, {
+        "linkId": "9.5",
+        "text": "Frequently",
+        "type": "boolean"
+      } ]
+    }, {
       "linkId": "10",
-      "text": "<p><b>10. How often does anyone, including family and friends, scream or curse at you?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "10.1",
-      "text": "Never",
-      "type": "boolean"
-    },
-    {
-      "linkId": "10.2",
-      "text": "Rarely",
-      "type": "boolean"
-    },
-    {
-      "linkId": "10.3",
-      "text": "Sometimes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "10.4",
-      "text": "Fairly often",
-      "type": "boolean"
-    },
-    {
-      "linkId": "10.5",
-      "text": "Frequently",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>How often does anyone, including family and friends, scream or curse at you?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "10.1",
+        "text": "Never",
+        "type": "boolean"
+      }, {
+        "linkId": "10.2",
+        "text": "Rarely",
+        "type": "boolean"
+      }, {
+        "linkId": "10.3",
+        "text": "Sometimes",
+        "type": "boolean"
+      }, {
+        "linkId": "10.4",
+        "text": "Fairly often",
+        "type": "boolean"
+      }, {
+        "linkId": "10.5",
+        "text": "Frequently",
+        "type": "boolean"
+      } ]
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+        "valueExpression": {
+          "description": "Personal Safety Need",
+          "language": "text/fhirpath",
+          "expression": "%personal-safety-need"
+        }
+      } ],
+      "linkId": "personal-safety-need",
+      "text": "Personal Safety Need",
+      "type": "boolean",
+      "readOnly": true
+    } ]
+  }, {
+    "linkId": "employment-and-education",
+    "text": "Employment and Education",
+    "type": "group",
+    "item": [ {
       "linkId": "11",
-      "text": "<p><b>11. How hard is it for you to pay for the very basics like food, housing, medical care, and heating? Would you say it is:</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "11.1",
-      "text": "Very hard",
-      "type": "boolean"
-    },
-    {
-      "linkId": "11.2",
-      "text": "Somewhat hard",
-      "type": "boolean"
-    },
-    {
-      "linkId": "11.3",
-      "text": "Not hard at all",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>How hard is it for you to pay for the very basics like food, housing, medical care, and heating? Would you say it is:</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "11.1",
+        "text": "Very hard",
+        "type": "boolean"
+      }, {
+        "linkId": "11.2",
+        "text": "Somewhat hard",
+        "type": "boolean"
+      }, {
+        "linkId": "11.3",
+        "text": "Not hard at all",
+        "type": "boolean"
+      } ]
+    }, {
       "linkId": "12",
-      "text": "<p><b>12. Do you want help finding or keeping work or a job?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "12.1",
-      "text": "Yes, help finding work",
-      "type": "boolean"
-    },
-    {
-      "linkId": "12.2",
-      "text": "Yes, help keeping work",
-      "type": "boolean"
-    },
-    {
-      "linkId": "12.3",
-      "text": "I do not need or want help",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>Do you want help finding or keeping work or a job?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "12.1",
+        "text": "Yes, help finding work",
+        "type": "boolean"
+      }, {
+        "linkId": "12.2",
+        "text": "Yes, help keeping work",
+        "type": "boolean"
+      }, {
+        "linkId": "12.3",
+        "text": "I do not need or want help",
+        "type": "boolean"
+      } ]
+    }, {
       "linkId": "13",
-      "text": "<p><b>13. Do you speak a language other than English at home?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "13.1",
-      "text": "Yes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "13.2",
-      "text": "No",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>Do you speak a language other than English at home?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "13.1",
+        "text": "Yes",
+        "type": "boolean"
+      }, {
+        "linkId": "13.2",
+        "text": "No",
+        "type": "boolean"
+      } ]
+    }, {
       "linkId": "14",
-      "text": "<p><b>14. Do you want help with school or training? For example, starting or completing job training or getting a high school diploma, GED or equivalent.</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "14.1",
-      "text": "Yes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "14.2",
-      "text": "No",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>Do you want help with school or training? For example, starting or completing job training or getting a high school diploma, GED or equivalent.</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "14.1",
+        "text": "Yes",
+        "type": "boolean"
+      }, {
+        "linkId": "14.2",
+        "text": "No",
+        "type": "boolean"
+      } ]
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+        "valueExpression": {
+          "description": "Employment and Education Need",
+          "language": "text/fhirpath",
+          "expression": "%employment-and-education-need"
+        }
+      } ],
+      "linkId": "employment-and-education-need",
+      "text": "Employment and Education Need",
+      "type": "boolean",
+      "readOnly": true
+    } ]
+  }, {
+    "linkId": "social-support",
+    "text": "Social Support",
+    "type": "group",
+    "item": [ {
       "linkId": "15",
-      "text": "<p><b>15. If for any reason you need help with day-to-day activities such as bathing, preparing meals, shopping, managing finances, etc., do you get the help you need?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "15.1",
-      "text": "I don't need any help",
-      "type": "boolean"
-    },
-    {
-      "linkId": "15.2",
-      "text": "I get all the help I need",
-      "type": "boolean"
-    },
-    {
-      "linkId": "15.3",
-      "text": "I could use a little more help",
-      "type": "boolean"
-    },
-    {
-      "linkId": "15.4",
-      "text": "I need a lot more help",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>If for any reason you need help with day-to-day activities such as bathing, preparing meals, shopping, managing finances, etc., do you get the help you need?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "15.1",
+        "text": "I don't need any help",
+        "type": "boolean"
+      }, {
+        "linkId": "15.2",
+        "text": "I get all the help I need",
+        "type": "boolean"
+      }, {
+        "linkId": "15.3",
+        "text": "I could use a little more help",
+        "type": "boolean"
+      }, {
+        "linkId": "15.4",
+        "text": "I need a lot more help",
+        "type": "boolean"
+      } ]
+    }, {
       "linkId": "16",
-      "text": "<p><b>16. How often do you feel lonely or isolated from those around you?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "16.1",
-      "text": "Never",
-      "type": "boolean"
-    },
-    {
-      "linkId": "16.2",
-      "text": "Rarely",
-      "type": "boolean"
-    },
-    {
-      "linkId": "16.3",
-      "text": "Sometimes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "16.4",
-      "text": "Often",
-      "type": "boolean"
-    },
-    {
-      "linkId": "16.5",
-      "text": "Always",
-      "type": "boolean"
-    },
-    {
+      "text": "<p><b>How often do you feel lonely or isolated from those around you?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "16.1",
+        "text": "Never",
+        "type": "boolean"
+      }, {
+        "linkId": "16.2",
+        "text": "Rarely",
+        "type": "boolean"
+      }, {
+        "linkId": "16.3",
+        "text": "Sometimes",
+        "type": "boolean"
+      }, {
+        "linkId": "16.4",
+        "text": "Often",
+        "type": "boolean"
+      }, {
+        "linkId": "16.5",
+        "text": "Always",
+        "type": "boolean"
+      } ]
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+        "valueExpression": {
+          "description": "Social Support Need",
+          "language": "text/fhirpath",
+          "expression": "%social-support-need"
+        }
+      } ],
+      "linkId": "social-support-need",
+      "text": "Social Support Need",
+      "type": "boolean",
+      "readOnly": true
+    } ]
+  }, {
+    "linkId": "legal-support",
+    "text": "Legal Support",
+    "type": "group",
+    "item": [ {
       "linkId": "17",
-      "text": "<p><b>17. Are you currently having difficulties addressing issues such as divorce, child support/custody, benefit appeals, or resolving disputes?</b></p>",
-      "type": "group"
-    },
-    {
-      "linkId": "17.1",
-      "text": "Yes",
-      "type": "boolean"
-    },
-    {
-      "linkId": "17.2",
-      "text": "No",
-      "type": "boolean"
-    }
-  ]
+      "text": "<p><b>Are you currently having difficulties addressing issues such as divorce, child support/custody, benefit appeals, or resolving disputes?</b></p>",
+      "type": "group",
+      "item": [ {
+        "linkId": "17.1",
+        "text": "Yes",
+        "type": "boolean"
+      }, {
+        "linkId": "17.2",
+        "text": "No",
+        "type": "boolean"
+      } ]
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+        "valueExpression": {
+          "description": "Legal Support Need",
+          "language": "text/fhirpath",
+          "expression": "%legal-support-need"
+        }
+      } ],
+      "linkId": "legal-support-need",
+      "text": "Legal Support Need",
+      "type": "boolean",
+      "readOnly": true
+    } ]
+  } ]
 }

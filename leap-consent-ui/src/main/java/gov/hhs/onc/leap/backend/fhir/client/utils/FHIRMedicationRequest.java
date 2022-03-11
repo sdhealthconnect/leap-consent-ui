@@ -61,4 +61,9 @@ public class FHIRMedicationRequest {
         Bundle bundle = hapiFhirServer.createAndExecuteBundle(medRequest);
         return res;
     }
+
+    public Bundle updateMedicationRequest(MedicationRequest medicationRequest) {
+        Bundle bundle = hapiFhirServer.createAndExecuteBundle(medicationRequest);
+        return bundle;
+    }
 }

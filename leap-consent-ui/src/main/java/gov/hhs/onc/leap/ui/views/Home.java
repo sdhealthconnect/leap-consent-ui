@@ -8,6 +8,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.layout.size.Horizontal;
@@ -33,16 +35,25 @@ public class Home extends ViewFrame {
 
 
 		String fullFormPath = UIUtils.IMG_PATH + "logos";
-		logo = UIUtils.createImage(fullFormPath,"aboutimage.jpeg", "");
+		if (isMobileDevice()) {
+			logo = UIUtils.createImage(fullFormPath, "aboutimage-1.jpeg", "");
+		}
+		else {
+			logo = UIUtils.createImage(fullFormPath, "aboutimage.jpeg", "");
+		}
 		logo.getStyle().set("background", "blue");
+		logo.setHeight("200px");
 
 
-		Html intro = new Html("<p>This HIMSS 2022 Interoperability Showcase <b>Consent for Referral</b> demonstration is a notional <b>FHIR " +
-				"based</b> implementation of <b>US Dept. of Veterans Affairs Acorn Initiative</b> " +
-				"as it captures the Veterans answers to a suite of questions based on the CMS AHC HRSN Screening tool <b>encoding them in FHIR resources</b>.  " +
-				"It identifies the Veteran's social needs and organizations that can provide help.</p>");
+
+
+		Html intro = new Html("<p>This HIMSS 2022 Federal Health interoperabilty demonstration of <b>Consent for Referral</b> is a notional <b>FHIR " +
+				"based</b> implementation of <b>U.S. Department of Veterans Affairs ACORN Initiative</b>.  " +
+				"It captures the Veteran's answers to a suite of questions based on the CMS AHC HRSN Screening tool <b>encoding them in a FHIR QuestionnaireResponse</b>.  " +
+				"Those responses are then processed and <b>social needs</b> are determined using mechanisms described in the <b>FHIR Implementation Guide</b> for <b>Structured Data Capture (SDC)</b>." +
+				"  Based on the Veteran's social need, and locale, a listing of State, County, and Community organizations are identified where help can be obtained.</p>");
 		Html intro2 = new Html("<p>This utilizes the LEAP FHIR Consent framework, an artifact of " +
-				"a <b>US Office of National Coordinator For Health Information Technology (ONC)</b> multi-year <b>Leading Edge " +
+				"a <b>U.S. Office of National Coordinator For Health Information Technology (ONC)</b> multi-year <b>Leading Edge " +
 				"Acceleration Project (LEAP)</b>. LEAP FHIR Consent " +
 				"demonstrates a broad set of use-cases including privacy consent (or consent to share information), " +
 				"consent for treatment, consent for research, advance care directives, DNR, National Portable Medical Order (POLST), " +
@@ -67,6 +78,19 @@ public class Home extends ViewFrame {
 		content.setMaxWidth("840px");
 		//content.setPadding(Uniform.RESPONSIVE_L);
 		return content;
+	}
+
+	private  boolean isMobileDevice() {
+		boolean res = false;
+		WebBrowser webBrowser = VaadinSession.getCurrent().getBrowser();
+		System.out.println(webBrowser.getBrowserApplication());
+		if (webBrowser.getBrowserApplication().indexOf("Chrome") > -1) {
+			res = false;
+		}
+		else {
+			res = true;
+		}
+		return res;
 	}
 
 }

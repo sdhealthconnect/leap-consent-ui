@@ -6,6 +6,8 @@ import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -14,12 +16,14 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.adr.model.POLSTPortableMedicalOrder;
 import gov.hhs.onc.leap.adr.model.QuestionnaireError;
@@ -43,6 +47,8 @@ import gov.hhs.onc.leap.ui.util.css.BoxSizing;
 import gov.hhs.onc.leap.ui.util.css.Shadow;
 import gov.hhs.onc.leap.ui.util.pdf.PDFDocumentHandler;
 import gov.hhs.onc.leap.ui.util.pdf.PDFPOLSTHandler;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +57,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.vaadin.alejandro.PdfBrowserViewer;
 
 import javax.annotation.PostConstruct;
+import javax.imageio.ImageIO;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -1070,19 +1079,53 @@ public class PortableMedicalOrder extends ViewFrame {
     private Dialog createInfoDialog() {
         PDFDocumentHandler pdfHandler = new PDFDocumentHandler();
         StreamResource streamResource = pdfHandler.retrievePDFForm("POLST");
-
+        consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
+        String docTitle = "POLST";
+        PdfBrowserViewer viewer = null;
         Dialog infoDialog = new Dialog();
+        Scroller scroller = new Scroller();
+        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        Div div = new Div();
+        if (isMobileDevice()) {
+            try {
+                PDDocument pdf = PDDocument.load(consentPDFAsByteArray);
+                PDFRenderer renderer = new PDFRenderer(pdf);
+                int pageSize = pdf.getNumberOfPages();
+                for (int i = 0; i < pageSize; i++) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(renderer.renderImageWithDPI(i, 96), "png", baos);
+                    StreamResource stream = new StreamResource(docTitle+"-"+ i +".jpg", () -> new ByteArrayInputStream(baos.toByteArray()));
+                    Image image = new Image(stream, docTitle+"-"+i);
+                    image.setWidthFull();
+                    div.add(image);
+                }
+                scroller.setContent(div);
+                pdf.close();
+            }
+            catch (Exception ex) {
+                log.error("Failed to create pdf image array for display. "+ex.getMessage());
+            }
+        }
+        else {
 
-        streamResource.setContentType("application/pdf");
+            streamResource.setContentType("application/pdf");
 
-        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
-        viewer.setHeight("800px");
-        viewer.setWidth("840px");
+            viewer = new PdfBrowserViewer(streamResource);
+            viewer.setHeight("800px");
+            viewer.setWidth("840px");
+        }
+
 
         Button closeButton = new Button(getTranslation("PortableMedicalOrder-close"), e -> infoDialog.close());
         closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
 
-        FlexBoxLayout content = new FlexBoxLayout(viewer, closeButton);
+        FlexBoxLayout content;
+        if (isMobileDevice()) {
+            content = new FlexBoxLayout(scroller, closeButton);
+        }
+        else {
+            content = new FlexBoxLayout(viewer, closeButton);
+        }
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -1364,13 +1407,44 @@ public class PortableMedicalOrder extends ViewFrame {
 
     private void getHumanReadable() {
         StreamResource streamResource = setFieldsCreatePDF();
+        String docTitle = "POLST";
+        PdfBrowserViewer viewer = null;
+        if (streamResource == null) {
+            return;
+        }
         docDialog = new Dialog();
+        Scroller scroller = new Scroller();
+        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        Div div = new Div();
+        if (isMobileDevice()) {
+            try {
+                PDDocument pdf = PDDocument.load(consentPDFAsByteArray);
+                PDFRenderer renderer = new PDFRenderer(pdf);
+                int pageSize = pdf.getNumberOfPages();
+                for (int i = 0; i < pageSize; i++) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(renderer.renderImageWithDPI(i, 96), "png", baos);
+                    StreamResource stream = new StreamResource(docTitle+"-"+ i +".jpg", () -> new ByteArrayInputStream(baos.toByteArray()));
+                    Image image = new Image(stream, docTitle+"-"+i);
+                    image.setWidthFull();
+                    div.add(image);
+                }
+                scroller.setContent(div);
+                pdf.close();
+            }
+            catch (Exception ex) {
+                log.error("Failed to create pdf image array for display. "+ex.getMessage());
+            }
+        }
+        else {
 
-        streamResource.setContentType("application/pdf");
+            streamResource.setContentType("application/pdf");
 
-        PdfBrowserViewer viewer = new PdfBrowserViewer(streamResource);
-        viewer.setHeight("800px");
-        viewer.setWidth("840px");
+            viewer = new PdfBrowserViewer(streamResource);
+            viewer.setHeight("800px");
+            viewer.setWidth("840px");
+        }
+
 
 
         Button closeButton = new Button(getTranslation("PortableMedicalOrder-cancel"), e -> docDialog.close());
@@ -1404,7 +1478,13 @@ public class PortableMedicalOrder extends ViewFrame {
 
         HorizontalLayout hLayout = new HorizontalLayout(closeButton, acceptButton);
 
-        FlexBoxLayout content = new FlexBoxLayout(viewer, hLayout);
+        FlexBoxLayout content;
+        if (isMobileDevice()) {
+            content = new FlexBoxLayout(scroller, hLayout);
+        }
+        else {
+            content = new FlexBoxLayout(viewer, hLayout);
+        }
         content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
         content.setBoxSizing(BoxSizing.BORDER_BOX);
         content.setHeightFull();
@@ -2000,5 +2080,19 @@ public class PortableMedicalOrder extends ViewFrame {
         errorDialog.setCloseOnEsc(false);
         errorDialog.setResizable(true);
         errorDialog.add(createHeader(VaadinIcon.WARNING, getTranslation("PortableMedicalOrder-failed_verification")),errorIntro, flowTypeIntro, verticalLayout, errorBTN);
+    }
+
+    private  boolean isMobileDevice() {
+        boolean res = false;
+        WebBrowser webB = VaadinSession.getCurrent().getBrowser();
+        System.out.println(webB.isMacOSX() +" "+webB.isSafari()+" "+webB.isAndroid()+" "+webB.isIPhone()+" "+webB.isWindowsPhone());
+        System.out.println(webB.getBrowserApplication());
+        if ((webB.isMacOSX() && webB.isSafari()) || webB.isAndroid() || webB.isIPhone() || webB.isWindowsPhone() || (webB.getBrowserApplication().indexOf("iPad") > -1))  {
+            res = true;
+        }
+        else {
+            res = false;
+        }
+        return res;
     }
 }

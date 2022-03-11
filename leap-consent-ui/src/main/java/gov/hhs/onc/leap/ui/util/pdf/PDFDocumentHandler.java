@@ -23,7 +23,7 @@ public class PDFDocumentHandler {
 
     private String formType;
     private ConsentSession consentSession;
-
+    private byte[] pdfAsByteArray;
     public StreamResource retrievePDFForm(String formType) {
         this.formType = formType;
         consentSession = (ConsentSession)VaadinSession.getCurrent().getAttribute("consentSession");
@@ -51,6 +51,7 @@ public class PDFDocumentHandler {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdfdocument.save(out);
             pdfdocument.close();
+            pdfAsByteArray = out.toByteArray();
             InputStream bi = new ByteArrayInputStream(out.toByteArray());
             InputStreamFactory iFactory = new InputStreamFactory() {
                 @Override
@@ -108,5 +109,9 @@ public class PDFDocumentHandler {
             ex.printStackTrace();
         }
         return doc;
+    }
+
+    public byte[] getPdfAsByteArray() {
+        return pdfAsByteArray;
     }
 }
