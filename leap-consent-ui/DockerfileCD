@@ -26,6 +26,7 @@ ARG JAR_FILE=target/leap-consent-ui-1.0-SNAPSHOT.war
 # Arguments declaration, needed to change ENV variables at build time
 ARG ARG_SLS_HOST_URL
 ARG ARG_HAPI_FHIR_URL
+ARG ARG_SH_API_URL
 ARG ARG_CLOUD_SQL_CONNECTION_NAME
 ARG ARG_DB_NAME
 ARG ARG_DB_USER
@@ -34,6 +35,7 @@ ARG ARG_DB_PASS
 # Environment Variables declaration, needed to execute stand-alone Dockerfile with custom argumens if they are specified
 ENV SLS_HOST_URL=${ARG_SLS_HOST_URL}
 ENV HAPI_FHIR_URL=${ARG_HAPI_FHIR_URL}
+ENV SH_API_URL=${ARG_SH_API_URL}
 ENV CLOUD_SQL_CONNECTION_NAME=${ARG_CLOUD_SQL_CONNECTION_NAME}
 ENV DB_NAME=${ARG_DB_NAME}
 ENV DB_USER=${ARG_DB_USER}
