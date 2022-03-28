@@ -32,6 +32,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.ConsentDocument;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRCondition;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaire;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
@@ -41,6 +42,7 @@ import gov.hhs.onc.leap.backend.repository.SDOHOrganizationRepository;
 import gov.hhs.onc.leap.sdoh.data.ACORNDisplayData;
 import gov.hhs.onc.leap.sdoh.model.QuestionnaireItem;
 import gov.hhs.onc.leap.sdoh.model.QuestionnaireSection;
+import gov.hhs.onc.leap.sdoh.model.SDOHCondition;
 import gov.hhs.onc.leap.sdoh.model.SDOHNeed;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
@@ -193,6 +195,9 @@ public class AcornHome extends ViewFrame {
 
     @Autowired
     private FHIRConsent fhirConsentClient;
+
+    @Autowired
+    private FHIRCondition fhirCondition;
 
     public AcornHome() { setId("acornhome"); }
 
@@ -1118,6 +1123,7 @@ public class AcornHome extends ViewFrame {
             //createQuestionnaireResponse();
             createFHIRConsent();
             //createFHIRProvenance();
+            createSDOHConditionResources();
             successNotification();
             //todo test for fhir consent create success
             //resetQuestionNavigation();
@@ -1704,7 +1710,6 @@ public class AcornHome extends ViewFrame {
                 break;
             }
         }
-
         return res;
     }
 
@@ -1749,6 +1754,7 @@ public class AcornHome extends ViewFrame {
             if (comp.getType().toCode().equals("group")) {
                 QuestionnaireResponse.QuestionnaireResponseItemComponent groupResponse = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
                 groupResponse.setLinkId(comp.getLinkId());
+                groupResponse.setText(comp.getText());
                 List<QuestionnaireResponse.QuestionnaireResponseItemComponent> answerList = new ArrayList<>();
                 //get questions
                 List<Questionnaire.QuestionnaireItemComponent> questionList = comp.getItem();
@@ -1758,6 +1764,7 @@ public class AcornHome extends ViewFrame {
                     boolean answerResult = getAnswerValue(questionComp.getLinkId());
                     QuestionnaireResponse.QuestionnaireResponseItemComponent fAnswer = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
                     fAnswer.setLinkId(questionComp.getLinkId());
+                    fAnswer.setText(questionComp.getText());
                     List<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent> fAnswerArray = new ArrayList<>();
                     QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent fAnswerArrayItem = new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
                     BooleanType b = new BooleanType(answerResult);
@@ -2017,5 +2024,26 @@ public class AcornHome extends ViewFrame {
             res = false;
         }
         return res;
+    }
+
+    private void createSDOHConditionResources() {
+        Iterator iter = sdohNeeds.iterator();
+        SDOHCondition sdohCondition = new SDOHCondition();
+        String fhirPatientId = consentSession.getFhirPatientId();
+        String patientName = consentSession.getConsentUser().getLastName()+", "+consentSession.getConsentUser().getFirstName();
+        String questionnaireRef = "QuestionnaireResponse/acorn-"+fhirPatientId;
+        while (iter.hasNext()) {
+            SDOHNeed needs = (SDOHNeed) iter.next();
+            String domain = needs.getDomain();
+            boolean domainNeed = needs.isNeeded();
+            if (domain.equals("food-security-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createFoodInsecurityCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("housing-security-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createHousingInstabilityCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("personal-safety-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createPersonalSafetyCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("utility-access-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createUtilityAccessCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("transportation-access-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createTransportationAccessCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("social-support-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createSocialSupportCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("employment-and-education-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createEmploymentAndEducationCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("legal-support-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createLegalSupportCondition(fhirPatientId, patientName, questionnaireRef));
+        }
     }
 }
