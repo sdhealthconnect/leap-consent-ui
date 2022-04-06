@@ -264,7 +264,7 @@ public class AcornHome extends ViewFrame {
     private void createIntroPage() {
 
         String fullFormPath = UIUtils.IMG_PATH + "logos";
-        Image logo = UIUtils.createImage(fullFormPath,"acornproject.png", "");
+        Image logo = UIUtils.createImage(fullFormPath,"sdoh.png", "");
         H1 header = new H1("Veterans Facing Health-Related Social Needs");
         Html intro = new Html("<p>This <b>FHIR Questionnaire</b>" +
                 " screens Veterans for non-clinical needs to provide resources at the point of clinical care. The assessment " +
