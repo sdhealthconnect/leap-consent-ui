@@ -683,7 +683,7 @@ public class AcornHome extends ViewFrame {
                     qLegal.setVisible(true);
                     break;
                 case 18:
-                    Notification notification = Notification.show("Congrats! You've completed the ACORN questionnaire.");
+                    Notification notification = Notification.show("Congrats! You've completed the SDOH questionnaire.");
                     notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                     notification.setPosition(Notification.Position.MIDDLE);
                     notification.setDuration(1000);
@@ -1071,7 +1071,7 @@ public class AcornHome extends ViewFrame {
     private void getHumanReadable() {
         getSelectedOrganizations();
         StreamResource streamResource = setFieldsCreatePDF();
-        String docTitle = "acorn";
+        String docTitle = "sdoh";
         PdfBrowserViewer viewer = null;
         if (streamResource == null) {
             return;
@@ -1155,7 +1155,7 @@ public class AcornHome extends ViewFrame {
     private StreamResource setFieldsCreatePDF() {
         PDFACORNHandler pdfHandler = new PDFACORNHandler(pdfSigningService);
         getSelectedOrganizations();
-        StreamResource res = pdfHandler.updateAndRetrievePDFForm("acorn", selectedSDOHOrganizations, base64Signature);
+        StreamResource res = pdfHandler.updateAndRetrievePDFForm("sdoh", selectedSDOHOrganizations, base64Signature);
         consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
         return  res;
     }
@@ -1889,7 +1889,7 @@ public class AcornHome extends ViewFrame {
         attachment.setContentType("application/pdf");
         Date dateRecordedProvenance = new Date();
         attachment.setCreation(dateRecordedProvenance);
-        attachment.setTitle("ACORN");
+        attachment.setTitle("SDOH");
 
 
         String encodedString = Base64.getEncoder().encodeToString(consentPDFAsByteArray);
@@ -1989,7 +1989,7 @@ public class AcornHome extends ViewFrame {
         return extension;
     }
     private void successNotification() {
-        Notification notification = Notification.show("Congrats! You've successfully created FHIR Consent to begin ACORN referral processing.");
+        Notification notification = Notification.show("Congrats! You've successfully created FHIR Consent to begin SDOH referral processing.");
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         notification.setDuration(3000);
 
@@ -2001,7 +2001,7 @@ public class AcornHome extends ViewFrame {
     private void noSocialNeedsDetermined() {
         VerticalLayout v = new VerticalLayout();
         Html l1 = new Html("<p>Based on you responses no unmet health-related social need with determined.</p>");
-        Html l2 = new Html("<p>You can at anytime retake the ACORN Questionnaire.</p>");
+        Html l2 = new Html("<p>You can at anytime retake the SDOH Questionnaire.</p>");
         v.add(l1,l2);
         v.setAlignItems(FlexComponent.Alignment.CENTER);
         Notification notification = new Notification();
