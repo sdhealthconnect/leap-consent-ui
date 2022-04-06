@@ -104,7 +104,7 @@ public class PDFACORNHandler {
                     return bi;
                 }
             };
-            stream = new StreamResource("acorn.pdf", iFactory);
+            stream = new StreamResource("sdoh.pdf", iFactory);
         }
         catch (IOException ix) {
             log.error("Failed PDF Processing ACORN Consent "+ix.getMessage());

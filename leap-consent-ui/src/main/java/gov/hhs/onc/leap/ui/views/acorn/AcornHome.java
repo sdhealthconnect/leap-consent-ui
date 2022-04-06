@@ -32,6 +32,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.ConsentDocument;
+import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRCondition;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaire;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
@@ -41,6 +42,7 @@ import gov.hhs.onc.leap.backend.repository.SDOHOrganizationRepository;
 import gov.hhs.onc.leap.sdoh.data.ACORNDisplayData;
 import gov.hhs.onc.leap.sdoh.model.QuestionnaireItem;
 import gov.hhs.onc.leap.sdoh.model.QuestionnaireSection;
+import gov.hhs.onc.leap.sdoh.model.SDOHCondition;
 import gov.hhs.onc.leap.sdoh.model.SDOHNeed;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
@@ -194,6 +196,9 @@ public class AcornHome extends ViewFrame {
     @Autowired
     private FHIRConsent fhirConsentClient;
 
+    @Autowired
+    private FHIRCondition fhirCondition;
+
     public AcornHome() { setId("acornhome"); }
 
     @PostConstruct
@@ -259,7 +264,7 @@ public class AcornHome extends ViewFrame {
     private void createIntroPage() {
 
         String fullFormPath = UIUtils.IMG_PATH + "logos";
-        Image logo = UIUtils.createImage(fullFormPath,"acornproject.png", "");
+        Image logo = UIUtils.createImage(fullFormPath,"sdoh.png", "");
         H1 header = new H1("Veterans Facing Health-Related Social Needs");
         Html intro = new Html("<p>This <b>FHIR Questionnaire</b>" +
                 " screens Veterans for non-clinical needs to provide resources at the point of clinical care. The assessment " +
@@ -678,7 +683,7 @@ public class AcornHome extends ViewFrame {
                     qLegal.setVisible(true);
                     break;
                 case 18:
-                    Notification notification = Notification.show("Congrats! You've completed the ACORN questionnaire.");
+                    Notification notification = Notification.show("Congrats! You've completed the SDOH questionnaire.");
                     notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                     notification.setPosition(Notification.Position.MIDDLE);
                     notification.setDuration(1000);
@@ -1066,7 +1071,7 @@ public class AcornHome extends ViewFrame {
     private void getHumanReadable() {
         getSelectedOrganizations();
         StreamResource streamResource = setFieldsCreatePDF();
-        String docTitle = "acorn";
+        String docTitle = "sdoh";
         PdfBrowserViewer viewer = null;
         if (streamResource == null) {
             return;
@@ -1118,6 +1123,7 @@ public class AcornHome extends ViewFrame {
             //createQuestionnaireResponse();
             createFHIRConsent();
             //createFHIRProvenance();
+            createSDOHConditionResources();
             successNotification();
             //todo test for fhir consent create success
             //resetQuestionNavigation();
@@ -1149,7 +1155,7 @@ public class AcornHome extends ViewFrame {
     private StreamResource setFieldsCreatePDF() {
         PDFACORNHandler pdfHandler = new PDFACORNHandler(pdfSigningService);
         getSelectedOrganizations();
-        StreamResource res = pdfHandler.updateAndRetrievePDFForm("acorn", selectedSDOHOrganizations, base64Signature);
+        StreamResource res = pdfHandler.updateAndRetrievePDFForm("sdoh", selectedSDOHOrganizations, base64Signature);
         consentPDFAsByteArray = pdfHandler.getPdfAsByteArray();
         return  res;
     }
@@ -1704,7 +1710,6 @@ public class AcornHome extends ViewFrame {
                 break;
             }
         }
-
         return res;
     }
 
@@ -1749,6 +1754,7 @@ public class AcornHome extends ViewFrame {
             if (comp.getType().toCode().equals("group")) {
                 QuestionnaireResponse.QuestionnaireResponseItemComponent groupResponse = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
                 groupResponse.setLinkId(comp.getLinkId());
+                groupResponse.setText(comp.getText());
                 List<QuestionnaireResponse.QuestionnaireResponseItemComponent> answerList = new ArrayList<>();
                 //get questions
                 List<Questionnaire.QuestionnaireItemComponent> questionList = comp.getItem();
@@ -1758,6 +1764,7 @@ public class AcornHome extends ViewFrame {
                     boolean answerResult = getAnswerValue(questionComp.getLinkId());
                     QuestionnaireResponse.QuestionnaireResponseItemComponent fAnswer = new QuestionnaireResponse.QuestionnaireResponseItemComponent();
                     fAnswer.setLinkId(questionComp.getLinkId());
+                    fAnswer.setText(questionComp.getText());
                     List<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent> fAnswerArray = new ArrayList<>();
                     QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent fAnswerArrayItem = new QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent();
                     BooleanType b = new BooleanType(answerResult);
@@ -1882,7 +1889,7 @@ public class AcornHome extends ViewFrame {
         attachment.setContentType("application/pdf");
         Date dateRecordedProvenance = new Date();
         attachment.setCreation(dateRecordedProvenance);
-        attachment.setTitle("ACORN");
+        attachment.setTitle("SDOH");
 
 
         String encodedString = Base64.getEncoder().encodeToString(consentPDFAsByteArray);
@@ -1982,7 +1989,7 @@ public class AcornHome extends ViewFrame {
         return extension;
     }
     private void successNotification() {
-        Notification notification = Notification.show("Congrats! You've successfully created FHIR Consent to begin ACORN referral processing.");
+        Notification notification = Notification.show("Congrats! You've successfully created FHIR Consent to begin SDOH referral processing.");
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
         notification.setDuration(3000);
 
@@ -1994,7 +2001,7 @@ public class AcornHome extends ViewFrame {
     private void noSocialNeedsDetermined() {
         VerticalLayout v = new VerticalLayout();
         Html l1 = new Html("<p>Based on you responses no unmet health-related social need with determined.</p>");
-        Html l2 = new Html("<p>You can at anytime retake the ACORN Questionnaire.</p>");
+        Html l2 = new Html("<p>You can at anytime retake the SDOH Questionnaire.</p>");
         v.add(l1,l2);
         v.setAlignItems(FlexComponent.Alignment.CENTER);
         Notification notification = new Notification();
@@ -2017,5 +2024,26 @@ public class AcornHome extends ViewFrame {
             res = false;
         }
         return res;
+    }
+
+    private void createSDOHConditionResources() {
+        Iterator iter = sdohNeeds.iterator();
+        SDOHCondition sdohCondition = new SDOHCondition();
+        String fhirPatientId = consentSession.getFhirPatientId();
+        String patientName = consentSession.getConsentUser().getLastName()+", "+consentSession.getConsentUser().getFirstName();
+        String questionnaireRef = "QuestionnaireResponse/acorn-"+fhirPatientId;
+        while (iter.hasNext()) {
+            SDOHNeed needs = (SDOHNeed) iter.next();
+            String domain = needs.getDomain();
+            boolean domainNeed = needs.isNeeded();
+            if (domain.equals("food-security-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createFoodInsecurityCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("housing-security-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createHousingInstabilityCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("personal-safety-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createPersonalSafetyCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("utility-access-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createUtilityAccessCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("transportation-access-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createTransportationAccessCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("social-support-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createSocialSupportCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("employment-and-education-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createEmploymentAndEducationCondition(fhirPatientId, patientName, questionnaireRef));
+            if (domain.equals("legal-support-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createLegalSupportCondition(fhirPatientId, patientName, questionnaireRef));
+        }
     }
 }

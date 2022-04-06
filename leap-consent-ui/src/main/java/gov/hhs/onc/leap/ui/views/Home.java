@@ -47,7 +47,7 @@ public class Home extends ViewFrame {
 
 
 
-		Html intro = new Html("<p>This HIMSS 2022 Federal Health interoperabilty demonstration of <b>Consent for Referral</b> is a notional <b>FHIR " +
+		Html intro = new Html("<p>This HIMSS 2022 Interoperabilty Showcase demonstration of <b>Consent for Referral</b> is a notional <b>FHIR " +
 				"based</b> implementation of <b>U.S. Department of Veterans Affairs ACORN Initiative</b>.  " +
 				"It captures the Veteran's answers to a suite of questions based on the CMS AHC HRSN Screening tool <b>encoding them in a FHIR QuestionnaireResponse</b>.  " +
 				"Those responses are then processed and <b>social needs</b> are determined using mechanisms described in the <b>FHIR Implementation Guide</b> for <b>Structured Data Capture (SDC)</b>." +
