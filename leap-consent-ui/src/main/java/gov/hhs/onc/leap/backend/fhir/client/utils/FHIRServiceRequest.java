@@ -3,7 +3,9 @@ package gov.hhs.onc.leap.backend.fhir.client.utils;
 import com.vaadin.flow.server.VaadinSession;
 import gov.hhs.onc.leap.backend.fhir.client.HapiFhirServer;
 import gov.hhs.onc.leap.session.ConsentSession;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.ServiceRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,5 +34,22 @@ public class FHIRServiceRequest {
             serviceRequestCollection.add(c);
         }
         return serviceRequestCollection;
+    }
+
+    public Collection<ServiceRequest> getPatientSDOHReferrals(String fhirPatientId) {
+        Collection<ServiceRequest> serviceRequests = new ArrayList<>();
+        Collection<IBaseResource> resources = hapiFhirServer.getAllPatientSDOHReferrals(fhirPatientId);
+        Iterator iter = resources.iterator();
+        while (iter.hasNext()) {
+            ServiceRequest serviceRequest = (ServiceRequest) iter.next();
+            serviceRequests.add(serviceRequest);
+        }
+        return serviceRequests;
+    }
+
+    public ServiceRequest createServiceRequest(ServiceRequest serviceRequest) {
+        Bundle bundle = hapiFhirServer.createAndExecuteBundle(serviceRequest);
+        ServiceRequest res = (ServiceRequest) bundle.getEntry().get(0).getResource();
+        return res;
     }
 }

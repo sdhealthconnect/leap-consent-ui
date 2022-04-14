@@ -263,6 +263,52 @@ public class HapiFhirServer {
         return consents;
     }
 
+    public List<IBaseResource> getAllConditionsForPatient(String id) {
+        List<IBaseResource> conditions = new ArrayList<>();
+        SortSpec sortSpec = new SortSpec();
+        sortSpec.setParamName(Condition.SP_RECORDED_DATE);
+        sortSpec.setOrder(SortOrderEnum.DESC);
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Condition.class)
+                .where(Condition.PATIENT.hasId(id))
+                .sort(sortSpec)
+                .returnBundle(Bundle.class)
+                .execute();
+        conditions.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while(bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            conditions.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return conditions;
+    }
+
+    public List<IBaseResource> getAllAllergyIntolerancesForPatient(String id) {
+        List<IBaseResource> allergies = new ArrayList<>();
+        SortSpec sortSpec = new SortSpec();
+        sortSpec.setParamName(AllergyIntolerance.SP_DATE);
+        sortSpec.setOrder(SortOrderEnum.DESC);
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(AllergyIntolerance.class)
+                .where(AllergyIntolerance.PATIENT.hasId(id))
+                .sort(sortSpec)
+                .returnBundle(Bundle.class)
+                .execute();
+        allergies.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while(bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            allergies.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return allergies;
+    }
+
     public List<IBaseResource> getAllOrganizations(String state) {
         //todo implement by state whereclause when more data is available
             /* Bundle bundle = hapiClient
@@ -430,6 +476,120 @@ public class HapiFhirServer {
             medList.addAll(BundleUtil.toListOfResources(ctx, bundle));
         }
         return medList;
+    }
+
+    public List<IBaseResource> getActiveMedicationRequests(final String patientId) {
+        List<IBaseResource> medList = new ArrayList<>();
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(MedicationRequest.class)
+                .where(new ReferenceClientParam("patient").hasId(patientId))
+                .where(new TokenClientParam("status").exactly().code("active"))
+                .returnBundle(Bundle.class)
+                .execute();
+        medList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while (bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            medList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return medList;
+    }
+
+    public List<IBaseResource> getAllPatientProcedures(final String patientId) {
+        List<IBaseResource> procList = new ArrayList<>();
+        SortSpec sortSpec = new SortSpec();
+        sortSpec.setParamName(Procedure.SP_DATE);
+        sortSpec.setOrder(SortOrderEnum.DESC);
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Procedure.class)
+                .where(new ReferenceClientParam("patient").hasId(patientId))
+                .sort(sortSpec)
+                .returnBundle(Bundle.class)
+                .execute();
+        procList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while (bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            procList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return procList;
+    }
+
+    public List<IBaseResource> getAllPatientImmunizations(final String patientId) {
+        List<IBaseResource> procList = new ArrayList<>();
+        SortSpec sortSpec = new SortSpec();
+        sortSpec.setParamName(Immunization.SP_DATE);
+        sortSpec.setOrder(SortOrderEnum.DESC);
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Immunization.class)
+                .where(new ReferenceClientParam("patient").hasId(patientId))
+                .sort(sortSpec)
+                .returnBundle(Bundle.class)
+                .execute();
+        procList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while (bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            procList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return procList;
+    }
+
+    public List<IBaseResource> getAllPatientObservations(final String patientId, String categorycode) {
+        List<IBaseResource> obsList = new ArrayList<>();
+        SortSpec sortSpec = new SortSpec();
+        sortSpec.setParamName(Observation.SP_DATE);
+        sortSpec.setOrder(SortOrderEnum.DESC);
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(Observation.class)
+                .where(new ReferenceClientParam("patient").hasId(patientId))
+                .where(new TokenClientParam("category").exactly().code(categorycode))
+                .sort(sortSpec)
+                .returnBundle(Bundle.class)
+                .execute();
+        obsList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while (bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            obsList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return obsList;
+    }
+
+    public List<IBaseResource> getAllPatientSDOHReferrals(final String patientId) {
+        List<IBaseResource> obsList = new ArrayList<>();
+        SortSpec sortSpec = new SortSpec();
+        sortSpec.setParamName(ServiceRequest.SP_AUTHORED);
+        sortSpec.setOrder(SortOrderEnum.DESC);
+        Bundle bundle = hapiClient
+                .search()
+                .forResource(ServiceRequest.class)
+                .where(new ReferenceClientParam("patient").hasId(patientId))
+                .where(new TokenClientParam("code").exactly().code("306206005"))
+                .sort(sortSpec)
+                .returnBundle(Bundle.class)
+                .execute();
+        obsList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        while (bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            bundle = hapiClient
+                    .loadPage()
+                    .next(bundle)
+                    .execute();
+            obsList.addAll(BundleUtil.toListOfResources(ctx, bundle));
+        }
+        return obsList;
     }
 
     public Bundle getServiceRequests(final String patientId) {

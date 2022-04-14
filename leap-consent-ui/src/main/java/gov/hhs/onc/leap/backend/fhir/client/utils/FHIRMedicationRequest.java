@@ -33,6 +33,17 @@ public class FHIRMedicationRequest {
         return medicationRequestCollection;
     }
 
+    public Collection<MedicationRequest> getPatientMedicationRequestsById(String fhirPatientId) {
+        Collection<MedicationRequest> medicationRequestCollection = new ArrayList<>();
+        List<IBaseResource> resourceList = hapiFhirServer.getActiveMedicationRequests(fhirPatientId);
+        Iterator iter = resourceList.iterator();
+        while(iter.hasNext()) {
+            MedicationRequest c = (MedicationRequest)iter.next();
+            medicationRequestCollection.add(c);
+        }
+        return medicationRequestCollection;
+    }
+
     public MedicationRequest getMedicationRequestByID(String url) {
         MedicationRequest res = new MedicationRequest();
         Bundle bundle = hapiFhirServer.getMedicationRequestById(url);
