@@ -32,18 +32,12 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import de.f0rce.signaturepad.SignaturePad;
 import gov.hhs.onc.leap.backend.ConsentDocument;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRCondition;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaire;
-import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRQuestionnaireResponse;
+import gov.hhs.onc.leap.backend.fhir.client.utils.*;
 import gov.hhs.onc.leap.backend.model.ConsentUser;
 import gov.hhs.onc.leap.backend.model.SDOHOrganization;
 import gov.hhs.onc.leap.backend.repository.SDOHOrganizationRepository;
 import gov.hhs.onc.leap.sdoh.data.ACORNDisplayData;
-import gov.hhs.onc.leap.sdoh.model.QuestionnaireItem;
-import gov.hhs.onc.leap.sdoh.model.QuestionnaireSection;
-import gov.hhs.onc.leap.sdoh.model.SDOHCondition;
-import gov.hhs.onc.leap.sdoh.model.SDOHNeed;
+import gov.hhs.onc.leap.sdoh.model.*;
 import gov.hhs.onc.leap.session.ConsentSession;
 import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
@@ -81,7 +75,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
-@PageTitle("ACORN Project - Home")
+@PageTitle("Scalable Consent for SDOH Referral")
 @Route(value = "acornhome", layout = MainLayout.class)
 public class AcornHome extends ViewFrame {
     private static final Logger log = LoggerFactory.getLogger(AcornHome.class);
@@ -198,6 +192,9 @@ public class AcornHome extends ViewFrame {
 
     @Autowired
     private FHIRCondition fhirCondition;
+
+    @Autowired
+    private FHIRServiceRequest fhirServiceRequest;
 
     public AcornHome() { setId("acornhome"); }
 
@@ -1124,6 +1121,7 @@ public class AcornHome extends ViewFrame {
             createFHIRConsent();
             //createFHIRProvenance();
             createSDOHConditionResources();
+            createSDOHServiceRequestResource();
             successNotification();
             //todo test for fhir consent create success
             //resetQuestionNavigation();
@@ -2044,6 +2042,26 @@ public class AcornHome extends ViewFrame {
             if (domain.equals("social-support-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createSocialSupportCondition(fhirPatientId, patientName, questionnaireRef));
             if (domain.equals("employment-and-education-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createEmploymentAndEducationCondition(fhirPatientId, patientName, questionnaireRef));
             if (domain.equals("legal-support-need") && domainNeed) fhirCondition.createCondition(sdohCondition.createLegalSupportCondition(fhirPatientId, patientName, questionnaireRef));
+        }
+    }
+
+    private void createSDOHServiceRequestResource() {
+        Iterator iter = selectedSDOHOrganizations.iterator();
+        String fhirPatientId = consentSession.getFhirPatientId();
+        String patientName = consentSession.getConsentUser().getLastName()+", "+consentSession.getConsentUser().getFirstName();
+        String questionnaireRef = "QuestionnaireResponse/acorn-"+fhirPatientId;
+        SDOHReferral sdohReferral = new SDOHReferral();
+        while (iter.hasNext()) {
+            SDOHOrganization org = (SDOHOrganization) iter.next();
+            String type = org.getType();
+            if (type.equals("Housing Insecurity")) fhirServiceRequest.createServiceRequest(sdohReferral.createHousingInstabilityReferralRequest(fhirPatientId, patientName, questionnaireRef, org));
+            if (type.equals("Food Security")) fhirServiceRequest.createServiceRequest(sdohReferral.createFoodInsecurityReferralRequest(fhirPatientId, patientName, questionnaireRef, org));
+            if (type.equals("Utility Needs")) fhirServiceRequest.createServiceRequest(sdohReferral.createUtilityAccessReferralRequest(fhirPatientId, patientName, questionnaireRef, org));
+            if (type.equals("Transportation Access")) fhirServiceRequest.createServiceRequest(sdohReferral.createTransportationAccessReferralRequest(fhirPatientId, patientName, questionnaireRef, org));
+            if (type.equals("Personal Safety")) fhirServiceRequest.createServiceRequest(sdohReferral.createPersonalSafetyReferralRequest(fhirPatientId, patientName, questionnaireRef, org));
+            if (type.equals("Employment and Education")) fhirServiceRequest.createServiceRequest(sdohReferral.createEmploymentAndEducationReferralRequest(fhirPatientId, patientName, questionnaireRef, org));
+            if (type.equals("Social Support")) fhirServiceRequest.createServiceRequest(sdohReferral.createSocialSupportReferralRequest(fhirPatientId, patientName, questionnaireRef, org));
+            if (type.equals("Legal Support")) fhirServiceRequest.createServiceRequest(sdohReferral.createLegalSupportReferralRequest(fhirPatientId, patientName, questionnaireRef, org));
         }
     }
 }

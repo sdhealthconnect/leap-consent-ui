@@ -1,5 +1,7 @@
 package gov.hhs.onc.leap.ui.views;
 
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -26,7 +28,11 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+import de.f0rce.ace.enums.AceTheme;
 import gov.hhs.onc.leap.backend.ConsentDocument;
+import gov.hhs.onc.leap.backend.fhir.client.BasicQuestionnaireResponseClient;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRConsent;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRMedicationRequest;
 import gov.hhs.onc.leap.backend.fhir.client.utils.FHIRResearchSubject;
@@ -50,10 +56,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageTree;
 import org.apache.pdfbox.rendering.PDFRenderer;
-import org.hl7.fhir.r4.model.Attachment;
-import org.hl7.fhir.r4.model.Consent;
-import org.hl7.fhir.r4.model.MedicationRequest;
-import org.hl7.fhir.r4.model.ResearchSubject;
+import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +75,14 @@ import java.util.*;
 @Route(value = "consentdocumentview", layout = MainLayout.class)
 public class ConsentDocumentsView extends SplitViewFrame {
     private static final Logger log = LoggerFactory.getLogger(ConsentDocumentsView.class);
+    private final String ACORN_EXTENSION = "https://va.gov/sdoh/acorn";
+    private final String LIVING_WILL_EXTENSION = "http://sdhealthconnect.com/leap/adr/livingwill";
+    private final String POA_HEALTHCARE_EXTENSION = "http://sdhealthconnect.com/leap/adr/poahealthcare";
+    private final String POA_MENTAL_HEALTH_EXTENSION = "http://sdhealthconnect.com/leap/adr/poamentalhealth";
+    private final String DNR_EXTENSION = "http://sdhealthconnect.com/leap/adr/dnr";
+    private final String POLST_EXTENSION = "http://sdhealthconnect.com/leap/adr/polst";
+    private final String PATIENT_PRIVACY_EXTENSION = "http://sdhealthconnect.com/leap/patient-privacy";
+
     private Grid<ConsentDocument> grid;
     private ListDataProvider<ConsentDocument> dataProvider;
     private DetailsDrawer detailsDrawer;
@@ -91,6 +102,8 @@ public class ConsentDocumentsView extends SplitViewFrame {
     private FHIRResearchSubject fhirResearchSubject;
 
     private Dialog docDialog;
+
+    private Dialog jsonDialog;
 
    @Override
     protected void onAttach(AttachEvent attachEvent) {
@@ -311,7 +324,45 @@ public class ConsentDocumentsView extends SplitViewFrame {
             createDocumentDialog();
             docDialog.open();
         });
+        Button consentJson = new Button("Consent Resource");
+        consentJson.addClickListener(buttonClickEvent -> {
+            FhirContext ctx = FhirContext.forR4();
+            IParser parser = ctx.newJsonParser();
+            parser.setPrettyPrint(true);
+            Optional<ConsentDocument> ocd = grid.getSelectionModel().getFirstSelectedItem();
+            ConsentDocument cd = ocd.get();
+            Consent consent = cd.getFhirConsentResource();
+            String consentString = parser.encodeResourceToString(consent);
+           createJsonViewer(consentString);
+           jsonDialog.open();
+        });
+        Button questionnaireJson = new Button("Questionnaire Response");
+        questionnaireJson.addClickListener(buttonClickEvent -> {
+            Optional<ConsentDocument> ocd = grid.getSelectionModel().getFirstSelectedItem();
+            ConsentDocument cd = ocd.get();
+            Consent consent = cd.getFhirConsentResource();
+            Extension ext = null;
+            String policyType = cd.getPolicyType();
+            if (policyType.equals("sdoh")) ext = consent.getExtensionByUrl(ACORN_EXTENSION);
+            if (policyType.equals("acd-LivingWill")) ext = consent.getExtensionByUrl(LIVING_WILL_EXTENSION);
+            if (policyType.equals("acd-POAHealthcare")) ext = consent.getExtensionByUrl(POA_HEALTHCARE_EXTENSION);
+            if (policyType.equals("acd-POAMentalHealth")) ext = consent.getExtensionByUrl(POA_MENTAL_HEALTH_EXTENSION);
+            if (policyType.equals("dnr")) ext = consent.getExtensionByUrl(DNR_EXTENSION);
+            if (policyType.equals("polst")) ext = consent.getExtensionByUrl(POLST_EXTENSION);
+            if (policyType.equals("patient-privacy")) ext = consent.getExtensionByUrl(PATIENT_PRIVACY_EXTENSION);
+            StringType stringType = (StringType)ext.getValue();
+            BasicQuestionnaireResponseClient qClient = new BasicQuestionnaireResponseClient(stringType.getValue());
+            QuestionnaireResponse resp = qClient.getQuestionnaireResponse();
+            FhirContext ctx = FhirContext.forR4();
+            IParser parser = ctx.newJsonParser();
+            parser.setPrettyPrint(true);
+            String qFinal = parser.encodeResourceToString(resp);
+            createJsonViewer(qFinal);
+            jsonDialog.open();
+        });
         viewDocument.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.FILE_O));
+        consentJson.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.BRIEFCASE));
+        questionnaireJson.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.QUESTION_CIRCLE_O));
         if (consentDocument.getFhirConsentResource().getSourceAttachment().getTitle() != null) {
             docTitle = new ListItem(
                     UIUtils.createTertiaryIcon(VaadinIcon.FILE_TEXT),
@@ -348,7 +399,13 @@ public class ConsentDocumentsView extends SplitViewFrame {
             item.setWhiteSpace(WhiteSpace.PRE_LINE);
         }
 
-        Div attachments = new Div(docTitle, docType, uploadAction, upload, viewDocument);
+        FlexBoxLayout contentB = new FlexBoxLayout(viewDocument, consentJson, questionnaireJson);
+        contentB.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        contentB.setBoxSizing(BoxSizing.BORDER_BOX);
+        contentB.setHeightFull();
+        contentB.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+
+        Div attachments = new Div(docTitle, docType, uploadAction, upload, contentB);
         attachments.addClassName(LumoStyles.Padding.Vertical.S);
         return attachments;
 
@@ -627,6 +684,35 @@ public class ConsentDocumentsView extends SplitViewFrame {
         docDialog.setModal(false);
         docDialog.setResizable(true);
         docDialog.setDraggable(true);
+    }
+
+    private void createJsonViewer(String jsonString) {
+        jsonDialog = new Dialog();
+        AceEditor editor = new AceEditor();
+        editor.setTheme(AceTheme.chrome);
+        editor.setMode(AceMode.json);
+        editor.setWidth("840px");
+        editor.setHeight("800px");
+        editor.setWrap(false);
+        editor.setAutoComplete(true);
+        editor.setHighlightActiveLine(false);
+        editor.setHighlightSelectedWord(false);
+        editor.setStatusbarEnabled(true);
+        editor.setValue(jsonString);
+
+        Button closeButton = new Button("Close", e -> jsonDialog.close());
+        closeButton.setIcon(UIUtils.createTertiaryIcon(VaadinIcon.EXIT));
+
+        FlexBoxLayout content = new FlexBoxLayout(editor, closeButton);
+        content.setFlexDirection(FlexLayout.FlexDirection.COLUMN);
+        content.setBoxSizing(BoxSizing.BORDER_BOX);
+        content.setHeightFull();
+        content.setPadding(Horizontal.RESPONSIVE_X, Top.RESPONSIVE_X);
+        jsonDialog.add(content);
+
+        jsonDialog.setModal(true);
+        jsonDialog.setResizable(true);
+        jsonDialog.setDraggable(true);
     }
 
     private boolean revokeAndStopMedicationRequest(String url) {

@@ -25,6 +25,13 @@ public class SDOHCondition {
         CanonicalType canonicalType = new CanonicalType();
         canonicalType.setValue("http://hl7.org/fhir/us/sdoh-clinicalcare/StructureDefinition/SDOHCC-Condition");
         meta.getProfile().add(canonicalType);
+        Coding security = new Coding();
+        security.setDisplay("Restricted");
+        security.setCode("R");
+        security.setSystem("http://terminology.hl7.org/CodeSystem/v3-Confidentiality");
+        List<Coding> securityList = new ArrayList<>();
+        securityList.add(security);
+        meta.setSecurity(securityList);
         baseCondition.setMeta(meta);
 
         baseCondition.setRecordedDate(new Date());

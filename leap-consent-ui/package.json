@@ -2,9 +2,11 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
+    "@f0rce/lit-ace": "^1.3.4",
     "@lrnwebcomponents/pdf-browser-viewer": "2.1.4",
     "@polymer/iron-icon": "3.0.1",
     "@polymer/iron-list": "3.1.0",
+    "@polymer/iron-media-query": "3.0.1",
     "@polymer/polymer": "3.2.0",
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/form": "./target/flow-frontend/form",
@@ -51,6 +53,7 @@
     "@vaadin/vaadin-time-picker": "20.0.2",
     "@vaadin/vaadin-upload": "20.0.2",
     "construct-style-sheets-polyfill": "2.4.16",
+    "element-match-media": "0.0.3",
     "lit-element": "2.5.1",
     "lit-html": "1.4.1",
     "signature_pad": "3.0.0-beta.4"
@@ -86,9 +89,11 @@
   },
   "vaadin": {
     "dependencies": {
+      "@f0rce/lit-ace": "^1.3.4",
       "@lrnwebcomponents/pdf-browser-viewer": "2.1.4",
       "@polymer/iron-icon": "3.0.1",
       "@polymer/iron-list": "3.1.0",
+      "@polymer/iron-media-query": "3.0.1",
       "@polymer/polymer": "3.2.0",
       "@vaadin/router": "1.7.2",
       "@vaadin/vaadin-accordion": "20.0.2",
@@ -134,6 +139,7 @@
       "@vaadin/vaadin-upload": "20.0.2",
       "@webcomponents/webcomponentsjs": "^2.2.10",
       "construct-style-sheets-polyfill": "2.4.16",
+      "element-match-media": "0.0.3",
       "lit-element": "2.5.1",
       "lit-html": "1.4.1",
       "multiselect-combo-box": "2.4.2",
@@ -164,6 +170,6 @@
       "workbox-precaching": "6.2.0",
       "workbox-webpack-plugin": "6.2.0"
     },
-    "hash": "5fd7870d4d7d19514692b37de02e35e9b2bc07aa37791c40f188b3a3de1b363d"
+    "hash": "84dcfd9bd1652a2ecb83d76e97fd55809f5bb00ee7374dc8fdcb6deca24033d2"
   }
 }

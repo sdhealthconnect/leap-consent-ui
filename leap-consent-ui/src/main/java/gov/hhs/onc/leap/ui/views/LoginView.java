@@ -22,7 +22,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 	public LoginView(){
 		login.setAction("login");
 		login.setOpened(true);
-		login.setTitle("ACORN Project");
+		login.setTitle("FHIR Consent");
 		login.setDescription("HIMSS2022 Demonstrations of SDOH");
 		login.setForgotPasswordButtonVisible(false);
 		getElement().appendChild(login.getElement());
