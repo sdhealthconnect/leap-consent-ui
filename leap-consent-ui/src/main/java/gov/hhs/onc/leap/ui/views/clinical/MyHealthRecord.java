@@ -40,7 +40,8 @@ public class MyHealthRecord extends ViewFrame {
     @Autowired
     private FHIRObservation fhirObservation;
 
-    @Autowired FHIRServiceRequest fhirServiceRequest;
+    @Autowired
+    private FHIRServiceRequest fhirServiceRequest;
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {

@@ -52,4 +52,8 @@ public class FHIRServiceRequest {
         ServiceRequest res = (ServiceRequest) bundle.getEntry().get(0).getResource();
         return res;
     }
+
+    public void deleteTestServiceRequestResource(String id) {
+        hapiFhirServer.deleteTestServiceRequestResource(id);
+    }
 }

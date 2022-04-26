@@ -43,6 +43,7 @@ import gov.hhs.onc.leap.signature.PDFSigningService;
 import gov.hhs.onc.leap.ui.MainLayout;
 import gov.hhs.onc.leap.ui.components.FlexBoxLayout;
 import gov.hhs.onc.leap.ui.components.ListItem;
+import gov.hhs.onc.leap.ui.components.ListItemSDOHOrganization;
 import gov.hhs.onc.leap.ui.components.navigation.BasicDivider;
 import gov.hhs.onc.leap.ui.layout.size.Horizontal;
 import gov.hhs.onc.leap.ui.layout.size.Right;
@@ -284,7 +285,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createFoodSecurityAction() {
-        Html foodIntro = new Html("<p>Based on your responses in the <b>Food</b> section of the ACORN questionnaire we have identified organizations in your area that may be able to help.</>");
+        Html foodIntro = new Html("<p>Based on your responses in the <b>Food</b> section of the SDOH questionnaire we have identified organizations in your area that may be able to help.</>");
         foodgrid = createGrid("Food Security");
         Html consent = new Html("<p>Highlight the organization that best fits your needs " +
                 "and click on the \"Accept\" button to authorize <b>U.S. Department of Veterans Affairs</b> to release your contact information while scheduling a referral.</p>");
@@ -304,7 +305,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createTransportationAction() {
-        Html transportationIntro = new Html("<p>Based on your responses in the <b>Transportation Access</b> section of the ACORN questionnaire we have identified organizations in your area that may be able to help.</>");
+        Html transportationIntro = new Html("<p>Based on your responses in the <b>Transportation Access</b> section of the SDOH questionnaire we have identified organizations in your area that may be able to help.</>");
         transportationgrid = createGrid("Transportation Access");
         Html consent = new Html("<p>Highlight the organization that best fits your needs " +
                 "and click on the \"Accept\" button to authorize <b>U.S. Department of Veterans Affairs</b> to release your contact information while scheduling a referral.</p>");
@@ -324,7 +325,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createHousingAction() {
-        Html housingIntro = new Html("<p>Based on your responses in the <b>Housing</b> section of the ACORN questionnaire we have identified organizations in your area that may be able to help.</>");
+        Html housingIntro = new Html("<p>Based on your responses in the <b>Housing</b> section of the SDOH questionnaire we have identified organizations in your area that may be able to help.</>");
         housinggrid = createGrid("Housing Insecurity");
         Html consent = new Html("<p>Highlight the organization that best fits your needs " +
                 "and click on the \"Accept\" button to authorize <b>U.S. Department of Veterans Affairs</b> to release your contact information while scheduling a referral.</p>");
@@ -344,7 +345,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createUtilityAction() {
-        Html utilityIntro = new Html("<p>Based on your responses in the <b>Utility Needs</b> section of the ACORN questionnaire we have identified organizations in your area that may be able to help.</>");
+        Html utilityIntro = new Html("<p>Based on your responses in the <b>Utility Needs</b> section of the SDOH questionnaire we have identified organizations in your area that may be able to help.</>");
         utilitygrid = createGrid("Utility Needs");
         Html consent = new Html("<p>Highlight the organization that best fits your needs " +
                 "and click on the \"Accept\" button to authorize <b>U.S. Department of Veterans Affairs</b> to release your contact information while scheduling a referral.</p>");
@@ -364,7 +365,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createPersonalSafetyAction() {
-        Html personalIntro = new Html("<p>Based on your responses in the <b>Personal Safety</b> section of the ACORN questionnaire we have identified organizations in your area that may be able to help.</>");
+        Html personalIntro = new Html("<p>Based on your responses in the <b>Personal Safety</b> section of the SDOH questionnaire we have identified organizations in your area that may be able to help.</>");
         personalgrid = createGrid("Personal Safety");
         Html consent = new Html("<p>Highlight the organization that best fits your needs " +
                 "and click on the \"Accept\" button to authorize <b>U.S. Department of Veterans Affairs</b> to release your contact information while scheduling a referral.</p>");
@@ -384,7 +385,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createSocialSupportAction() {
-        Html socialIntro = new Html("<p>Based on your responses in the <b>Social Support</b> section of the ACORN questionnaire we have identified organizations in your area that may be able to help.</>");
+        Html socialIntro = new Html("<p>Based on your responses in the <b>Social Support</b> section of the SDOH questionnaire we have identified organizations in your area that may be able to help.</>");
         socialgrid = createGrid("Social Support");
         Html consent = new Html("<p>Highlight the organization that best fits your needs " +
                 "and click on the \"Accept\" button to authorize <b>U.S. Department of Veterans Affairs</b> to release your contact information while scheduling a referral.</p>");
@@ -404,7 +405,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createEmploymentEductionAction() {
-        Html employIntro = new Html("<p>Based on your responses in the <b>Employment and Education</b> section of the ACORN questionnaire we have identified organizations in your area that may be able to help.</>");
+        Html employIntro = new Html("<p>Based on your responses in the <b>Employment and Education</b> section of the SDOH questionnaire we have identified organizations in your area that may be able to help.</>");
         employgrid = createGrid("Employment and Education");
         Html consent = new Html("<p>Highlight the organization that best fits your needs " +
                 "and click on the \"Accept\" button to authorize <b>U.S. Department of Veterans Affairs</b> to release your contact information while scheduling a referral.</p>");
@@ -424,7 +425,7 @@ public class AcornHome extends ViewFrame {
     }
 
     private void createLegalSupportAction() {
-        Html legalIntro = new Html("<p>Based on your responses in the <b>Legal Support</b> section of the ACORN questionnaire we have identified organizations in your area that may be able to help.</>");
+        Html legalIntro = new Html("<p>Based on your responses in the <b>Legal Support</b> section of the SDOH questionnaire we have identified organizations in your area that may be able to help.</>");
         legalgrid = createGrid("Legal Support");
         Html consent = new Html("<p>Highlight the organization that best fits your needs " +
                 "and click on the \"Accept\" button to authorize <b>U.S. Department of Veterans Affairs</b> to release your contact information while scheduling a referral.</p>");
@@ -514,6 +515,10 @@ public class AcornHome extends ViewFrame {
         grid.setDataProvider(dataProvider);
         grid.setHeightFull();
 
+        grid.addColumn(new ComponentRenderer<>(this::createSDOHItem))
+                .setHeader(getTranslation("Program Name"))
+                .setWidth("100%");
+                        /**
         grid.addColumn(new ComponentRenderer<>(this::createSDOHName))
                 .setHeader(getTranslation("Program Name"))
                 .setWidth("220px");
@@ -532,8 +537,20 @@ public class AcornHome extends ViewFrame {
         grid.addColumn(new ComponentRenderer<>(this::createEmailAddress))
                 .setHeader(getTranslation("Website"))
                 .setWidth("150px");
+                         */
 
         return grid;
+    }
+
+    private Component createSDOHItem(SDOHOrganization org) {
+        String program = org.getProgramname();
+        String orgName = org.getName();
+        String address = org.getAddress()+", "+org.getCity()+" "+org.getState();
+        String phoneAndOpHours = org.getPhonenumber()+" "+org.getDaysopen()+" "+org.getHoursofoperation();
+        String website = org.getWebsite();
+        ListItemSDOHOrganization item = new ListItemSDOHOrganization(program, orgName, address, phoneAndOpHours, website);
+        item.setPadding(Vertical.XS);
+        return item;
     }
 
     private Component createSDOHName(SDOHOrganization org) {

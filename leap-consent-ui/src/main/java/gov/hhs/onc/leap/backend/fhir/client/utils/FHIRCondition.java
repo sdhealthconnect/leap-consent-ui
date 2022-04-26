@@ -34,4 +34,8 @@ public class FHIRCondition {
         }
         return results;
     }
+
+    public void deleteTestConditionResource(String id) {
+        hapiFhirServer.deleteTestConditionResource(id);
+    }
 }
