@@ -63,4 +63,8 @@ public class FHIRConsent {
         Bundle bundle = hapiFhirServer.createAndExecuteBundle(consent);
         return res;
     }
+
+    public void deleteTestResource(String id) {
+        hapiFhirServer.deleteTestResource(id);
+    }
 }

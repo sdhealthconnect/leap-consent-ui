@@ -28,4 +28,8 @@ public class FHIRQuestionnaireResponse {
         QuestionnaireResponse resp = hapiFhirServer.getQuestionnaireResponseById(questionnaireResponseId);
         return resp;
     }
+
+    public void deleteTestResource(String id) {
+        hapiFhirServer.deleteTestResource(id);
+    }
 }

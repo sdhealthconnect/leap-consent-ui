@@ -42,7 +42,7 @@ public class SDOHReferral {
 
     public ServiceRequest createHousingInstabilityReferralRequest(String fhirPatientId, String patientName, String questionnaireRef, SDOHOrganization org) {
         createBaseServiceRequest();
-        baseServiceRequest.setId("SDOHHousingInstablity-Referral-"+fhirPatientId);
+        baseServiceRequest.setId("SDOHHousingInstability-Referral-"+fhirPatientId);
 
         //category
         List<CodeableConcept> ccList = new ArrayList<>();

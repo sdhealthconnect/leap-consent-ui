@@ -1,6 +1,7 @@
 package gov.hhs.onc.leap.backend.fhir.client;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.SearchTotalModeEnum;
 import ca.uhn.fhir.rest.api.SortOrderEnum;
 import ca.uhn.fhir.rest.api.SortSpec;
@@ -284,6 +285,28 @@ public class HapiFhirServer {
             conditions.addAll(BundleUtil.toListOfResources(ctx, bundle));
         }
         return conditions;
+    }
+
+    public void deleteTestConditionResource(String id) {
+        IBaseOperationOutcome outcome = hapiClient
+                .delete()
+                .resourceById(new IdType("Condition/"+id))
+                .execute();
+
+    }
+
+    public void deleteTestResource(String id) {
+        IBaseOperationOutcome outcome = hapiClient
+                .delete()
+                .resourceById(new IdType(id))
+                .execute();
+    }
+
+    public void deleteTestServiceRequestResource(String id) {
+        IBaseOperationOutcome outcome = hapiClient
+                .delete()
+                .resourceById(new IdType("ServiceRequest/"+id))
+                .execute();
     }
 
     public List<IBaseResource> getAllAllergyIntolerancesForPatient(String id) {
