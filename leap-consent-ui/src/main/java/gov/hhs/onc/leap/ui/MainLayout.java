@@ -37,7 +37,6 @@ import gov.hhs.onc.leap.ui.util.css.Display;
 import gov.hhs.onc.leap.ui.util.css.Overflow;
 import gov.hhs.onc.leap.ui.views.*;
 import gov.hhs.onc.leap.ui.views.acorn.*;
-import gov.hhs.onc.leap.ui.views.clinical.MyHealthRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,11 +158,11 @@ public class MainLayout extends FlexBoxLayout
 	private void initNaviItems() {
 		NaviMenu menu = naviDrawer.getMenu();
 		menu.addNaviItem(VaadinIcon.HOME, getTranslation("mainLayout-menu-home"), Home.class);
-		menu.addNaviItem(VaadinIcon.DOCTOR_BRIEFCASE, "My Health Record", MyHealthRecord.class);
+		menu.addNaviItem(VaadinIcon.DOCTOR_BRIEFCASE, "My Health Record", ClinicalDisabledView.class);
 		menu.addNaviItem(VaadinIcon.FAMILY, "My Social Needs", AcornHome.class);
-		menu.addNaviItem(VaadinIcon.CHECK_SQUARE, "MED Reconciliation", MedReconciliation.class);
+		menu.addNaviItem(VaadinIcon.CHECK_SQUARE, "MED Reconciliation", MedRecDisabledView.class);
 		menu.addNaviItem(VaadinIcon.RECORDS, getTranslation("mainLayout-menu-my_consent_documents"), ConsentDocumentsView.class);
-		menu.addNaviItem(VaadinIcon.COGS, getTranslation("mainLayout-menu-analyze_my_data"), AnalyzeRecordView.class);
+		menu.addNaviItem(VaadinIcon.COGS, getTranslation("mainLayout-menu-analyze_my_data"), AnalyzeDisabledView.class);
 		menu.addNaviItem(VaadinIcon.SHARE, getTranslation("mainLayout-menu-share_my_data"), SharePatientDataView.class);
 
 		NaviItem advDirective = menu.addNaviItem(VaadinIcon.EDIT, getTranslation("mainLayout-menu-my_directives"), AdvancedDirectiveView.class);

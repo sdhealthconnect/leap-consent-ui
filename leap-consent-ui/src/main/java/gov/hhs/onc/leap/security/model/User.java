@@ -1,7 +1,9 @@
 package gov.hhs.onc.leap.security.model;
 
 import lombok.Data;
+import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Length;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
@@ -10,6 +12,7 @@ import javax.validation.constraints.NotEmpty;
 import java.sql.Blob;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -22,7 +25,7 @@ import java.util.Set;
  */
 @Data
 @Entity
-@Table(name = "user")
+@Table(name = "user", schema = "public")
 public class User extends org.springframework.security.core.userdetails.User {
 
     @Id
@@ -51,10 +54,11 @@ public class User extends org.springframework.security.core.userdetails.User {
     private Boolean active;
     @Column(name = "photo")
     @Lob
-    private Blob photo;
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles;
+    @Type(type="org.hibernate.type.BinaryType")
+    private byte[] photo;
+    //@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    //@JoinTable(name = "public.user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    //private Set<Role> roles;
 
     @Column(name = "fhir_patient_id")
     private String fhirPatientId;

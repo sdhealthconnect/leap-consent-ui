@@ -8,8 +8,8 @@ hapi-fhir:
   url: ${HAPI_FHIR_URL:https://sdhc-hapi-fhir-leap-wafxyq4bza-uc.a.run.app/fhir/}
 
 datasource:
-  url: jdbc:mysql://${DB_NAME:localhost:3306/leap_consent?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&jdbcCompliantTruncation=false&createDatabaseIfNotExist=true}
-  username: ${DB_USER:root}
-  password: ${DB_PASS:changeme}
+  url: jdbc:postgresql://${DB_NAME:localhost:5432/leap_consent?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&jdbcCompliantTruncation=false&createDatabaseIfNotExist=true}
+  username: ${DB_USER:postgres}
+  password: ${DB_PASS:saperi}
 
 

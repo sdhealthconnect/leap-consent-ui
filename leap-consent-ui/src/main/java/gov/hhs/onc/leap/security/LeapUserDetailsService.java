@@ -16,10 +16,7 @@ import javax.annotation.PostConstruct;
 import javax.sql.rowset.serial.SerialBlob;
 import javax.transaction.Transactional;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static gov.hhs.onc.leap.ui.util.UIUtils.IMG_PATH;
 
@@ -39,7 +36,11 @@ public class LeapUserDetailsService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
         User user = userService.findUserByUserName(userName);
-        List<GrantedAuthority> authorities = getUserAuthority(user.getRoles());
+        Set<Role> roles = new HashSet<>() {{
+            add(new Role(Integer.valueOf(1), "USER"));
+        }};
+
+        List<GrantedAuthority> authorities = getUserAuthority(roles);
         return buildUserForAuthentication(user, authorities);
     }
 
@@ -60,7 +61,8 @@ public class LeapUserDetailsService implements UserDetailsService {
         nUser.setName(user.getName());
         nUser.setLastName(user.getLastName());
         nUser.setPhoto(user.getPhoto());
-        nUser.setRoles(user.getRoles());
+
+        //nUser.setRoles(roles);
         nUser.setFhirPatientId(user.getFhirPatientId());
         return nUser;
     }
@@ -71,7 +73,7 @@ public class LeapUserDetailsService implements UserDetailsService {
             ClassPathResource classPathResource = new ClassPathResource(IMG_PATH + "ironmanbike.jpg");
             InputStream imageInputStream = classPathResource.getInputStream();
             User u =userService.findUserByEmail("sgroh@gmail.com");
-            u.setPhoto(new SerialBlob(IOUtils.toByteArray(imageInputStream)));
+            u.setPhoto(IOUtils.toByteArray(imageInputStream));
             userService.saveUser(u);
         } catch (Exception e){
 

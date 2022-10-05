@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Data
 @Entity
-@Table(name = "consentuser")
+@Table(name = "consentuser", schema = "public")
 public class ConsentUser {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,7 +34,7 @@ public class ConsentUser {
     private String hairColor;                   // Fullfilled with DB, overwritten with Fhir information
     @Column(name = "weight")
     @NotEmpty(message = "*Please provide your weight")
-    private Double weight;                      // Fullfilled with DB, overwritten with Fhir information
+    private String weight;                      // Fullfilled with DB, overwritten with Fhir information
     @Column(name = "gender")
     @NotEmpty(message = "*Please provide your gender")
     private String gender;                      // Fullfilled with DB, overwritten with Fhir information
