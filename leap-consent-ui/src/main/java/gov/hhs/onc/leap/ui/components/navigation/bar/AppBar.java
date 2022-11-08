@@ -117,11 +117,11 @@ public class AppBar extends Header {
 	private void initAvatar() {
 		ConsentSession consentSession = (ConsentSession) VaadinSession.getCurrent().getAttribute("consentSession");
 		User u = consentSession.getConsentUser().getUser();
-		Blob b = u.getPhoto();
+		byte[] b = u.getPhoto();
 		avatar = new Image();
 		try {
 			if ( b != null) {
-				avatar = UIUtils.createImage(b.getBytes(1, (int) b.length()), "ironmanbike.jpg", "User menu");
+				avatar = UIUtils.createImage(b, "ironmanbike.jpg", "User menu");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

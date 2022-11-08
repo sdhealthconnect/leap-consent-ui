@@ -207,10 +207,10 @@ public class UserPreferencesView extends ViewFrame {
         this.relationship.setEnabled(false);
 
         //this.image = UIUtils.createImageFromText("S.G");
-        Blob b = user.getUser().getPhoto();
+        byte[] b = user.getUser().getPhoto();
         try {
             if ( b != null) {
-                this.image = UIUtils.createImage(b.getBytes(1, (int) b.length()), "avatar.png", "avatar");
+                this.image = UIUtils.createImage(b, "avatar.png", "avatar");
                 this.image.setMaxHeight("45px");
                 this.image.setMaxWidth("45px");
             }

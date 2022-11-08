@@ -17,8 +17,8 @@ public class BrandExpression extends Div {
 	public BrandExpression(String text) {
 		setClassName(CLASS_NAME);
 		String fullFormPath = UIUtils.IMG_PATH + "logos";
-		logo = UIUtils.createImage(fullFormPath,"va-logo.png", "");
-		logo.getStyle().set("background", "blue");
+		logo = UIUtils.createImage(fullFormPath,"healthit-logo.png", "");
+		logo.getStyle().set("background", "white");
        	logo.setAlt(text + " logo");
 		logo.setClassName(CLASS_NAME + "__logo");
 

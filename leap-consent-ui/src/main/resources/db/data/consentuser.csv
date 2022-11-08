@@ -1,11 +1,11 @@
 id;fhir_patient_id;first_name;middle_name;last_name;gender;state;eye_color;hair_color;weight;marital_status;ethnicity
-1;2035;Lorena247;;Badillo851;F;Arizona;BRN;BRN;120;M;Hispanic or Latino
-2;2739;Russel238;;Morar593;M;Arizona;BRN;BRN;180;M;White
-3;3975;Willie882;;Nienow652;M;Arizona;BLU;BRN;205;M;Hispanic or Latino
-4;6827;Cecilia788;;Verduzco998;F;Arizona;BRN;BRN;130;M;Hispanic or Latino
-5;7950;Estela596;;Orta736;F;Arizona;BRN;BRN;140;S;Hispanic or Latino
-6;8790;Guadalupe206;;Moreno82;M;Arizona;BRN;BRN;180;M;Hispanic or Latino
-7;9314;Laura391;;Pelayo88;F;Arizona;BRN;BRN;135;M;Hispanic or Latino
-8;10094;Martín25;;Rodríquez611;M;Arizona;BRN;BRN;180;M;Hispanic or Latino
-9;10576;Nicolás801;;Córdova800;M;Arizona;BRN;BRN;190;M;Hispanic or Latino
-10;11242;Virginia437;;Ocampo729;F;Arizona;BRN;BRN;115;M;Hispanic or Latino
+1;2035;Lorena247;;Badillo851;F;Arizona;BRN;BRN;120.00;M;Hispanic or Latino
+2;2739;Russel238;;Morar593;M;Arizona;BRN;BRN;180.00;M;White
+3;3975;Willie882;;Nienow652;M;Arizona;BLU;BRN;205.00;M;Hispanic or Latino
+4;6827;Cecilia788;;Verduzco998;F;Arizona;BRN;BRN;130.00;M;Hispanic or Latino
+5;7950;Estela596;;Orta736;F;Arizona;BRN;BRN;140.00;S;Hispanic or Latino
+6;8790;Guadalupe206;;Moreno82;M;Arizona;BRN;BRN;180.00;M;Hispanic or Latino
+7;9314;Laura391;;Pelayo88;F;Arizona;BRN;BRN;135.00;M;Hispanic or Latino
+8;10094;Martín25;;Rodríquez611;M;Arizona;BRN;BRN;180.00;M;Hispanic or Latino
+9;10576;Nicolás801;;Córdova800;M;Arizona;BRN;BRN;190.00;M;Hispanic or Latino
+10;11242;Virginia437;;Ocampo729;F;Arizona;BRN;BRN;115.00;M;Hispanic or Latino

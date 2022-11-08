@@ -26,7 +26,7 @@
             <column name="last_name" type="varchar(100)"/>
             <column name="name" type="varchar(100)"/>
             <column name="password" type="varchar(100)"/>
-            <column name="photo" type="blob"/>
+            <column name="photo" type="bytea"/>
         </createTable>
         <rollback>
             <dropUniqueConstraint tableName="user" constraintName="ux_user_email"></dropUniqueConstraint>
@@ -144,7 +144,7 @@
             <column name="hair_color" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="weight" type="double">
+            <column name="weight" type="varchar(10)">
                 <constraints nullable="false"/>
             </column>
             <column name="gender" type="varchar(50)">
@@ -229,11 +229,11 @@
         </addColumn>
         <update tableName="consentuser">
             <column name="language_preference" value="Spanish"/>
-            <where>fhir_patient_id=7950</where>
+            <where>id=5</where>
         </update>
         <update tableName="consentuser">
             <column name="language_preference" value=""/>
-            <where>fhir_patient_id=2035</where>
+            <where>id=1</where>
         </update>
         <rollback>
             <dropColumn tableName="consentuser">
@@ -242,7 +242,7 @@
         </rollback>
     </changeSet>
     <changeSet id="00000000000006" author="duane" logicalFilePath="changelog.xml" labels="linkConsentData">
-        <sql>SET FOREIGN_KEY_CHECKS=0;</sql>
+        <sql>ALTER TABLE consentuser DISABLE TRIGGER ALL;</sql>
         <loadUpdateData
                 file="db/data/consentuser_new_fhir_ids.csv"
                 separator=";"
@@ -263,10 +263,10 @@
             <column name="name" type="string"/>
             <column name="last_name" type="string"/>
         </loadUpdateData>
-        <sql>SET FOREIGN_KEY_CHECKS=1;</sql>
+        <sql>ALTER TABLE consentuser ENABLE TRIGGER ALL;</sql>
     </changeSet>
     <changeSet id="00000000000007" author="duane" logicalFilePath="changelog.xml" labels="linkConsentData">
-        <sql>SET FOREIGN_KEY_CHECKS=0;</sql>
+        <sql>ALTER TABLE consentuser DISABLE TRIGGER ALL;</sql>
         <loadUpdateData
                 file="db/data/consentuser_new_fhir_ids_v3.csv"
                 separator=";"
@@ -287,7 +287,7 @@
             <column name="name" type="string"/>
             <column name="last_name" type="string"/>
         </loadUpdateData>
-        <sql>SET FOREIGN_KEY_CHECKS=1;</sql>
+        <sql>ALTER TABLE consentuser ENABLE TRIGGER ALL;</sql>
     </changeSet>
     <changeSet id="00000000000008" author="duane" logicalFilePath="changelog.xml" labels="createSDOHOrganization">
         <createTable tableName="sdohorganization">
@@ -330,7 +330,7 @@
             <column name="parentorganizationname" type="varchar(200)">
                     <constraints nullable="false"/>
             </column>
-            <column name="statewide" type="int">
+            <column name="statewide" type="boolean">
                 <constraints nullable="false"/>
             </column>
         </createTable>

@@ -1,8 +1,6 @@
 package gov.hhs.onc.leap.security;
 
-import gov.hhs.onc.leap.security.model.Role;
 import gov.hhs.onc.leap.security.model.User;
-import gov.hhs.onc.leap.security.repository.RoleRepository;
 import gov.hhs.onc.leap.security.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,14 +18,12 @@ import java.util.HashSet;
 public class UserService {
 
     private UserRepository userRepository;
-    private RoleRepository roleRepository;
+    //private RoleRepository roleRepository;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository,
-                       RoleRepository roleRepository) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
         this.bCryptPasswordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -48,10 +44,12 @@ public class UserService {
             user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         }
         user.setActive(true);
+        /**
         if (user.getRoles().isEmpty()){
             Role userRole = roleRepository.findByRole("USER");
             user.setRoles(new HashSet<Role>(Arrays.asList(userRole)));
         }
+         **/
         return userRepository.save(user);
     }
 }

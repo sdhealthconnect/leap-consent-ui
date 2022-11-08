@@ -239,8 +239,8 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- Liquibase -->
@@ -253,8 +253,8 @@
         <!-- Needed to connect in gcloud env -->
         <dependency>
             <groupId>com.google.cloud.sql</groupId>
-            <artifactId>mysql-socket-factory-connector-j-8</artifactId>
-            <version>1.2.1</version>
+            <artifactId>postgres-socket-factory</artifactId>
+            <version>1.7.0</version>
         </dependency>
         <dependency>
             <groupId>org.rapidpm</groupId>
